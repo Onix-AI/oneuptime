@@ -80,6 +80,10 @@ Certs/StatusPageCerts/*.key
 Certs/ServerCerts/*.crt
 Certs/ServerCerts/*.key
 
+# Custom certs for Onix deployment (lowercase)
+certs/ServerCerts/*.crt
+certs/ServerCerts/*.key
+
 Backups/*.backup
 Backups/*.sql
 Backups/*.tar

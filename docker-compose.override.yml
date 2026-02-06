@@ -1,0 +1,16 @@
+services:
+  ingress:
+    volumes:
+      - ./certs/ServerCerts:/etc/nginx/certs/ServerCerts:ro
+
+  app:
+    volumes:
+      - ./patches/StatusPageService.ts:/usr/src/Common/Server/Services/StatusPageService.ts:ro
+
+  probe-ingest:
+    volumes:
+      - ./patches/CustomCodeMonitorCriteria.ts:/usr/src/app/node_modules/Common/Server/Utils/Monitor/Criteria/CustomCodeMonitorCriteria.ts:ro
+
+  probe-2:
+    deploy:
+      replicas: 0
