@@ -14,7 +14,7 @@ This document tracks all modifications made to the upstream OneUptime repository
 Custom JavaScript Code monitors that return JSON objects (e.g., `return { data: { status: "ok" } }`) silently fail criteria matching. The "Contains" filter and other string-based criteria checks don't work because the result is an object, not a string.
 
 ### Fix
-Added JSON.stringify conversion for object results before criteria comparison in the `CheckOn.ResultValue` section.
+Added JSON.stringify conversion (with pretty-print formatting) for object results before criteria comparison in the `CheckOn.ResultValue` section.
 
 ### Patch Code (added after the emptyNotEmptyResult check, ~line 73)
 ```typescript
@@ -27,6 +27,8 @@ if (
 ) {
   syntheticMonitorResponse.result = JSON.stringify(
     syntheticMonitorResponse.result,
+    null,
+    2,
   );
 }
 ```
@@ -93,6 +95,7 @@ docker exec oneuptime-probe-ingest-1 grep -A 5 "Convert object results" /usr/src
 
 ### Impact
 - Custom Code monitors returning JSON objects now work correctly with string-based criteria filters (Contains, NotContains, etc.)
+- Root cause text shows formatted JSON with spacing for readability
 - Backward compatible - monitors returning strings or numbers continue to work as before
 
 ### Why This Approach?

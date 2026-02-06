@@ -81,6 +81,8 @@ export default class CustomCodeMonitoringCriteria {
       ) {
         syntheticMonitorResponse.result = JSON.stringify(
           syntheticMonitorResponse.result,
+          null,
+          2,
         );
       }
 
