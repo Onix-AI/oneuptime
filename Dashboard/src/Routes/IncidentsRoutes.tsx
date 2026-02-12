@@ -214,6 +214,12 @@ const IncidentSettingsRoles: LazyExoticComponent<
   return import("../Pages/Incidents/Settings/IncidentRoles");
 });
 
+const IncidentSettingsMore: LazyExoticComponent<
+  FunctionComponent<ComponentProps>
+> = lazy(() => {
+  return import("../Pages/Incidents/Settings/IncidentMoreSettings");
+});
+
 // Incident Episode Pages
 const IncidentEpisodes: LazyExoticComponent<FunctionComponent<ComponentProps>> =
   lazy(() => {
@@ -284,6 +290,18 @@ const IncidentEpisodeViewInternalNote: LazyExoticComponent<
   FunctionComponent<ComponentProps>
 > = lazy(() => {
   return import("../Pages/Incidents/EpisodeView/InternalNote");
+});
+
+const IncidentEpisodeViewPublicNote: LazyExoticComponent<
+  FunctionComponent<ComponentProps>
+> = lazy(() => {
+  return import("../Pages/Incidents/EpisodeView/PublicNote");
+});
+
+const IncidentEpisodeViewSettings: LazyExoticComponent<
+  FunctionComponent<ComponentProps>
+> = lazy(() => {
+  return import("../Pages/Incidents/EpisodeView/Settings");
 });
 
 const IncidentEpisodeViewMembers: LazyExoticComponent<
@@ -591,6 +609,18 @@ const IncidentsRoutes: FunctionComponent<ComponentProps> = (
           }
         />
 
+        <PageRoute
+          path={IncidentsRoutePath[PageMap.INCIDENTS_SETTINGS_MORE] || ""}
+          element={
+            <Suspense fallback={Loader}>
+              <IncidentSettingsMore
+                {...props}
+                pageRoute={RouteMap[PageMap.INCIDENTS_SETTINGS_MORE] as Route}
+              />
+            </Suspense>
+          }
+        />
+
         {/* Incident Episode Routes */}
         <PageRoute
           path={IncidentsRoutePath[PageMap.INCIDENT_EPISODES] || ""}
@@ -808,6 +838,22 @@ const IncidentsRoutes: FunctionComponent<ComponentProps> = (
 
         <PageRoute
           path={RouteUtil.getLastPathForKey(
+            PageMap.INCIDENT_EPISODE_VIEW_PUBLIC_NOTE,
+          )}
+          element={
+            <Suspense fallback={Loader}>
+              <IncidentEpisodeViewPublicNote
+                {...props}
+                pageRoute={
+                  RouteMap[PageMap.INCIDENT_EPISODE_VIEW_PUBLIC_NOTE] as Route
+                }
+              />
+            </Suspense>
+          }
+        />
+
+        <PageRoute
+          path={RouteUtil.getLastPathForKey(
             PageMap.INCIDENT_EPISODE_VIEW_MEMBERS,
           )}
           element={
@@ -816,6 +862,22 @@ const IncidentsRoutes: FunctionComponent<ComponentProps> = (
                 {...props}
                 pageRoute={
                   RouteMap[PageMap.INCIDENT_EPISODE_VIEW_MEMBERS] as Route
+                }
+              />
+            </Suspense>
+          }
+        />
+
+        <PageRoute
+          path={RouteUtil.getLastPathForKey(
+            PageMap.INCIDENT_EPISODE_VIEW_SETTINGS,
+          )}
+          element={
+            <Suspense fallback={Loader}>
+              <IncidentEpisodeViewSettings
+                {...props}
+                pageRoute={
+                  RouteMap[PageMap.INCIDENT_EPISODE_VIEW_SETTINGS] as Route
                 }
               />
             </Suspense>

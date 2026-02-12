@@ -79,6 +79,7 @@ import ProjectSmtpConfigService from "./ProjectSmtpConfigService";
 import ProjectSsoService from "./ProjectSsoService";
 import PromoCodeService from "./PromoCodeService";
 import EnterpriseLicenseService from "./EnterpriseLicenseService";
+import OpenSourceDeploymentService from "./OpenSourceDeploymentService";
 import ResellerPlanService from "./ResellerPlanService";
 import ResellerService from "./ResellerService";
 import ScheduledMaintenanceCustomFieldService from "./ScheduledMaintenanceCustomFieldService";
@@ -181,6 +182,7 @@ import IncidentEpisodeRoleMemberService from "./IncidentEpisodeRoleMemberService
 import IncidentEpisodeOwnerTeamService from "./IncidentEpisodeOwnerTeamService";
 import IncidentEpisodeOwnerUserService from "./IncidentEpisodeOwnerUserService";
 import IncidentEpisodeStateTimelineService from "./IncidentEpisodeStateTimelineService";
+import IncidentEpisodePublicNoteService from "./IncidentEpisodePublicNoteService";
 import AlertGroupingRuleService from "./AlertGroupingRuleService";
 import IncidentSlaRuleService from "./IncidentSlaRuleService";
 import IncidentSlaService from "./IncidentSlaService";
@@ -209,6 +211,7 @@ const services: Array<BaseService> = [
   AcmeCertificateService,
   PromoCodeService,
   EnterpriseLicenseService,
+  OpenSourceDeploymentService,
 
   ResellerService,
   ResellerPlanService,
@@ -400,6 +403,7 @@ const services: Array<BaseService> = [
   IncidentEpisodeOwnerTeamService,
   IncidentEpisodeOwnerUserService,
   IncidentEpisodeStateTimelineService,
+  IncidentEpisodePublicNoteService,
   AlertGroupingRuleService,
   IncidentSlaRuleService,
   IncidentSlaService,

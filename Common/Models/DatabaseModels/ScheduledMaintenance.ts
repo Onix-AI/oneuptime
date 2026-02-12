@@ -253,6 +253,7 @@ export default class ScheduledMaintenance extends BaseModel {
     required: true,
     unique: true,
     type: TableColumnType.Slug,
+    computed: true,
     title: "Slug",
     description: "Friendly globally unique name for your object",
   })
@@ -1071,6 +1072,33 @@ export default class ScheduledMaintenance extends BaseModel {
     nullable: true,
   })
   public scheduledMaintenanceNumber?: number = undefined;
+
+  @ColumnAccessControl({
+    create: [],
+    read: [
+      Permission.ProjectOwner,
+      Permission.ProjectAdmin,
+      Permission.ProjectMember,
+      Permission.ReadProjectScheduledMaintenance,
+      Permission.ReadAllProjectResources,
+    ],
+    update: [],
+  })
+  @TableColumn({
+    isDefaultValueColumn: false,
+    required: false,
+    type: TableColumnType.ShortText,
+    title: "Scheduled Maintenance Number With Prefix",
+    description:
+      "Scheduled maintenance number with prefix (e.g., 'SM-42' or '#42')",
+    computed: true,
+  })
+  @Column({
+    type: ColumnType.ShortText,
+    length: ColumnLength.ShortText,
+    nullable: true,
+  })
+  public scheduledMaintenanceNumberWithPrefix?: string = undefined;
 
   @ColumnAccessControl({
     create: [],

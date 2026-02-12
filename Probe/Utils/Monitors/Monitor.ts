@@ -38,6 +38,26 @@ import MonitorTest from "Common/Models/DatabaseModels/MonitorTest";
 import ProxyConfig from "../ProxyConfig";
 
 export default class MonitorUtil {
+  // Replace dynamic URL placeholders like {{timestamp}} and {{random}} with actual values.
+  public static resolveUrlPlaceholders(url: URL): URL {
+    let urlString: string = url.toString();
+
+    if (
+      !urlString.includes("{{timestamp}}") &&
+      !urlString.includes("{{random}}")
+    ) {
+      return url;
+    }
+
+    const timestamp: string = Math.floor(Date.now() / 1000).toString();
+    const random: string = ObjectID.generate().toString().replace(/-/g, "");
+
+    urlString = urlString.replace(/\{\{timestamp\}\}/g, timestamp);
+    urlString = urlString.replace(/\{\{random\}\}/g, random);
+
+    return URL.fromString(urlString);
+  }
+
   public static async probeMonitorTest(
     monitorTest: MonitorTest,
   ): Promise<Array<ProbeMonitorResponse | null>> {
@@ -378,8 +398,12 @@ export default class MonitorUtil {
 
       result.monitorDestination = monitorStep.data.monitorDestination;
 
-      const response: ProbeWebsiteResponse | null = await WebsiteMonitor.ping(
+      const websiteUrl: URL = MonitorUtil.resolveUrlPlaceholders(
         monitorStep.data?.monitorDestination as URL,
+      );
+
+      const response: ProbeWebsiteResponse | null = await WebsiteMonitor.ping(
+        websiteUrl,
         {
           isHeadRequest: MonitorUtil.isHeadRequest(monitorStep),
           monitorId: monitorId,
@@ -410,6 +434,10 @@ export default class MonitorUtil {
 
       result.monitorDestination = monitorStep.data.monitorDestination;
 
+      const apiUrl: URL = MonitorUtil.resolveUrlPlaceholders(
+        monitorStep.data?.monitorDestination as URL,
+      );
+
       let requestBody: JSONObject | undefined = undefined;
       if (
         monitorStep.data?.requestBody &&
@@ -420,18 +448,15 @@ export default class MonitorUtil {
         );
       }
 
-      const response: APIResponse | null = await ApiMonitor.ping(
-        monitorStep.data?.monitorDestination as URL,
-        {
-          requestHeaders: monitorStep.data?.requestHeaders || {},
-          requestBody: requestBody || undefined,
-          monitorId: monitorId,
-          requestType: monitorStep.data?.requestType || HTTPMethod.GET,
-          retry: PROBE_MONITOR_RETRY_LIMIT,
-          timeout: new PositiveNumber(60000), // 60 seconds
-          doNotFollowRedirects: monitorStep.data?.doNotFollowRedirects || false,
-        },
-      );
+      const response: APIResponse | null = await ApiMonitor.ping(apiUrl, {
+        requestHeaders: monitorStep.data?.requestHeaders || {},
+        requestBody: requestBody || undefined,
+        monitorId: monitorId,
+        requestType: monitorStep.data?.requestType || HTTPMethod.GET,
+        retry: PROBE_MONITOR_RETRY_LIMIT,
+        timeout: new PositiveNumber(60000), // 60 seconds
+        doNotFollowRedirects: monitorStep.data?.doNotFollowRedirects || false,
+      });
 
       if (!response) {
         return null;

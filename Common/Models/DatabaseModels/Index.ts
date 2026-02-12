@@ -98,6 +98,7 @@ import ProjectSmtpConfig from "./ProjectSmtpConfig";
 import ProjectSSO from "./ProjectSso";
 import PromoCode from "./PromoCode";
 import EnterpriseLicense from "./EnterpriseLicense";
+import OpenSourceDeployment from "./OpenSourceDeployment";
 import Reseller from "./Reseller";
 import ResellerPlan from "./ResellerPlan";
 // ScheduledMaintenances
@@ -210,6 +211,7 @@ import IncidentEpisodeOwnerUser from "./IncidentEpisodeOwnerUser";
 import IncidentEpisodeOwnerTeam from "./IncidentEpisodeOwnerTeam";
 import IncidentEpisodeInternalNote from "./IncidentEpisodeInternalNote";
 import IncidentEpisodeFeed from "./IncidentEpisodeFeed";
+import IncidentEpisodePublicNote from "./IncidentEpisodePublicNote";
 import IncidentGroupingRule from "./IncidentGroupingRule";
 import IncidentSlaRule from "./IncidentSlaRule";
 import IncidentSla from "./IncidentSla";
@@ -318,6 +320,7 @@ const AllModelTypes: Array<{
   IncidentEpisodeOwnerTeam,
   IncidentEpisodeInternalNote,
   IncidentEpisodeFeed,
+  IncidentEpisodePublicNote,
   IncidentGroupingRule,
   IncidentSlaRule,
   IncidentSla,
@@ -409,6 +412,7 @@ const AllModelTypes: Array<{
 
   PromoCode,
   EnterpriseLicense,
+  OpenSourceDeployment,
 
   GlobalConfig,
 

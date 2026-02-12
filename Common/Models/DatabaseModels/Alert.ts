@@ -418,9 +418,8 @@ export default class Alert extends BaseModel {
   })
   @TableColumn({
     type: TableColumnType.ObjectID,
-    title: "Deleted by User ID",
-    description:
-      "User ID who deleted this object (if this object was deleted by a User)",
+    title: "Monitor ID",
+    description: "ID of the monitor this alert belongs to",
   })
   @Column({
     type: ColumnType.ObjectID,
@@ -453,9 +452,9 @@ export default class Alert extends BaseModel {
   @TableColumn({
     required: false,
     type: TableColumnType.EntityArray,
-    modelType: Monitor,
+    modelType: OnCallDutyPolicy,
     title: "On-Call Duty Policies",
-    description: "List of on-call duty policy affected by this alert.",
+    description: "List of on-call duty policies affected by this alert.",
   })
   @ManyToMany(
     () => {
@@ -466,15 +465,15 @@ export default class Alert extends BaseModel {
   @JoinTable({
     name: "AlertOnCallDutyPolicy",
     inverseJoinColumn: {
-      name: "monitorId",
-      referencedColumnName: "_id",
-    },
-    joinColumn: {
       name: "onCallDutyPolicyId",
       referencedColumnName: "_id",
     },
+    joinColumn: {
+      name: "alertId",
+      referencedColumnName: "_id",
+    },
   })
-  public onCallDutyPolicies?: Array<OnCallDutyPolicy> = undefined; // monitors affected by this alert.
+  public onCallDutyPolicies?: Array<OnCallDutyPolicy> = undefined; // on-call duty policies affected by this alert.
 
   @ColumnAccessControl({
     create: [
@@ -701,7 +700,7 @@ export default class Alert extends BaseModel {
   @TableColumn({
     manyToOneRelationColumn: "monitorStatusWhenThisAlertWasCreatedId",
     type: TableColumnType.Entity,
-    modelType: AlertState,
+    modelType: MonitorStatus,
     title: "Monitor status when this alert was created",
     description: "Monitor status when this alert was created",
   })
@@ -862,6 +861,7 @@ export default class Alert extends BaseModel {
     isDefaultValueColumn: false,
     required: false,
     type: TableColumnType.JSON,
+    computed: true,
   })
   @Column({
     type: ColumnType.JSON,
@@ -1082,6 +1082,33 @@ export default class Alert extends BaseModel {
     nullable: true,
   })
   public alertNumber?: number = undefined;
+
+  @ColumnAccessControl({
+    create: [],
+    read: [
+      Permission.ProjectOwner,
+      Permission.ProjectAdmin,
+      Permission.ProjectMember,
+      Permission.ReadAlert,
+      Permission.ReadAllProjectResources,
+    ],
+    update: [],
+  })
+  @TableColumn({
+    isDefaultValueColumn: false,
+    required: false,
+    type: TableColumnType.ShortText,
+    title: "Alert Number With Prefix",
+    description: "Alert number with prefix (e.g., 'ALT-42' or '#42')",
+    computed: true,
+    canReadOnRelationQuery: true,
+  })
+  @Column({
+    type: ColumnType.ShortText,
+    length: ColumnLength.ShortText,
+    nullable: true,
+  })
+  public alertNumberWithPrefix?: string = undefined;
 
   @ColumnAccessControl({
     create: [],

@@ -21,7 +21,7 @@ import UserNotificationEventType from "../../../../../Types/UserNotification/Use
 import AlertState from "../../../../../Models/DatabaseModels/AlertState";
 import AlertStateService from "../../../../Services/AlertStateService";
 import logger from "../../../Logger";
-import AccessTokenService from "../../../../Services/AccessTokenService";
+
 import CaptureSpan from "../../../Telemetry/CaptureSpan";
 import WorkspaceNotificationLogService from "../../../../Services/WorkspaceNotificationLogService";
 import WorkspaceUserAuthTokenService from "../../../../Services/WorkspaceUserAuthTokenService";
@@ -305,6 +305,23 @@ export default class SlackAlertEpisodeActions {
         return option.label !== "" || option.value !== "";
       });
 
+    if (dropdownOption.length === 0) {
+      if (data.slackRequest.slackChannelId) {
+        await SlackUtil.sendEphemeralMessageToChannel({
+          messageBlocks: [
+            {
+              _type: "WorkspacePayloadMarkdown",
+              text: "No on-call policies have been configured for this project yet. Please add an on-call policy in the OneUptime Dashboard under On-Call Duty > Policies to use this feature.",
+            } as WorkspacePayloadMarkdown,
+          ],
+          authToken: data.slackRequest.projectAuthToken!,
+          channelId: data.slackRequest.slackChannelId,
+          userId: data.slackRequest.slackUserId!,
+        });
+      }
+      return;
+    }
+
     const onCallPolicyDropdown: WorkspaceDropdownBlock = {
       _type: "WorkspaceDropdownBlock",
       label: "On Call Policy",
@@ -438,18 +455,16 @@ export default class SlackAlertEpisodeActions {
 
     const stateId: ObjectID = new ObjectID(stateString);
 
-    await AlertEpisodeService.updateOneById({
-      id: episodeId,
-      data: {
-        currentAlertStateId: stateId,
+    await AlertEpisodeService.changeEpisodeState({
+      projectId: data.slackRequest.projectId!,
+      episodeId: episodeId,
+      alertStateId: stateId,
+      notifyOwners: true,
+      rootCause: "State changed via Slack.",
+      props: {
+        isRoot: true,
+        userId: data.slackRequest.userId!,
       },
-      props:
-        await AccessTokenService.getDatabaseCommonInteractionPropsByUserAndProject(
-          {
-            userId: data.slackRequest.userId!,
-            projectId: data.slackRequest.projectId!,
-          },
-        ),
     });
 
     // Log the button interaction

@@ -110,14 +110,17 @@ export default class SlackAlertActions {
         });
 
       if (isAlreadyAcknowledged) {
-        const alertNumber: number | null = await AlertService.getAlertNumber({
+        const alertNumberResult: {
+          number: number | null;
+          numberWithPrefix: string | null;
+        } = await AlertService.getAlertNumber({
           alertId: alertId,
         });
 
         // send a message to the channel visible to user, that the alert has already been acknowledged.
         const markdwonPayload: WorkspacePayloadMarkdown = {
           _type: "WorkspacePayloadMarkdown",
-          text: `@${slackUsername}, unfortunately you cannot acknowledge the **[Alert ${alertNumber?.toString()}](${await AlertService.getAlertLinkInDashboard(slackRequest.projectId!, alertId)})**. It has already been acknowledged.`,
+          text: `@${slackUsername}, unfortunately you cannot acknowledge the **[Alert ${alertNumberResult.numberWithPrefix || "#" + alertNumberResult.number}](${await AlertService.getAlertLinkInDashboard(slackRequest.projectId!, alertId)})**. It has already been acknowledged.`,
         };
 
         await SlackUtil.sendDirectMessageToUser({
@@ -232,13 +235,16 @@ export default class SlackAlertActions {
       });
 
       if (isAlreadyResolved) {
-        const alertNumber: number | null = await AlertService.getAlertNumber({
+        const alertNumberResult: {
+          number: number | null;
+          numberWithPrefix: string | null;
+        } = await AlertService.getAlertNumber({
           alertId: alertId,
         });
         // send a message to the channel visible to user, that the alert has already been Resolved.
         const markdwonPayload: WorkspacePayloadMarkdown = {
           _type: "WorkspacePayloadMarkdown",
-          text: `@${slackUsername}, unfortunately you cannot resolve the **[Alert ${alertNumber?.toString()}](${await AlertService.getAlertLinkInDashboard(slackRequest.projectId!, alertId)})**. It has already been resolved.`,
+          text: `@${slackUsername}, unfortunately you cannot resolve the **[Alert ${alertNumberResult.numberWithPrefix || "#" + alertNumberResult.number}](${await AlertService.getAlertLinkInDashboard(slackRequest.projectId!, alertId)})**. It has already been resolved.`,
         };
 
         await SlackUtil.sendDirectMessageToUser({
@@ -315,6 +321,23 @@ export default class SlackAlertActions {
       .filter((option: DropdownOption) => {
         return option.label !== "" || option.value !== "";
       });
+
+    if (dropdownOption.length === 0) {
+      if (data.slackRequest.slackChannelId) {
+        await SlackUtil.sendEphemeralMessageToChannel({
+          messageBlocks: [
+            {
+              _type: "WorkspacePayloadMarkdown",
+              text: "No on-call policies have been configured for this project yet. Please add an on-call policy in the OneUptime Dashboard under On-Call Duty > Policies to use this feature.",
+            } as WorkspacePayloadMarkdown,
+          ],
+          authToken: data.slackRequest.projectAuthToken!,
+          channelId: data.slackRequest.slackChannelId,
+          userId: data.slackRequest.slackUserId!,
+        });
+      }
+      return;
+    }
 
     const onCallPolicyDropdown: WorkspaceDropdownBlock = {
       _type: "WorkspaceDropdownBlock",
@@ -568,13 +591,16 @@ export default class SlackAlertActions {
       });
 
       if (isAlreadyResolved) {
-        const alertNumber: number | null = await AlertService.getAlertNumber({
+        const alertNumberResult: {
+          number: number | null;
+          numberWithPrefix: string | null;
+        } = await AlertService.getAlertNumber({
           alertId: alertId,
         });
         // send a message to the channel visible to user, that the alert has already been Resolved.
         const markdwonPayload: WorkspacePayloadMarkdown = {
           _type: "WorkspacePayloadMarkdown",
-          text: `@${slackUsername}, unfortunately you cannot execute the on-call policy for **[Alert ${alertNumber?.toString()}](${await AlertService.getAlertLinkInDashboard(slackRequest.projectId!, alertId)})**. It has already been resolved.`,
+          text: `@${slackUsername}, unfortunately you cannot execute the on-call policy for **[Alert ${alertNumberResult.numberWithPrefix || "#" + alertNumberResult.number}](${await AlertService.getAlertLinkInDashboard(slackRequest.projectId!, alertId)})**. It has already been resolved.`,
         };
 
         await SlackUtil.sendDirectMessageToUser({
@@ -853,7 +879,10 @@ export default class SlackAlertActions {
     const alertId: ObjectID = workspaceLog.alertId;
 
     // Get the alert number for the confirmation message
-    const alertNumber: number | null = await AlertService.getAlertNumber({
+    const alertNumberResult: {
+      number: number | null;
+      numberWithPrefix: string | null;
+    } = await AlertService.getAlertNumber({
       alertId: alertId,
     });
 
@@ -940,7 +969,7 @@ export default class SlackAlertActions {
         await AlertService.getAlertLinkInDashboard(projectId, alertId)
       ).toString();
 
-      const confirmationMessage: string = `✅ Message saved as *private note* to <${alertLink}|Alert #${alertNumber}>.`;
+      const confirmationMessage: string = `✅ Message saved as *private note* to <${alertLink}|Alert ${alertNumberResult.numberWithPrefix || "#" + alertNumberResult.number}>.`;
 
       await SlackUtil.sendMessageToThread({
         authToken: authToken,

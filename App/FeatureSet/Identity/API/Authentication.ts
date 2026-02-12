@@ -17,9 +17,11 @@ import ObjectID from "Common/Types/ObjectID";
 import PositiveNumber from "Common/Types/PositiveNumber";
 import DatabaseConfig from "Common/Server/DatabaseConfig";
 import {
+  AppVersion,
   EncryptionSecret,
   IsBillingEnabled,
 } from "Common/Server/EnvironmentConfig";
+import API from "Common/Utils/API";
 import AccessTokenService from "Common/Server/Services/AccessTokenService";
 import EmailVerificationTokenService from "Common/Server/Services/EmailVerificationTokenService";
 import MailService from "Common/Server/Services/MailService";
@@ -29,6 +31,7 @@ import UserSessionService, {
   SessionMetadata,
 } from "Common/Server/Services/UserSessionService";
 import CookieUtil from "Common/Server/Utils/Cookie";
+import JSONWebToken from "Common/Server/Utils/JsonWebToken";
 import Express, {
   ExpressRequest,
   ExpressResponse,
@@ -54,6 +57,11 @@ const router: ExpressRouter = Express.getRouter();
 
 const ACCESS_TOKEN_EXPIRY_SECONDS: number = 15 * 60;
 
+interface FinalizeUserLoginResult {
+  sessionMetadata: SessionMetadata;
+  accessToken: string;
+}
+
 type FinalizeUserLoginInput = {
   req: ExpressRequest;
   res: ExpressResponse;
@@ -63,9 +71,9 @@ type FinalizeUserLoginInput = {
 
 const finalizeUserLogin: (
   data: FinalizeUserLoginInput,
-) => Promise<SessionMetadata> = async (
+) => Promise<FinalizeUserLoginResult> = async (
   data: FinalizeUserLoginInput,
-): Promise<SessionMetadata> => {
+): Promise<FinalizeUserLoginResult> => {
   const { req, res, user, isGlobalLogin } = data;
 
   const sessionMetadata: SessionMetadata =
@@ -87,7 +95,21 @@ const finalizeUserLogin: (
     accessTokenExpiresInSeconds: ACCESS_TOKEN_EXPIRY_SECONDS,
   });
 
-  return sessionMetadata;
+  // Generate access token for response body (used by mobile clients)
+  const accessToken: string = JSONWebToken.signUserLoginToken({
+    tokenData: {
+      userId: user.id!,
+      email: user.email!,
+      name: user.name!,
+      timezone: user.timezone || null,
+      isMasterAdmin: user.isMasterAdmin!,
+      isGlobalLogin: isGlobalLogin,
+      sessionId: sessionMetadata.session.id!,
+    },
+    expiresInSeconds: ACCESS_TOKEN_EXPIRY_SECONDS,
+  });
+
+  return { sessionMetadata, accessToken };
 };
 
 router.post(
@@ -250,6 +272,28 @@ router.post(
         });
 
         logger.info("User signed up: " + savedUser.email?.toString());
+
+        if (!IsBillingEnabled && miscDataProps["notifySelfHosted"] === true) {
+          const instanceUrl: string = new URL(httpProtocol, host).toString();
+
+          API.post({
+            url: URL.fromString(
+              "https://oneuptime.com/api/open-source-deployment/register",
+            ),
+            data: {
+              email: savedUser.email?.toString() || "",
+              name: savedUser.name?.toString() || "",
+              companyName:
+                (miscDataProps["selfHostedCompanyName"] as string) || undefined,
+              companyPhoneNumber:
+                (miscDataProps["selfHostedPhoneNumber"] as string) || undefined,
+              oneuptimeVersion: AppVersion,
+              instanceUrl: instanceUrl,
+            },
+          }).catch((err: Error) => {
+            logger.error(err);
+          });
+        }
 
         return Response.sendEntityResponse(req, res, savedUser, User);
       }
@@ -552,8 +596,10 @@ router.post(
     next: NextFunction,
   ): Promise<void> => {
     try {
+      // Try cookie first, then fallback to request body (for mobile clients)
       const refreshToken: string | undefined =
-        CookieUtil.getRefreshTokenFromExpressRequest(req);
+        CookieUtil.getRefreshTokenFromExpressRequest(req) ||
+        (req.body.refreshToken as string | undefined);
 
       if (!refreshToken) {
         CookieUtil.removeAllCookies(req, res);
@@ -658,7 +704,26 @@ router.post(
         accessTokenExpiresInSeconds: ACCESS_TOKEN_EXPIRY_SECONDS,
       });
 
-      return Response.sendEmptySuccessResponse(req, res);
+      // Generate access token for response body (used by mobile clients)
+      const newAccessToken: string = JSONWebToken.signUserLoginToken({
+        tokenData: {
+          userId: user.id!,
+          email: user.email!,
+          name: user.name!,
+          timezone: user.timezone || null,
+          isMasterAdmin: user.isMasterAdmin!,
+          isGlobalLogin: isGlobalLogin,
+          sessionId: renewedSession.session.id!,
+        },
+        expiresInSeconds: ACCESS_TOKEN_EXPIRY_SECONDS,
+      });
+
+      return Response.sendJsonObjectResponse(req, res, {
+        accessToken: newAccessToken,
+        refreshToken: renewedSession.refreshToken,
+        refreshTokenExpiresAt:
+          renewedSession.refreshTokenExpiresAt.toISOString(),
+      });
     } catch (err) {
       return next(err);
     }
@@ -673,8 +738,10 @@ router.post(
     next: NextFunction,
   ): Promise<void> => {
     try {
+      // Try cookie first, then fallback to request body (for mobile clients)
       const refreshToken: string | undefined =
-        CookieUtil.getRefreshTokenFromExpressRequest(req);
+        CookieUtil.getRefreshTokenFromExpressRequest(req) ||
+        (req.body.refreshToken as string | undefined);
 
       if (refreshToken) {
         await UserSessionService.revokeSessionByRefreshToken(refreshToken, {
@@ -987,14 +1054,21 @@ const login: LoginFunction = async (options: {
       if (alreadySavedUser.password.toString() === user.password!.toString()) {
         logger.info("User logged in: " + alreadySavedUser.email?.toString());
 
-        await finalizeUserLogin({
+        const loginResult: FinalizeUserLoginResult = await finalizeUserLogin({
           req,
           res,
           user: alreadySavedUser,
           isGlobalLogin: true,
         });
 
-        return Response.sendEntityResponse(req, res, alreadySavedUser, User);
+        return Response.sendEntityResponse(req, res, alreadySavedUser, User, {
+          miscData: {
+            accessToken: loginResult.accessToken,
+            refreshToken: loginResult.sessionMetadata.refreshToken,
+            refreshTokenExpiresAt:
+              loginResult.sessionMetadata.refreshTokenExpiresAt.toISOString(),
+          },
+        });
       }
     }
     return Response.sendErrorResponse(

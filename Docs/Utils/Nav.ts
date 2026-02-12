@@ -134,6 +134,14 @@ const DocsNav: NavGroup[] = [
     title: "Monitor",
     links: [
       {
+        title: "Website Monitor",
+        url: "/docs/monitor/website-monitor",
+      },
+      {
+        title: "API Monitor",
+        url: "/docs/monitor/api-monitor",
+      },
+      {
         title: "Custom Code Monitor",
         url: "/docs/monitor/custom-code-monitor",
       },
@@ -240,6 +248,10 @@ DocsNav.push({
     {
       title: "GitHub Integration",
       url: "/docs/self-hosted/github-integration",
+    },
+    {
+      title: "Push Notifications",
+      url: "/docs/self-hosted/push-notifications",
     },
     {
       title: "SendGrid Inbound Email",

@@ -16,6 +16,7 @@ export default class IncidentWorkspaceMessages {
     projectId: ObjectID;
     incidentId: ObjectID;
     incidentNumber: number;
+    incidentNumberWithPrefix?: string;
   }): Promise<{
     channelsCreated: NotificationRuleWorkspaceChannel[];
   } | null> {
@@ -28,7 +29,8 @@ export default class IncidentWorkspaceMessages {
             incidentId: data.incidentId,
           },
           notificationRuleEventType: NotificationRuleEventType.Incident,
-          channelNameSiffix: data.incidentNumber.toString(),
+          channelNameSiffix:
+            data.incidentNumberWithPrefix || data.incidentNumber.toString(),
         },
       );
     } catch (err) {

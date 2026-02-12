@@ -81,6 +81,7 @@ import CaptureSpan from "../Utils/Telemetry/CaptureSpan";
 import DatabaseConfig from "../DatabaseConfig";
 import DatabaseCommonInteractionProps from "../../Types/BaseDatabase/DatabaseCommonInteractionProps";
 import PositiveNumber from "../../Types/PositiveNumber";
+import Semaphore, { SemaphoreMutex } from "../Infrastructure/Semaphore";
 
 export interface CurrentPlan {
   plan: PlanType | null;
@@ -276,6 +277,27 @@ export class ProjectService extends DatabaseService<Model> {
     data.data.utmTerm = user.utmTerm!;
     data.data.utmContent = user.utmContent!;
     data.data.utmUrl = user.utmUrl!;
+
+    // Set default number prefixes.
+    if (!data.data.incidentNumberPrefix) {
+      data.data.incidentNumberPrefix = "INC-";
+    }
+
+    if (!data.data.alertNumberPrefix) {
+      data.data.alertNumberPrefix = "ALT-";
+    }
+
+    if (!data.data.scheduledMaintenanceNumberPrefix) {
+      data.data.scheduledMaintenanceNumberPrefix = "SM-";
+    }
+
+    if (!data.data.incidentEpisodeNumberPrefix) {
+      data.data.incidentEpisodeNumberPrefix = "IE-";
+    }
+
+    if (!data.data.alertEpisodeNumberPrefix) {
+      data.data.alertEpisodeNumberPrefix = "AE-";
+    }
 
     return Promise.resolve({ createBy: data, carryForward: null });
   }
@@ -1587,6 +1609,211 @@ export class ProjectService extends DatabaseService<Model> {
     return URL.fromString(dashboardUrl.toString()).addRoute(
       `/${projectId.toString()}`,
     );
+  }
+
+  @CaptureSpan()
+  public async incrementAndGetIncidentCounter(
+    projectId: ObjectID,
+  ): Promise<{ counter: number; prefix: string | undefined }> {
+    const mutex: SemaphoreMutex = await Semaphore.lock({
+      key: projectId.toString(),
+      namespace: "ProjectService.incidentCounter",
+    });
+
+    try {
+      await this.atomicIncrementColumnValueByOne({
+        id: projectId,
+        columnName: "incidentCounter",
+      });
+
+      const project: Model | null = await this.findOneById({
+        id: projectId,
+        select: {
+          incidentCounter: true,
+          incidentNumberPrefix: true,
+        },
+        props: {
+          isRoot: true,
+        },
+      });
+
+      if (!project || project.incidentCounter === undefined) {
+        throw new BadDataException(
+          `Could not read incidentCounter for project ${projectId.toString()}`,
+        );
+      }
+
+      return {
+        counter: project.incidentCounter,
+        prefix: project.incidentNumberPrefix,
+      };
+    } finally {
+      await Semaphore.release(mutex);
+    }
+  }
+
+  @CaptureSpan()
+  public async incrementAndGetAlertCounter(
+    projectId: ObjectID,
+  ): Promise<{ counter: number; prefix: string | undefined }> {
+    const mutex: SemaphoreMutex = await Semaphore.lock({
+      key: projectId.toString(),
+      namespace: "ProjectService.alertCounter",
+    });
+
+    try {
+      await this.atomicIncrementColumnValueByOne({
+        id: projectId,
+        columnName: "alertCounter",
+      });
+
+      const project: Model | null = await this.findOneById({
+        id: projectId,
+        select: {
+          alertCounter: true,
+          alertNumberPrefix: true,
+        },
+        props: {
+          isRoot: true,
+        },
+      });
+
+      if (!project || project.alertCounter === undefined) {
+        throw new BadDataException(
+          `Could not read alertCounter for project ${projectId.toString()}`,
+        );
+      }
+
+      return {
+        counter: project.alertCounter,
+        prefix: project.alertNumberPrefix,
+      };
+    } finally {
+      await Semaphore.release(mutex);
+    }
+  }
+
+  @CaptureSpan()
+  public async incrementAndGetScheduledMaintenanceCounter(
+    projectId: ObjectID,
+  ): Promise<{ counter: number; prefix: string | undefined }> {
+    const mutex: SemaphoreMutex = await Semaphore.lock({
+      key: projectId.toString(),
+      namespace: "ProjectService.scheduledMaintenanceCounter",
+    });
+
+    try {
+      await this.atomicIncrementColumnValueByOne({
+        id: projectId,
+        columnName: "scheduledMaintenanceCounter",
+      });
+
+      const project: Model | null = await this.findOneById({
+        id: projectId,
+        select: {
+          scheduledMaintenanceCounter: true,
+          scheduledMaintenanceNumberPrefix: true,
+        },
+        props: {
+          isRoot: true,
+        },
+      });
+
+      if (!project || project.scheduledMaintenanceCounter === undefined) {
+        throw new BadDataException(
+          `Could not read scheduledMaintenanceCounter for project ${projectId.toString()}`,
+        );
+      }
+
+      return {
+        counter: project.scheduledMaintenanceCounter,
+        prefix: project.scheduledMaintenanceNumberPrefix,
+      };
+    } finally {
+      await Semaphore.release(mutex);
+    }
+  }
+
+  @CaptureSpan()
+  public async incrementAndGetIncidentEpisodeCounter(
+    projectId: ObjectID,
+  ): Promise<{ counter: number; prefix: string | undefined }> {
+    const mutex: SemaphoreMutex = await Semaphore.lock({
+      key: projectId.toString(),
+      namespace: "ProjectService.incidentEpisodeCounter",
+    });
+
+    try {
+      await this.atomicIncrementColumnValueByOne({
+        id: projectId,
+        columnName: "incidentEpisodeCounter",
+      });
+
+      const project: Model | null = await this.findOneById({
+        id: projectId,
+        select: {
+          incidentEpisodeCounter: true,
+          incidentEpisodeNumberPrefix: true,
+        },
+        props: {
+          isRoot: true,
+        },
+      });
+
+      if (!project || project.incidentEpisodeCounter === undefined) {
+        throw new BadDataException(
+          `Could not read incidentEpisodeCounter for project ${projectId.toString()}`,
+        );
+      }
+
+      return {
+        counter: project.incidentEpisodeCounter,
+        prefix: project.incidentEpisodeNumberPrefix,
+      };
+    } finally {
+      await Semaphore.release(mutex);
+    }
+  }
+
+  @CaptureSpan()
+  public async incrementAndGetAlertEpisodeCounter(
+    projectId: ObjectID,
+  ): Promise<{ counter: number; prefix: string | undefined }> {
+    const mutex: SemaphoreMutex = await Semaphore.lock({
+      key: projectId.toString(),
+      namespace: "ProjectService.alertEpisodeCounter",
+    });
+
+    try {
+      await this.atomicIncrementColumnValueByOne({
+        id: projectId,
+        columnName: "alertEpisodeCounter",
+      });
+
+      const project: Model | null = await this.findOneById({
+        id: projectId,
+        select: {
+          alertEpisodeCounter: true,
+          alertEpisodeNumberPrefix: true,
+        },
+        props: {
+          isRoot: true,
+        },
+      });
+
+      if (!project || project.alertEpisodeCounter === undefined) {
+        throw new BadDataException(
+          `Could not read alertEpisodeCounter for project ${projectId.toString()}`,
+        );
+      }
+
+      return {
+        counter: project.alertEpisodeCounter,
+        prefix: project.alertEpisodeNumberPrefix,
+      };
+    } finally {
+      await Semaphore.release(mutex);
+    }
   }
 
   @CaptureSpan()

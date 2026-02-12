@@ -1,3 +1,4 @@
+import Navigation from "Common/UI/Utils/Navigation";
 import Loader from "../Components/Loader/Loader";
 import Layout from "../Pages/Alerts/Layout";
 import AlertViewLayout from "../Pages/Alerts/View/Layout";
@@ -19,6 +20,11 @@ const Alerts: LazyExoticComponent<FunctionComponent<ComponentProps>> = lazy(
     return import("../Pages/Alerts/Alerts");
   },
 );
+
+const AlertCreate: LazyExoticComponent<FunctionComponent<ComponentProps>> =
+  lazy(() => {
+    return import("../Pages/Alerts/Create");
+  });
 const AlertView: LazyExoticComponent<FunctionComponent<ComponentProps>> = lazy(
   () => {
     return import("../Pages/Alerts/View/Index");
@@ -138,6 +144,12 @@ const AlertSettingsGroupingRules: LazyExoticComponent<
   return import("../Pages/Alerts/Settings/AlertGroupingRules");
 });
 
+const AlertSettingsMore: LazyExoticComponent<
+  FunctionComponent<ComponentProps>
+> = lazy(() => {
+  return import("../Pages/Alerts/Settings/AlertMoreSettings");
+});
+
 // Episode Pages
 const Episodes: LazyExoticComponent<FunctionComponent<ComponentProps>> = lazy(
   () => {
@@ -224,9 +236,18 @@ const AlertEpisodeDocs: LazyExoticComponent<FunctionComponent<ComponentProps>> =
 const AlertsRoutes: FunctionComponent<ComponentProps> = (
   props: ComponentProps,
 ) => {
+  let hideSideMenu: boolean = false;
+
+  if (Navigation.isOnThisPage(RouteMap[PageMap.ALERT_CREATE] as Route)) {
+    hideSideMenu = true;
+  }
+
   return (
     <Routes>
-      <PageRoute path="/" element={<Layout {...props} />}>
+      <PageRoute
+        path="/"
+        element={<Layout {...props} hideSideMenu={hideSideMenu} />}
+      >
         <PageRoute
           path={AlertsRoutePath[PageMap.ALERTS] || ""}
           element={
@@ -282,6 +303,18 @@ const AlertsRoutes: FunctionComponent<ComponentProps> = (
                     PageMap.ALERTS_WORKSPACE_CONNECTION_MICROSOFT_TEAMS
                   ] as Route
                 }
+              />
+            </Suspense>
+          }
+        />
+
+        <PageRoute
+          path={AlertsRoutePath[PageMap.ALERT_CREATE] || ""}
+          element={
+            <Suspense fallback={Loader}>
+              <AlertCreate
+                {...props}
+                pageRoute={RouteMap[PageMap.ALERT_CREATE] as Route}
               />
             </Suspense>
           }
@@ -365,6 +398,18 @@ const AlertsRoutes: FunctionComponent<ComponentProps> = (
                 pageRoute={
                   RouteMap[PageMap.ALERTS_SETTINGS_GROUPING_RULES] as Route
                 }
+              />
+            </Suspense>
+          }
+        />
+
+        <PageRoute
+          path={AlertsRoutePath[PageMap.ALERTS_SETTINGS_MORE] || ""}
+          element={
+            <Suspense fallback={Loader}>
+              <AlertSettingsMore
+                {...props}
+                pageRoute={RouteMap[PageMap.ALERTS_SETTINGS_MORE] as Route}
               />
             </Suspense>
           }

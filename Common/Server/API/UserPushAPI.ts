@@ -14,6 +14,7 @@ import Response from "../Utils/Response";
 import BaseAPI from "./BaseAPI";
 import BadDataException from "../../Types/Exception/BadDataException";
 import ObjectID from "../../Types/ObjectID";
+import PushDeviceType from "../../Types/PushNotification/PushDeviceType";
 import UserPush from "../../Models/DatabaseModels/UserPush";
 import PushNotificationMessage from "../../Types/PushNotification/PushNotificationMessage";
 
@@ -39,11 +40,17 @@ export default class UserPushAPI extends BaseAPI<
             );
           }
 
-          if (!req.body.deviceType || req.body.deviceType !== "web") {
+          const validDeviceTypes: string[] = Object.values(PushDeviceType);
+          if (
+            !req.body.deviceType ||
+            !validDeviceTypes.includes(req.body.deviceType)
+          ) {
             return Response.sendErrorResponse(
               req,
               res,
-              new BadDataException("Only web device type is supported"),
+              new BadDataException(
+                "Device type must be one of: " + validDeviceTypes.join(", "),
+              ),
             );
           }
 
@@ -86,7 +93,7 @@ export default class UserPushAPI extends BaseAPI<
           userPush.deviceToken = req.body.deviceToken;
           userPush.deviceType = req.body.deviceType;
           userPush.deviceName = req.body.deviceName || "Unknown Device";
-          userPush.isVerified = true; // For web push, we consider it verified immediately
+          userPush.isVerified = true; // Web, iOS, and Android devices are verified immediately
 
           const savedDevice: UserPush = await this.service.create({
             data: userPush,
@@ -101,6 +108,46 @@ export default class UserPushAPI extends BaseAPI<
           });
         } catch (error: any) {
           next(error);
+        }
+      },
+    );
+
+    this.router.post(
+      `/user-push/unregister`,
+      UserMiddleware.getUserMiddleware,
+      async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+        try {
+          req = req as OneUptimeRequest;
+
+          if (!req.body.deviceToken) {
+            return Response.sendErrorResponse(
+              req,
+              res,
+              new BadDataException("Device token is required"),
+            );
+          }
+
+          const userId: ObjectID = (req as OneUptimeRequest).userAuthorization!
+            .userId!;
+
+          await this.service.deleteBy({
+            query: {
+              userId: userId,
+              deviceToken: req.body.deviceToken,
+            },
+            limit: 100,
+            skip: 0,
+            props: {
+              isRoot: true,
+            },
+          });
+
+          return Response.sendJsonObjectResponse(req, res, {
+            success: true,
+            message: "Device unregistered successfully",
+          });
+        } catch (error) {
+          return next(error);
         }
       },
     );
@@ -186,7 +233,7 @@ export default class UserPushAPI extends BaseAPI<
                   },
                 ],
                 message: testMessage,
-                deviceType: device.deviceType!,
+                deviceType: device.deviceType! as PushDeviceType,
               },
               {
                 isSensitive: false,

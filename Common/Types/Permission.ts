@@ -4,12 +4,32 @@ import BadDataException from "./Exception/BadDataException";
 import { JSONObject } from "./JSON";
 import ObjectID from "./ObjectID";
 
+export enum PermissionGroup {
+  Project = "Project",
+  Incident = "Incident",
+  Alert = "Alert",
+  Monitor = "Monitor",
+  StatusPage = "Status Page",
+  ScheduledMaintenance = "Scheduled Maintenance",
+  OnCallDutyPolicy = "On-Call Duty Policy",
+  Telemetry = "Telemetry",
+  Workflow = "Workflow",
+  Team = "Team",
+  Billing = "Billing",
+  ServiceCatalog = "Service Catalog",
+  Settings = "Settings",
+  AIAgent = "AI Agent",
+  Probe = "Probe",
+  NotificationLog = "Notification Log",
+}
+
 export interface PermissionProps {
   permission: Permission;
   description: string;
   isAssignableToTenant: boolean;
   title: string;
   isAccessControlPermission: boolean;
+  group: PermissionGroup;
 }
 
 enum Permission {
@@ -810,6 +830,12 @@ enum Permission {
   EditIncidentEpisodeFeed = "EditIncidentEpisodeFeed",
   ReadIncidentEpisodeFeed = "ReadIncidentEpisodeFeed",
 
+  // Incident Episode Public Note Permissions
+  CreateIncidentEpisodePublicNote = "CreateIncidentEpisodePublicNote",
+  DeleteIncidentEpisodePublicNote = "DeleteIncidentEpisodePublicNote",
+  EditIncidentEpisodePublicNote = "EditIncidentEpisodePublicNote",
+  ReadIncidentEpisodePublicNote = "ReadIncidentEpisodePublicNote",
+
   // Incident Grouping Rule Permissions
   CreateIncidentGroupingRule = "CreateIncidentGroupingRule",
   DeleteIncidentGroupingRule = "DeleteIncidentGroupingRule",
@@ -970,6 +996,7 @@ export class PermissionHelper {
           "Owner of this project. Manages billing, inviting other admins to this project, and can delete this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Project,
       },
       {
         permission: Permission.ProjectMember,
@@ -978,6 +1005,7 @@ export class PermissionHelper {
           "Member of this project. Can view most resources unless restricted.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Project,
       },
       {
         permission: Permission.ProjectAdmin,
@@ -986,6 +1014,7 @@ export class PermissionHelper {
           "Admin of this project. Manages team members in this project, however cannot manage billing or delete this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Project,
       },
       {
         permission: Permission.ProjectUser,
@@ -993,6 +1022,7 @@ export class PermissionHelper {
         description: "User of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Project,
       },
       {
         permission: Permission.CurrentUser,
@@ -1000,6 +1030,7 @@ export class PermissionHelper {
         description: "This permission is assigned to any registered user.",
         isAssignableToTenant: false,
         isAccessControlPermission: false,
+        group: PermissionGroup.Project,
       },
       {
         permission: Permission.CustomerSupport,
@@ -1007,6 +1038,7 @@ export class PermissionHelper {
         description: "Customer Support Resource of OneUptime.",
         isAssignableToTenant: false,
         isAccessControlPermission: false,
+        group: PermissionGroup.Project,
       },
       {
         permission: Permission.User,
@@ -1015,6 +1047,7 @@ export class PermissionHelper {
           "Owner of this project, manages billing, inviting other admins to this project, and can delete this project.",
         isAssignableToTenant: false,
         isAccessControlPermission: false,
+        group: PermissionGroup.Project,
       },
       {
         permission: Permission.Public,
@@ -1023,6 +1056,7 @@ export class PermissionHelper {
           "Non registered user. Typically used for sign up or log in.",
         isAssignableToTenant: false,
         isAccessControlPermission: false,
+        group: PermissionGroup.Project,
       },
 
       {
@@ -1031,6 +1065,7 @@ export class PermissionHelper {
         description: "This permission can update project billing.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Billing,
       },
       {
         permission: Permission.CreateProjectApiKey,
@@ -1038,6 +1073,7 @@ export class PermissionHelper {
         description: "This permission can create api keys of this project",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.DeleteProjectApiKey,
@@ -1045,6 +1081,7 @@ export class PermissionHelper {
         description: "This permission can delete api keys of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.EditProjectApiKeyPermissions,
@@ -1053,6 +1090,7 @@ export class PermissionHelper {
           "This permission can edit api key permissions of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.EditProjectApiKey,
@@ -1060,6 +1098,7 @@ export class PermissionHelper {
         description: "This permission can edit api keys of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.ReadProjectApiKey,
@@ -1067,6 +1106,7 @@ export class PermissionHelper {
         description: "This permission can read api keys of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
 
       {
@@ -1076,6 +1116,7 @@ export class PermissionHelper {
           "This permission can create Telemetry Ingestion Keys of this project",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.DeleteTelemetryIngestionKey,
@@ -1084,6 +1125,7 @@ export class PermissionHelper {
           "This permission can delete Telemetry Ingestion Keys of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.EditTelemetryIngestionKey,
@@ -1092,6 +1134,7 @@ export class PermissionHelper {
           "This permission can edit Telemetry Ingestion Keys of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.ReadTelemetryIngestionKey,
@@ -1100,6 +1143,7 @@ export class PermissionHelper {
           "This permission can read Telemetry Ingestion Keys of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
 
       // Dashboards.
@@ -1110,6 +1154,7 @@ export class PermissionHelper {
         description: "This permission can create Dashboards of this project",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.DeleteDashboard,
@@ -1117,6 +1162,7 @@ export class PermissionHelper {
         description: "This permission can delete Dashboard of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.EditDashboard,
@@ -1124,6 +1170,7 @@ export class PermissionHelper {
         description: "This permission can edit Dashboards of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.ReadDashboard,
@@ -1131,6 +1178,7 @@ export class PermissionHelper {
         description: "This permission can read Dashboards of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Settings,
       },
 
       // Table view permissions
@@ -1141,6 +1189,7 @@ export class PermissionHelper {
         description: "This permission can create table views of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.DeleteTableView,
@@ -1148,6 +1197,7 @@ export class PermissionHelper {
         description: "This permission can delete table views of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.EditTableView,
@@ -1155,6 +1205,7 @@ export class PermissionHelper {
         description: "This permission can edit table views of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.ReadTableView,
@@ -1162,6 +1213,7 @@ export class PermissionHelper {
         description: "This permission can read table views of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
 
       {
@@ -1170,6 +1222,7 @@ export class PermissionHelper {
         description: "This permission can create labels this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.DeleteProjectLabel,
@@ -1177,6 +1230,7 @@ export class PermissionHelper {
         description: "This permission can delete labels of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.AddLabelsToProjectResources,
@@ -1185,6 +1239,7 @@ export class PermissionHelper {
           "This permission can add project labels to resources of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.EditProjectLabel,
@@ -1192,6 +1247,7 @@ export class PermissionHelper {
         description: "This permission can edit labels of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.ReadProjectLabel,
@@ -1199,6 +1255,7 @@ export class PermissionHelper {
         description: "This permission can read labels of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
 
       {
@@ -1207,6 +1264,7 @@ export class PermissionHelper {
         description: "This permission can create incident states this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentState,
@@ -1215,6 +1273,7 @@ export class PermissionHelper {
           "This permission can delete incident states of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentState,
@@ -1223,6 +1282,7 @@ export class PermissionHelper {
           "This permission can edit incident states of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentState,
@@ -1231,6 +1291,7 @@ export class PermissionHelper {
           "This permission can read incident states of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -1239,6 +1300,7 @@ export class PermissionHelper {
         description: "This permission can create alert states this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertState,
@@ -1246,6 +1308,7 @@ export class PermissionHelper {
         description: "This permission can delete alert states of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertState,
@@ -1253,6 +1316,7 @@ export class PermissionHelper {
         description: "This permission can edit alert states of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertState,
@@ -1260,6 +1324,7 @@ export class PermissionHelper {
         description: "This permission can read alert states of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       {
@@ -1268,6 +1333,7 @@ export class PermissionHelper {
         description: "This permission can create alert states this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.DeleteWorkspaceNotificationRule,
@@ -1275,6 +1341,7 @@ export class PermissionHelper {
         description: "This permission can delete alert states of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.EditWorkspaceNotificationRule,
@@ -1282,6 +1349,7 @@ export class PermissionHelper {
         description: "This permission can edit alert states of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.ReadWorkspaceNotificationRule,
@@ -1289,6 +1357,7 @@ export class PermissionHelper {
         description: "This permission can read alert states of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
 
       {
@@ -1298,6 +1367,7 @@ export class PermissionHelper {
           "This permission can create incident state history of an incident in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentStateTimeline,
@@ -1306,6 +1376,7 @@ export class PermissionHelper {
           "This permission can delete incident state history of an incident in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentStateTimeline,
@@ -1314,6 +1385,7 @@ export class PermissionHelper {
           "This permission can edit incident state history of an incident in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentStateTimeline,
@@ -1322,6 +1394,7 @@ export class PermissionHelper {
           "This permission can read incident state history of an incident in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -1331,6 +1404,7 @@ export class PermissionHelper {
           "This permission can create log of an monitor in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.EditMonitorFeed,
@@ -1339,6 +1413,7 @@ export class PermissionHelper {
           "This permission can edit log of an monitor in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.ReadMonitorFeed,
@@ -1347,6 +1422,7 @@ export class PermissionHelper {
           "This permission can read log of an monitor in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
 
       {
@@ -1356,6 +1432,7 @@ export class PermissionHelper {
           "This permission can create log of an incident in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentFeed,
@@ -1364,6 +1441,7 @@ export class PermissionHelper {
           "This permission can edit log of an incident in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentFeed,
@@ -1372,6 +1450,7 @@ export class PermissionHelper {
           "This permission can read log of an incident in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -1381,6 +1460,7 @@ export class PermissionHelper {
           "This permission can create log of an on-call policy in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditOnCallDutyPolicyFeed,
@@ -1389,6 +1469,7 @@ export class PermissionHelper {
           "This permission can edit log of an on-call policy in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadOnCallDutyPolicyFeed,
@@ -1397,6 +1478,7 @@ export class PermissionHelper {
           "This permission can read log of an on-call policy in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -1406,6 +1488,7 @@ export class PermissionHelper {
           "This permission can create log of an alert in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertFeed,
@@ -1414,6 +1497,7 @@ export class PermissionHelper {
           "This permission can edit log of an alert in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertFeed,
@@ -1422,6 +1506,7 @@ export class PermissionHelper {
           "This permission can read log of an alert in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       {
@@ -1431,6 +1516,7 @@ export class PermissionHelper {
           "This permission can create log of a scheduled maintenance in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.EditScheduledMaintenanceFeed,
@@ -1439,6 +1525,7 @@ export class PermissionHelper {
           "This permission can edit log of an scheduled maintenance in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.ReadScheduledMaintenanceFeed,
@@ -1447,6 +1534,7 @@ export class PermissionHelper {
           "This permission can read log of an scheduled maintenance in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
 
       {
@@ -1456,6 +1544,7 @@ export class PermissionHelper {
           "This permission can create alert state history of an alert in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertStateTimeline,
@@ -1464,6 +1553,7 @@ export class PermissionHelper {
           "This permission can delete alert state history of an alert in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertStateTimeline,
@@ -1472,6 +1562,7 @@ export class PermissionHelper {
           "This permission can edit incident alert history of an alert in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertStateTimeline,
@@ -1480,6 +1571,7 @@ export class PermissionHelper {
           "This permission can read alert state history of an alert in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       {
@@ -1489,6 +1581,7 @@ export class PermissionHelper {
           "This permission can create Monitor Status history of an incident in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.DeleteMonitorStatusTimeline,
@@ -1497,6 +1590,7 @@ export class PermissionHelper {
           "This permission can delete Monitor Status history of an incident in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.EditMonitorStatusTimeline,
@@ -1505,6 +1599,7 @@ export class PermissionHelper {
           "This permission can edit Monitor Status history of an incident in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.ReadMonitorStatusTimeline,
@@ -1513,6 +1608,7 @@ export class PermissionHelper {
           "This permission can read Monitor Status history of an incident in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
 
       {
@@ -1521,6 +1617,7 @@ export class PermissionHelper {
         description: "This permission can read email logs of the project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.NotificationLog,
       },
 
       {
@@ -1530,6 +1627,7 @@ export class PermissionHelper {
           "This permission can read SCIM provisioning logs of the project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.NotificationLog,
       },
       {
         permission: Permission.ReadStatusPageSCIMLog,
@@ -1538,6 +1636,7 @@ export class PermissionHelper {
           "This permission can read SCIM provisioning logs of status pages in the project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -1547,6 +1646,7 @@ export class PermissionHelper {
           "This permission can create monitor statuses this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.DeleteProjectMonitorStatus,
@@ -1555,6 +1655,7 @@ export class PermissionHelper {
           "This permission can delete monitor statuses of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.EditProjectMonitorStatus,
@@ -1563,6 +1664,7 @@ export class PermissionHelper {
           "This permission can edit monitor statuses of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.ReadProjectMonitorStatus,
@@ -1571,6 +1673,7 @@ export class PermissionHelper {
           "This permission can read monitor statuses of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
 
       {
@@ -1580,6 +1683,7 @@ export class PermissionHelper {
           "This permission can create Status Page Announcement this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageAnnouncement,
@@ -1588,6 +1692,7 @@ export class PermissionHelper {
           "This permission can delete Status Page Announcement of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageAnnouncement,
@@ -1596,6 +1701,7 @@ export class PermissionHelper {
           "This permission can edit Status Page Announcement of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageAnnouncement,
@@ -1604,6 +1710,7 @@ export class PermissionHelper {
           "This permission can read Status Page Announcement of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -1613,6 +1720,7 @@ export class PermissionHelper {
           "This permission can create Status Page Announcement Templates in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageAnnouncementTemplate,
@@ -1621,6 +1729,7 @@ export class PermissionHelper {
           "This permission can delete Status Page Announcement Templates of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageAnnouncementTemplate,
@@ -1629,6 +1738,7 @@ export class PermissionHelper {
           "This permission can edit Status Page Announcement Templates of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageAnnouncementTemplate,
@@ -1637,6 +1747,7 @@ export class PermissionHelper {
           "This permission can read Status Page Announcement Templates of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -1646,6 +1757,7 @@ export class PermissionHelper {
           "This permission can create Status Page Announcements in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageAnnouncement,
@@ -1654,6 +1766,7 @@ export class PermissionHelper {
           "This permission can delete Status Page Announcements of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageAnnouncement,
@@ -1662,6 +1775,7 @@ export class PermissionHelper {
           "This permission can edit Status Page Announcements of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageAnnouncement,
@@ -1670,6 +1784,7 @@ export class PermissionHelper {
           "This permission can read Status Page Announcements of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -1679,6 +1794,7 @@ export class PermissionHelper {
           "This permission can create Status Page Announcement Templates in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageAnnouncementTemplate,
@@ -1687,6 +1803,7 @@ export class PermissionHelper {
           "This permission can delete Status Page Announcement Templates of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageAnnouncementTemplate,
@@ -1695,6 +1812,7 @@ export class PermissionHelper {
           "This permission can edit Status Page Announcement Templates of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageAnnouncementTemplate,
@@ -1703,6 +1821,7 @@ export class PermissionHelper {
           "This permission can read Status Page Announcement Templates of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -1712,6 +1831,7 @@ export class PermissionHelper {
           "This permission can create Status Page Subscriber Notification Templates in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageSubscriberNotificationTemplate,
@@ -1720,6 +1840,7 @@ export class PermissionHelper {
           "This permission can delete Status Page Subscriber Notification Templates of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageSubscriberNotificationTemplate,
@@ -1728,6 +1849,7 @@ export class PermissionHelper {
           "This permission can edit Status Page Subscriber Notification Templates of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageSubscriberNotificationTemplate,
@@ -1736,6 +1858,7 @@ export class PermissionHelper {
           "This permission can read Status Page Subscriber Notification Templates of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -1746,6 +1869,7 @@ export class PermissionHelper {
           "This permission can create Status Page Subscriber Notification Template Links in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission:
@@ -1755,6 +1879,7 @@ export class PermissionHelper {
           "This permission can delete Status Page Subscriber Notification Template Links of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission:
@@ -1764,6 +1889,7 @@ export class PermissionHelper {
           "This permission can edit Status Page Subscriber Notification Template Links of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission:
@@ -1773,6 +1899,7 @@ export class PermissionHelper {
           "This permission can read Status Page Subscriber Notification Template Links of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -1781,6 +1908,7 @@ export class PermissionHelper {
         description: "This permission can create Domain in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.DeleteProjectDomain,
@@ -1788,6 +1916,7 @@ export class PermissionHelper {
         description: "This permission can delete Domain in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.EditProjectDomain,
@@ -1795,6 +1924,7 @@ export class PermissionHelper {
         description: "This permission can edit Domain in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.ReadProjectDomain,
@@ -1802,6 +1932,7 @@ export class PermissionHelper {
         description: "This permission can read Domain in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
 
       {
@@ -1810,6 +1941,7 @@ export class PermissionHelper {
         description: "This permission can create Header Link in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageHeaderLink,
@@ -1817,6 +1949,7 @@ export class PermissionHelper {
         description: "This permission can delete Header Link in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageHeaderLink,
@@ -1824,6 +1957,7 @@ export class PermissionHelper {
         description: "This permission can edit Header Link in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageHeaderLink,
@@ -1831,6 +1965,7 @@ export class PermissionHelper {
         description: "This permission can read Header Link in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -1839,6 +1974,7 @@ export class PermissionHelper {
         description: "This permission can create Footer Link in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageFooterLink,
@@ -1846,6 +1982,7 @@ export class PermissionHelper {
         description: "This permission can delete Footer Link in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageFooterLink,
@@ -1853,6 +1990,7 @@ export class PermissionHelper {
         description: "This permission can edit Footer Link in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageFooterLink,
@@ -1860,6 +1998,7 @@ export class PermissionHelper {
         description: "This permission can read Footer Link in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -1869,6 +2008,7 @@ export class PermissionHelper {
           "This permission can create Status Page Resource in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageResource,
@@ -1877,6 +2017,7 @@ export class PermissionHelper {
           "This permission can delete Status Page Resource in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageResource,
@@ -1885,6 +2026,7 @@ export class PermissionHelper {
           "This permission can edit Status Page Resource in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageResource,
@@ -1893,6 +2035,7 @@ export class PermissionHelper {
           "This permission can read Status Page Resource in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -1902,6 +2045,7 @@ export class PermissionHelper {
           "This permission can create Status Page History Chart Bar Color Rule in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageHistoryChartBarColorRule,
@@ -1910,6 +2054,7 @@ export class PermissionHelper {
           "This permission can delete Status Page History Chart Bar Color Rule in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageHistoryChartBarColorRule,
@@ -1918,6 +2063,7 @@ export class PermissionHelper {
           "This permission can edit Status Page History Chart Bar Color Rule in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageHistoryChartBarColorRule,
@@ -1926,6 +2072,7 @@ export class PermissionHelper {
           "This permission can read Status Page History Chart Bar Color Rule in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -1934,6 +2081,7 @@ export class PermissionHelper {
         description: "This permission can create Workflow in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Workflow,
       },
       {
         permission: Permission.DeleteWorkflow,
@@ -1941,6 +2089,7 @@ export class PermissionHelper {
         description: "This permission can delete Workflow in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Workflow,
       },
       {
         permission: Permission.EditWorkflow,
@@ -1948,6 +2097,7 @@ export class PermissionHelper {
         description: "This permission can edit Workflow in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Workflow,
       },
       {
         permission: Permission.ReadWorkflow,
@@ -1955,6 +2105,7 @@ export class PermissionHelper {
         description: "This permission can read Workflow in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Workflow,
       },
 
       {
@@ -1963,6 +2114,7 @@ export class PermissionHelper {
         description: "This permission can delete Project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Project,
       },
       {
         permission: Permission.EditProject,
@@ -1970,6 +2122,7 @@ export class PermissionHelper {
         description: "This permission can edit Project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Project,
       },
       {
         permission: Permission.ReadProject,
@@ -1977,6 +2130,7 @@ export class PermissionHelper {
         description: "This permission can read this Project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Project,
       },
 
       {
@@ -1986,6 +2140,7 @@ export class PermissionHelper {
           "This permission can create Workflow Variables in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Workflow,
       },
       {
         permission: Permission.DeleteWorkflowVariable,
@@ -1994,6 +2149,7 @@ export class PermissionHelper {
           "This permission can delete Workflow Variables in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Workflow,
       },
       {
         permission: Permission.EditWorkflowVariable,
@@ -2002,6 +2158,7 @@ export class PermissionHelper {
           "This permission can edit Workflow Variables in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Workflow,
       },
       {
         permission: Permission.ReadWorkflowVariable,
@@ -2010,6 +2167,7 @@ export class PermissionHelper {
           "This permission can read Workflow Variables in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Workflow,
       },
 
       {
@@ -2018,6 +2176,7 @@ export class PermissionHelper {
         description: "This permission can create Workflow Log in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Workflow,
       },
       {
         permission: Permission.DeleteWorkflowLog,
@@ -2025,6 +2184,7 @@ export class PermissionHelper {
         description: "This permission can delete Workflow Log in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Workflow,
       },
       {
         permission: Permission.EditWorkflowLog,
@@ -2032,6 +2192,7 @@ export class PermissionHelper {
         description: "This permission can edit Workflow Log in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Workflow,
       },
       {
         permission: Permission.ReadWorkflowLog,
@@ -2039,6 +2200,7 @@ export class PermissionHelper {
         description: "This permission can read Workflow Log in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Workflow,
       },
 
       {
@@ -2048,6 +2210,7 @@ export class PermissionHelper {
           "This permission can create Status Page Group in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageGroup,
@@ -2056,6 +2219,7 @@ export class PermissionHelper {
           "This permission can delete Status Page Group in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageGroup,
@@ -2064,6 +2228,7 @@ export class PermissionHelper {
           "This permission can edit Status Page Group in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageGroup,
@@ -2072,6 +2237,7 @@ export class PermissionHelper {
           "This permission can read Status Page Group in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -2081,6 +2247,7 @@ export class PermissionHelper {
           "This permission can create Status Page Domain in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageDomain,
@@ -2089,6 +2256,7 @@ export class PermissionHelper {
           "This permission can delete Status Page Domain in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageDomain,
@@ -2097,6 +2265,7 @@ export class PermissionHelper {
           "This permission can edit Status Page Domain in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageDomain,
@@ -2105,6 +2274,7 @@ export class PermissionHelper {
           "This permission can read Status Page Domain in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -2114,6 +2284,7 @@ export class PermissionHelper {
           "This permission can create Monitor Group in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.DeleteMonitorGroup,
@@ -2122,6 +2293,7 @@ export class PermissionHelper {
           "This permission can delete Monitor Group in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.EditMonitorGroup,
@@ -2129,6 +2301,7 @@ export class PermissionHelper {
         description: "This permission can edit Monitor Group in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.ReadMonitorGroup,
@@ -2136,6 +2309,7 @@ export class PermissionHelper {
         description: "This permission can read Monitor Group in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Monitor,
       },
 
       {
@@ -2144,6 +2318,7 @@ export class PermissionHelper {
         description: "This permission can create Project SSO in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.DeleteProjectSSO,
@@ -2151,6 +2326,7 @@ export class PermissionHelper {
         description: "This permission can delete Project SSO in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.EditProjectSSO,
@@ -2158,6 +2334,7 @@ export class PermissionHelper {
         description: "This permission can edit Project SSO in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.ReadProjectSSO,
@@ -2165,6 +2342,7 @@ export class PermissionHelper {
         description: "This permission can read Project SSO in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
 
       {
@@ -2174,6 +2352,7 @@ export class PermissionHelper {
           "This permission can create Status Page SSO in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageSSO,
@@ -2182,6 +2361,7 @@ export class PermissionHelper {
           "This permission can delete Status Page SSO in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageSSO,
@@ -2190,6 +2370,7 @@ export class PermissionHelper {
           "This permission can edit Status Page SSO in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageSSO,
@@ -2198,6 +2379,7 @@ export class PermissionHelper {
           "This permission can read Status Page SSO in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -2206,6 +2388,7 @@ export class PermissionHelper {
         description: "This permission can create SMTP configs this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.DeleteProjectSMTPConfig,
@@ -2213,6 +2396,7 @@ export class PermissionHelper {
         description: "This permission can delete SMTP configs of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.EditProjectSMTPConfig,
@@ -2220,6 +2404,7 @@ export class PermissionHelper {
         description: "This permission can edit SMTP configs of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.ReadProjectSMTPConfig,
@@ -2227,6 +2412,7 @@ export class PermissionHelper {
         description: "This permission can read SMTP configs of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
 
       {
@@ -2235,6 +2421,7 @@ export class PermissionHelper {
         description: "This permission can create Call and SMS this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.DeleteProjectCallSMSConfig,
@@ -2242,6 +2429,7 @@ export class PermissionHelper {
         description: "This permission can delete Call and SMS of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.EditProjectCallSMSConfig,
@@ -2249,6 +2437,7 @@ export class PermissionHelper {
         description: "This permission can edit Call and SMS of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
       {
         permission: Permission.ReadProjectCallSMSConfig,
@@ -2256,6 +2445,7 @@ export class PermissionHelper {
         description: "This permission can read Call and SMS of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Settings,
       },
 
       {
@@ -2265,6 +2455,7 @@ export class PermissionHelper {
           "This permission can create Status Page Domain in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageDomain,
@@ -2273,6 +2464,7 @@ export class PermissionHelper {
           "This permission can delete Status Page Domain in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageDomain,
@@ -2281,6 +2473,7 @@ export class PermissionHelper {
           "This permission can edit Status Page Domain in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageDomain,
@@ -2289,6 +2482,7 @@ export class PermissionHelper {
           "This permission can read Status Page Domain in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -2298,6 +2492,7 @@ export class PermissionHelper {
           "This permission can create Incident Severity this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentSeverity,
@@ -2306,6 +2501,7 @@ export class PermissionHelper {
           "This permission can delete Incident Severity of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentSeverity,
@@ -2314,6 +2510,7 @@ export class PermissionHelper {
           "This permission can edit Incident Severity of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentSeverity,
@@ -2322,6 +2519,7 @@ export class PermissionHelper {
           "This permission can read Incident Severity of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -2330,6 +2528,7 @@ export class PermissionHelper {
         description: "This permission can create Alert Severity this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertSeverity,
@@ -2338,6 +2537,7 @@ export class PermissionHelper {
           "This permission can delete Alert Severity of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertSeverity,
@@ -2345,6 +2545,7 @@ export class PermissionHelper {
         description: "This permission can edit Alert Severity of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertSeverity,
@@ -2352,6 +2553,7 @@ export class PermissionHelper {
         description: "This permission can read Alert Severity of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       {
@@ -2360,6 +2562,7 @@ export class PermissionHelper {
         description: "This permission can create teams this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Team,
       },
       {
         permission: Permission.DeleteProjectTeam,
@@ -2367,6 +2570,7 @@ export class PermissionHelper {
         description: "This permission can delete teams of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Team,
       },
       {
         permission: Permission.InviteProjectTeamMembers,
@@ -2374,6 +2578,7 @@ export class PermissionHelper {
         description: "This permission can invite users to the team.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Team,
       },
       {
         permission: Permission.EditProjectTeamPermissions,
@@ -2382,6 +2587,7 @@ export class PermissionHelper {
           "This permission can edit team permissions of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Team,
       },
       {
         permission: Permission.EditProjectTeam,
@@ -2389,6 +2595,7 @@ export class PermissionHelper {
         description: "This permission can edit teams of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Team,
       },
       {
         permission: Permission.ReadProjectTeam,
@@ -2396,6 +2603,7 @@ export class PermissionHelper {
         description: "This permission can read teams of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Team,
       },
 
       {
@@ -2404,6 +2612,7 @@ export class PermissionHelper {
         description: "This permission can create monitor this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.DeleteProjectMonitor,
@@ -2411,6 +2620,7 @@ export class PermissionHelper {
         description: "This permission can delete monitor of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.EditProjectMonitor,
@@ -2418,6 +2628,7 @@ export class PermissionHelper {
         description: "This permission can edit monitor of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.ReadProjectMonitor,
@@ -2425,6 +2636,7 @@ export class PermissionHelper {
         description: "This permission can read monitor of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Monitor,
       },
 
       {
@@ -2434,6 +2646,7 @@ export class PermissionHelper {
           "This permission can create Incident Internal Note this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentInternalNote,
@@ -2442,6 +2655,7 @@ export class PermissionHelper {
           "This permission can delete Incident Internal Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentInternalNote,
@@ -2450,6 +2664,7 @@ export class PermissionHelper {
           "This permission can edit Incident Internal Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentInternalNote,
@@ -2458,6 +2673,7 @@ export class PermissionHelper {
           "This permission can read Incident Internal Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -2467,6 +2683,7 @@ export class PermissionHelper {
           "This permission can create Alert Internal Note this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertInternalNote,
@@ -2475,6 +2692,7 @@ export class PermissionHelper {
           "This permission can delete Alert Internal Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertInternalNote,
@@ -2483,6 +2701,7 @@ export class PermissionHelper {
           "This permission can edit Alert Internal Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertInternalNote,
@@ -2491,6 +2710,7 @@ export class PermissionHelper {
           "This permission can read Alert Internal Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       {
@@ -2500,6 +2720,7 @@ export class PermissionHelper {
           "This permission can create Incident Status Page Note this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentPublicNote,
@@ -2508,6 +2729,7 @@ export class PermissionHelper {
           "This permission can delete Incident Status Page Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentPublicNote,
@@ -2516,6 +2738,7 @@ export class PermissionHelper {
           "This permission can edit Incident Status Page Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentPublicNote,
@@ -2524,6 +2747,7 @@ export class PermissionHelper {
           "This permission can read Incident Status Page Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -2532,6 +2756,7 @@ export class PermissionHelper {
         description: "This permission can create Invoices this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Billing,
       },
       {
         permission: Permission.DeleteInvoices,
@@ -2539,6 +2764,7 @@ export class PermissionHelper {
         description: "This permission can delete Invoices of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Billing,
       },
       {
         permission: Permission.EditInvoices,
@@ -2546,6 +2772,7 @@ export class PermissionHelper {
         description: "This permission can edit Invoices of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Billing,
       },
       {
         permission: Permission.ReadInvoices,
@@ -2553,6 +2780,7 @@ export class PermissionHelper {
         description: "This permission can read Invoices of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Billing,
       },
 
       {
@@ -2561,6 +2789,7 @@ export class PermissionHelper {
         description: "This permission can create Payment Method this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Billing,
       },
       {
         permission: Permission.DeleteBillingPaymentMethod,
@@ -2569,6 +2798,7 @@ export class PermissionHelper {
           "This permission can delete Payment Method of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Billing,
       },
       {
         permission: Permission.EditBillingPaymentMethod,
@@ -2576,6 +2806,7 @@ export class PermissionHelper {
         description: "This permission can edit Payment Method of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Billing,
       },
       {
         permission: Permission.ReadBillingPaymentMethod,
@@ -2583,6 +2814,7 @@ export class PermissionHelper {
         description: "This permission can read Payment Method of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Billing,
       },
 
       {
@@ -2592,6 +2824,7 @@ export class PermissionHelper {
           "This permission can read teams in on-call duty execution log timeline.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -2600,6 +2833,7 @@ export class PermissionHelper {
         description: "This permission can read on-call duty execution log.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.CreateProjectOnCallDutyPolicyExecutionLog,
@@ -2607,6 +2841,7 @@ export class PermissionHelper {
         description: "This permission can create on-call duty execution log.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -2616,6 +2851,7 @@ export class PermissionHelper {
           "This permission can create teams in on-call duty escalation rule this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.DeleteProjectOnCallDutyPolicyEscalationRuleTeam,
@@ -2624,6 +2860,7 @@ export class PermissionHelper {
           "This permission can delete teams in on-call duty escalation rule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditProjectOnCallDutyPolicyEscalationRuleTeam,
@@ -2632,6 +2869,7 @@ export class PermissionHelper {
           "This permission can edit teams in on-call duty escalation rule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadProjectOnCallDutyPolicyEscalationRuleTeam,
@@ -2640,6 +2878,7 @@ export class PermissionHelper {
           "This permission can read teams in on-call duty escalation rule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       // Incoming Call Policy Permissions
@@ -2650,6 +2889,7 @@ export class PermissionHelper {
           "This permission can create incoming call policies for this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.DeleteProjectIncomingCallPolicy,
@@ -2658,6 +2898,7 @@ export class PermissionHelper {
           "This permission can delete incoming call policies of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditProjectIncomingCallPolicy,
@@ -2666,6 +2907,7 @@ export class PermissionHelper {
           "This permission can edit incoming call policies of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadProjectIncomingCallPolicy,
@@ -2674,6 +2916,7 @@ export class PermissionHelper {
           "This permission can read incoming call policies of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       // Incoming Call Policy Escalation Rule Permissions
@@ -2684,6 +2927,7 @@ export class PermissionHelper {
           "This permission can create incoming call policy escalation rules for this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.DeleteProjectIncomingCallPolicyEscalationRule,
@@ -2692,6 +2936,7 @@ export class PermissionHelper {
           "This permission can delete incoming call policy escalation rules of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditProjectIncomingCallPolicyEscalationRule,
@@ -2700,6 +2945,7 @@ export class PermissionHelper {
           "This permission can edit incoming call policy escalation rules of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadProjectIncomingCallPolicyEscalationRule,
@@ -2708,6 +2954,7 @@ export class PermissionHelper {
           "This permission can read incoming call policy escalation rules of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       // Incoming Call Log Permissions
@@ -2718,6 +2965,7 @@ export class PermissionHelper {
           "This permission can read incoming call logs of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       // Incoming Call Log Item Permissions
@@ -2728,6 +2976,7 @@ export class PermissionHelper {
           "This permission can read incoming call log items of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -2738,6 +2987,7 @@ export class PermissionHelper {
           "This permission can create teams in on-call duty escalation rule schedule this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission:
@@ -2747,6 +2997,7 @@ export class PermissionHelper {
           "This permission can delete teams in on-call duty escalation rule schedule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission:
@@ -2756,6 +3007,7 @@ export class PermissionHelper {
           "This permission can edit teams in on-call duty escalation rule schedule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission:
@@ -2765,6 +3017,7 @@ export class PermissionHelper {
           "This permission can read teams in on-call duty escalation rule schedule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -2773,6 +3026,7 @@ export class PermissionHelper {
         description: "This permission can create monitor secret.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.DeleteMonitorSecret,
@@ -2780,6 +3034,7 @@ export class PermissionHelper {
         description: "This permission can delete monitor secret",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.EditMonitorSecret,
@@ -2787,6 +3042,7 @@ export class PermissionHelper {
         description: "This permission can edit monitor secret.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.ReadMonitorSecret,
@@ -2794,6 +3050,7 @@ export class PermissionHelper {
         description: "This permission can read monitor secret.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
 
       {
@@ -2803,6 +3060,7 @@ export class PermissionHelper {
           "This permission can create on-call duty escalation rule this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.DeleteProjectOnCallDutyPolicyEscalationRuleUser,
@@ -2811,6 +3069,7 @@ export class PermissionHelper {
           "This permission can delete on-call duty escalation rule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditProjectOnCallDutyPolicyEscalationRuleUser,
@@ -2819,6 +3078,7 @@ export class PermissionHelper {
           "This permission can edit on-call duty escalation rule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadProjectOnCallDutyPolicyEscalationRuleUser,
@@ -2827,6 +3087,7 @@ export class PermissionHelper {
           "This permission can read on-call duty escalation rule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -2836,6 +3097,7 @@ export class PermissionHelper {
           "This permission can create on-call duty escalation rule this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.DeleteProjectOnCallDutyPolicyEscalationRule,
@@ -2844,6 +3106,7 @@ export class PermissionHelper {
           "This permission can delete on-call duty escalation rule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditProjectOnCallDutyPolicyEscalationRule,
@@ -2852,6 +3115,7 @@ export class PermissionHelper {
           "This permission can edit on-call duty escalation rule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadProjectOnCallDutyPolicyEscalationRule,
@@ -2860,6 +3124,7 @@ export class PermissionHelper {
           "This permission can read on-call duty escalation rule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -2869,6 +3134,7 @@ export class PermissionHelper {
           "This permission can read on-call policy time log this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -2878,6 +3144,7 @@ export class PermissionHelper {
           "This permission can create on-call duty policy user override this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.DeleteOnCallDutyPolicyUserOverride,
@@ -2886,6 +3153,7 @@ export class PermissionHelper {
           "This permission can delete on-call duty policy user override of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditOnCallDutyPolicyUserOverride,
@@ -2894,6 +3162,7 @@ export class PermissionHelper {
           "This permission can edit on-call duty policy user override of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadOnCallDutyPolicyUserOverride,
@@ -2902,6 +3171,7 @@ export class PermissionHelper {
           "This permission can read on-call duty policy user override of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -2910,6 +3180,7 @@ export class PermissionHelper {
         description: "This permission can create on-call duty this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.DeleteProjectOnCallDutyPolicy,
@@ -2917,6 +3188,7 @@ export class PermissionHelper {
         description: "This permission can delete on-call duty of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditProjectOnCallDutyPolicy,
@@ -2924,6 +3196,7 @@ export class PermissionHelper {
         description: "This permission can edit on-call duty of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadProjectOnCallDutyPolicy,
@@ -2931,6 +3204,7 @@ export class PermissionHelper {
         description: "This permission can read on-call duty of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -2940,6 +3214,7 @@ export class PermissionHelper {
           "This permission can create on-call duty schedule this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.DeleteProjectOnCallDutyPolicySchedule,
@@ -2948,6 +3223,7 @@ export class PermissionHelper {
           "This permission can delete on-call duty schedule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditProjectOnCallDutyPolicySchedule,
@@ -2956,6 +3232,7 @@ export class PermissionHelper {
           "This permission can edit on-call duty schedule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadProjectOnCallDutyPolicySchedule,
@@ -2964,6 +3241,7 @@ export class PermissionHelper {
           "This permission can read on-call duty schedule of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -2972,6 +3250,7 @@ export class PermissionHelper {
         description: "This permission can create status pages this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteProjectStatusPage,
@@ -2979,6 +3258,7 @@ export class PermissionHelper {
         description: "This permission can delete status pages of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditProjectStatusPage,
@@ -2986,6 +3266,7 @@ export class PermissionHelper {
         description: "This permission can edit status pages of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadProjectStatusPage,
@@ -2993,6 +3274,7 @@ export class PermissionHelper {
         description: "This permission can read status pages of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -3001,6 +3283,7 @@ export class PermissionHelper {
         description: "This permission can create probe this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Probe,
       },
       {
         permission: Permission.DeleteProjectProbe,
@@ -3008,6 +3291,7 @@ export class PermissionHelper {
         description: "This permission can delete probe of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Probe,
       },
       {
         permission: Permission.EditProjectProbe,
@@ -3015,6 +3299,7 @@ export class PermissionHelper {
         description: "This permission can edit probe of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Probe,
       },
       {
         permission: Permission.ReadProjectProbe,
@@ -3022,6 +3307,7 @@ export class PermissionHelper {
         description: "This permission can read probe of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Probe,
       },
 
       {
@@ -3030,6 +3316,7 @@ export class PermissionHelper {
         description: "This permission can create AI agents for this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.DeleteProjectAIAgent,
@@ -3037,6 +3324,7 @@ export class PermissionHelper {
         description: "This permission can delete AI agents of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.EditProjectAIAgent,
@@ -3044,6 +3332,7 @@ export class PermissionHelper {
         description: "This permission can edit AI agents of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.ReadProjectAIAgent,
@@ -3051,6 +3340,7 @@ export class PermissionHelper {
         description: "This permission can read AI agents of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.AIAgent,
       },
 
       {
@@ -3060,6 +3350,7 @@ export class PermissionHelper {
           "This permission can create AI agent tasks for this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.DeleteProjectAIAgentTask,
@@ -3068,6 +3359,7 @@ export class PermissionHelper {
           "This permission can delete AI agent tasks of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.EditProjectAIAgentTask,
@@ -3075,6 +3367,7 @@ export class PermissionHelper {
         description: "This permission can edit AI agent tasks of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.ReadProjectAIAgentTask,
@@ -3082,6 +3375,7 @@ export class PermissionHelper {
         description: "This permission can read AI agent tasks of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.AIAgent,
       },
 
       {
@@ -3091,6 +3385,7 @@ export class PermissionHelper {
           "This permission can create links between AI agent tasks and telemetry exceptions.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.DeleteProjectAIAgentTaskTelemetryException,
@@ -3099,6 +3394,7 @@ export class PermissionHelper {
           "This permission can delete links between AI agent tasks and telemetry exceptions.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.EditProjectAIAgentTaskTelemetryException,
@@ -3107,6 +3403,7 @@ export class PermissionHelper {
           "This permission can edit links between AI agent tasks and telemetry exceptions.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.ReadProjectAIAgentTaskTelemetryException,
@@ -3115,6 +3412,7 @@ export class PermissionHelper {
           "This permission can read links between AI agent tasks and telemetry exceptions.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.AIAgent,
       },
 
       {
@@ -3124,6 +3422,7 @@ export class PermissionHelper {
           "This permission can create LLM configurations for this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.DeleteProjectLlm,
@@ -3132,6 +3431,7 @@ export class PermissionHelper {
           "This permission can delete LLM configurations of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.EditProjectLlm,
@@ -3140,6 +3440,7 @@ export class PermissionHelper {
           "This permission can edit LLM configurations of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.ReadProjectLlm,
@@ -3148,6 +3449,7 @@ export class PermissionHelper {
           "This permission can read LLM configurations of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
 
       {
@@ -3157,6 +3459,7 @@ export class PermissionHelper {
           "This permission can create Telemetry Service this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.DeleteTelemetryService,
@@ -3165,6 +3468,7 @@ export class PermissionHelper {
           "This permission can delete Telemetry Service of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.EditTelemetryService,
@@ -3173,6 +3477,7 @@ export class PermissionHelper {
           "This permission can edit Telemetry Service of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.ReadTelemetryService,
@@ -3180,6 +3485,7 @@ export class PermissionHelper {
         description: "This permission can read Service of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Telemetry,
       },
 
       {
@@ -3188,6 +3494,7 @@ export class PermissionHelper {
         description: "This permission can create monitor group resource.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.DeleteMonitorGroupResource,
@@ -3195,6 +3502,7 @@ export class PermissionHelper {
         description: "This permission can delete monitor group resource.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.EditMonitorGroupResource,
@@ -3202,6 +3510,7 @@ export class PermissionHelper {
         description: "This permission can edit monitor group resource.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.ReadMonitorGroupResource,
@@ -3209,6 +3518,7 @@ export class PermissionHelper {
         description: "This permission can read monitor group resource.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
 
       {
@@ -3218,6 +3528,7 @@ export class PermissionHelper {
           "This permission can create On-Call Policy Custom Field this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.DeleteOnCallDutyPolicyCustomField,
@@ -3226,6 +3537,7 @@ export class PermissionHelper {
           "This permission can delete On-Call Policy Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditOnCallDutyPolicyCustomField,
@@ -3234,6 +3546,7 @@ export class PermissionHelper {
           "This permission can edit On-Call Policy Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadOnCallDutyPolicyCustomField,
@@ -3242,6 +3555,7 @@ export class PermissionHelper {
           "This permission can read On-Call Policy Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -3251,6 +3565,7 @@ export class PermissionHelper {
           "This permission can create On-Call Schedule Layer this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.DeleteOnCallDutyPolicyScheduleLayer,
@@ -3259,6 +3574,7 @@ export class PermissionHelper {
           "This permission can delete On-Call Schedule Layer of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditOnCallDutyPolicyScheduleLayer,
@@ -3267,6 +3583,7 @@ export class PermissionHelper {
           "This permission can edit On-Call Schedule Layer of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadOnCallDutyPolicyScheduleLayer,
@@ -3275,6 +3592,7 @@ export class PermissionHelper {
           "This permission can read On-Call Schedule Layer of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -3284,6 +3602,7 @@ export class PermissionHelper {
           "This permission can create On-Call Schedule Layer User this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.DeleteOnCallDutyPolicyScheduleLayerUser,
@@ -3292,6 +3611,7 @@ export class PermissionHelper {
           "This permission can delete On-Call Schedule Layer User of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditOnCallDutyPolicyScheduleLayerUser,
@@ -3300,6 +3620,7 @@ export class PermissionHelper {
           "This permission can edit On-Call Schedule Layer User of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadOnCallDutyPolicyScheduleLayerUser,
@@ -3308,6 +3629,7 @@ export class PermissionHelper {
           "This permission can read On-Call Schedule Layer User of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -3317,6 +3639,7 @@ export class PermissionHelper {
           "This permission can create Monitor Custom Field this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.DeleteMonitorCustomField,
@@ -3325,6 +3648,7 @@ export class PermissionHelper {
           "This permission can delete Monitor Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.EditMonitorCustomField,
@@ -3333,6 +3657,7 @@ export class PermissionHelper {
           "This permission can edit Monitor Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.ReadMonitorCustomField,
@@ -3341,6 +3666,7 @@ export class PermissionHelper {
           "This permission can read Monitor Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
 
       {
@@ -3350,6 +3676,7 @@ export class PermissionHelper {
           "This permission can create Incident Custom Field this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentCustomField,
@@ -3358,6 +3685,7 @@ export class PermissionHelper {
           "This permission can delete Incident Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentCustomField,
@@ -3366,6 +3694,7 @@ export class PermissionHelper {
           "This permission can edit Incident Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentCustomField,
@@ -3374,6 +3703,7 @@ export class PermissionHelper {
           "This permission can read Incident Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -3383,6 +3713,7 @@ export class PermissionHelper {
           "This permission can create Alert Custom Field this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertCustomField,
@@ -3391,6 +3722,7 @@ export class PermissionHelper {
           "This permission can delete Alert Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertCustomField,
@@ -3399,6 +3731,7 @@ export class PermissionHelper {
           "This permission can edit Alert Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertCustomField,
@@ -3407,6 +3740,7 @@ export class PermissionHelper {
           "This permission can read Alert Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       {
@@ -3416,6 +3750,7 @@ export class PermissionHelper {
           "This permission can create Team Member Custom Field for this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Team,
       },
       {
         permission: Permission.DeleteTeamMemberCustomField,
@@ -3424,6 +3759,7 @@ export class PermissionHelper {
           "This permission can delete Team Member Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Team,
       },
       {
         permission: Permission.EditTeamMemberCustomField,
@@ -3432,6 +3768,7 @@ export class PermissionHelper {
           "This permission can edit Team Member Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Team,
       },
       {
         permission: Permission.ReadTeamMemberCustomField,
@@ -3440,6 +3777,7 @@ export class PermissionHelper {
           "This permission can read Team Member Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Team,
       },
 
       {
@@ -3449,6 +3787,7 @@ export class PermissionHelper {
           "This permission can create Status Page Custom Field this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageCustomField,
@@ -3457,6 +3796,7 @@ export class PermissionHelper {
           "This permission can delete Status Page Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageCustomField,
@@ -3465,6 +3805,7 @@ export class PermissionHelper {
           "This permission can edit Status Page Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageCustomField,
@@ -3473,6 +3814,7 @@ export class PermissionHelper {
           "This permission can read Status Page Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -3482,6 +3824,7 @@ export class PermissionHelper {
           "This permission can create Scheduled Maintenance Custom Field this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.DeleteScheduledMaintenanceCustomField,
@@ -3490,6 +3833,7 @@ export class PermissionHelper {
           "This permission can delete Scheduled Maintenance Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.EditScheduledMaintenanceCustomField,
@@ -3498,6 +3842,7 @@ export class PermissionHelper {
           "This permission can edit Scheduled Maintenance Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.ReadScheduledMaintenanceCustomField,
@@ -3506,6 +3851,7 @@ export class PermissionHelper {
           "This permission can read Scheduled Maintenance Custom Field of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
 
       {
@@ -3514,6 +3860,7 @@ export class PermissionHelper {
         description: "This permission can read SMS Log of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.NotificationLog,
       },
 
       {
@@ -3522,6 +3869,7 @@ export class PermissionHelper {
         description: "This permission can read WhatsApp Log of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.NotificationLog,
       },
 
       {
@@ -3530,6 +3878,7 @@ export class PermissionHelper {
         description: "This permission can read Call Logs of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.NotificationLog,
       },
 
       {
@@ -3539,6 +3888,7 @@ export class PermissionHelper {
           "This permission can read Push Notification Logs of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.NotificationLog,
       },
 
       {
@@ -3548,6 +3898,7 @@ export class PermissionHelper {
           "This permission can read Workspace Notification Logs (Slack / Microsoft Teams) of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.NotificationLog,
       },
 
       {
@@ -3556,6 +3907,7 @@ export class PermissionHelper {
         description: "This permission can read LLM Logs of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.NotificationLog,
       },
 
       {
@@ -3564,6 +3916,7 @@ export class PermissionHelper {
         description: "This permission can create Monitor Probe this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.DeleteMonitorProbe,
@@ -3572,6 +3925,7 @@ export class PermissionHelper {
           "This permission can delete Monitor Probe of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.EditMonitorProbe,
@@ -3579,6 +3933,7 @@ export class PermissionHelper {
         description: "This permission can edit Monitor Probe of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.ReadMonitorProbe,
@@ -3586,6 +3941,7 @@ export class PermissionHelper {
         description: "This permission can read Monitor Probe of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
 
       {
@@ -3595,6 +3951,7 @@ export class PermissionHelper {
           "This permission can create Telemetry Service Log this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.DeleteTelemetryServiceLog,
@@ -3603,6 +3960,7 @@ export class PermissionHelper {
           "This permission can delete Telemetry Service Log of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.EditTelemetryServiceLog,
@@ -3611,6 +3969,7 @@ export class PermissionHelper {
           "This permission can edit Telemetry Service Log of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.ReadTelemetryServiceLog,
@@ -3619,6 +3978,7 @@ export class PermissionHelper {
           "This permission can read Telemetry Service Log of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
 
       {
@@ -3628,6 +3988,7 @@ export class PermissionHelper {
           "This permission can create Telemetry Service Exception this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.DeleteTelemetryException,
@@ -3636,6 +3997,7 @@ export class PermissionHelper {
           "This permission can delete Telemetry Service Exception of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.EditTelemetryException,
@@ -3644,6 +4006,7 @@ export class PermissionHelper {
           "This permission can edit Telemetry Service Exception of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.ReadTelemetryException,
@@ -3652,6 +4015,7 @@ export class PermissionHelper {
           "This permission can read Telemetry Service Exception of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
 
       {
@@ -3660,6 +4024,7 @@ export class PermissionHelper {
         description: "This permission can create owners for probes.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Probe,
       },
       {
         permission: Permission.DeleteProbeOwnerTeam,
@@ -3667,6 +4032,7 @@ export class PermissionHelper {
         description: "This permission can delete owners for probes",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Probe,
       },
       {
         permission: Permission.EditProbeOwnerTeam,
@@ -3674,6 +4040,7 @@ export class PermissionHelper {
         description: "This permission can edit owners for probes",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Probe,
       },
       {
         permission: Permission.ReadProbeOwnerTeam,
@@ -3681,6 +4048,7 @@ export class PermissionHelper {
         description: "This permission can read owners for probes",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Probe,
       },
 
       {
@@ -3689,6 +4057,7 @@ export class PermissionHelper {
         description: "This permission can create owners for probes.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Probe,
       },
       {
         permission: Permission.DeleteProbeOwnerUser,
@@ -3696,6 +4065,7 @@ export class PermissionHelper {
         description: "This permission can delete owners for probes",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Probe,
       },
       {
         permission: Permission.EditProbeOwnerUser,
@@ -3703,6 +4073,7 @@ export class PermissionHelper {
         description: "This permission can edit owners for probes",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Probe,
       },
       {
         permission: Permission.ReadProbeOwnerUser,
@@ -3710,6 +4081,7 @@ export class PermissionHelper {
         description: "This permission can read owners for probes",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Probe,
       },
 
       {
@@ -3718,6 +4090,7 @@ export class PermissionHelper {
         description: "This permission can create team owners for AI agents.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.DeleteAIAgentOwnerTeam,
@@ -3725,6 +4098,7 @@ export class PermissionHelper {
         description: "This permission can delete team owners for AI agents",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.EditAIAgentOwnerTeam,
@@ -3732,6 +4106,7 @@ export class PermissionHelper {
         description: "This permission can edit team owners for AI agents",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.ReadAIAgentOwnerTeam,
@@ -3739,6 +4114,7 @@ export class PermissionHelper {
         description: "This permission can read team owners for AI agents",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
 
       {
@@ -3747,6 +4123,7 @@ export class PermissionHelper {
         description: "This permission can create user owners for AI agents.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.DeleteAIAgentOwnerUser,
@@ -3754,6 +4131,7 @@ export class PermissionHelper {
         description: "This permission can delete user owners for AI agents",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.EditAIAgentOwnerUser,
@@ -3761,6 +4139,7 @@ export class PermissionHelper {
         description: "This permission can edit user owners for AI agents",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
       {
         permission: Permission.ReadAIAgentOwnerUser,
@@ -3768,6 +4147,7 @@ export class PermissionHelper {
         description: "This permission can read user owners for AI agents",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.AIAgent,
       },
 
       {
@@ -3776,6 +4156,7 @@ export class PermissionHelper {
         description: "This permission can create Service in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.DeleteService,
@@ -3783,6 +4164,7 @@ export class PermissionHelper {
         description: "This permission can delete Service of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.EditService,
@@ -3790,6 +4172,7 @@ export class PermissionHelper {
         description: "This permission can edit Service of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.ReadService,
@@ -3797,6 +4180,7 @@ export class PermissionHelper {
         description: "This permission can read Service of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.ServiceCatalog,
       },
 
       {
@@ -3806,6 +4190,7 @@ export class PermissionHelper {
           "This permission can create Service Dependencies in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.DeleteServiceDependency,
@@ -3814,6 +4199,7 @@ export class PermissionHelper {
           "This permission can delete Service Dependencies of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.EditServiceDependency,
@@ -3822,6 +4208,7 @@ export class PermissionHelper {
           "This permission can edit Service Dependencies of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.ReadServiceDependency,
@@ -3830,6 +4217,7 @@ export class PermissionHelper {
           "This permission can read Service Dependencies of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
 
       {
@@ -3839,6 +4227,7 @@ export class PermissionHelper {
           "This permission can create Service Monitor in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.DeleteServiceMonitor,
@@ -3847,6 +4236,7 @@ export class PermissionHelper {
           "This permission can delete Service Monitor of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.EditServiceMonitor,
@@ -3855,6 +4245,7 @@ export class PermissionHelper {
           "This permission can edit Service Monitor of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.ReadServiceMonitor,
@@ -3863,6 +4254,7 @@ export class PermissionHelper {
           "This permission can read Service Monitor of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
 
       {
@@ -3872,6 +4264,7 @@ export class PermissionHelper {
           "This permission can create Service Telemetry Service in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.DeleteServiceTelemetryService,
@@ -3880,6 +4273,7 @@ export class PermissionHelper {
           "This permission can delete Service Telemetry Service of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.EditServiceTelemetryService,
@@ -3888,6 +4282,7 @@ export class PermissionHelper {
           "This permission can edit Service Telemetry Service of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.ReadServiceTelemetryService,
@@ -3896,6 +4291,7 @@ export class PermissionHelper {
           "This permission can read Service Telemetry Service of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
 
       {
@@ -3905,6 +4301,7 @@ export class PermissionHelper {
           "This permission can create Service Code Repository in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.DeleteServiceCodeRepository,
@@ -3913,6 +4310,7 @@ export class PermissionHelper {
           "This permission can delete Service Code Repository of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.EditServiceCodeRepository,
@@ -3921,6 +4319,7 @@ export class PermissionHelper {
           "This permission can edit Service Code Repository of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.ReadServiceCodeRepository,
@@ -3929,6 +4328,7 @@ export class PermissionHelper {
           "This permission can read Service Code Repository of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
 
       // Code Repository Permissions
@@ -3939,6 +4339,7 @@ export class PermissionHelper {
           "This permission can create Code Repositories in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.DeleteCodeRepository,
@@ -3947,6 +4348,7 @@ export class PermissionHelper {
           "This permission can delete Code Repositories of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.EditCodeRepository,
@@ -3955,6 +4357,7 @@ export class PermissionHelper {
           "This permission can edit Code Repositories of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.ReadCodeRepository,
@@ -3963,6 +4366,7 @@ export class PermissionHelper {
           "This permission can read Code Repositories of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.ServiceCatalog,
       },
 
       {
@@ -3972,6 +4376,7 @@ export class PermissionHelper {
           "This permission can create Telemetry Service Traces this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.DeleteTelemetryServiceTraces,
@@ -3980,6 +4385,7 @@ export class PermissionHelper {
           "This permission can delete Telemetry Service Traces of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.EditTelemetryServiceTraces,
@@ -3988,6 +4394,7 @@ export class PermissionHelper {
           "This permission can edit Telemetry Service Traces of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.ReadTelemetryServiceTraces,
@@ -3996,6 +4403,7 @@ export class PermissionHelper {
           "This permission can read Telemetry Service Traces of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
 
       {
@@ -4005,6 +4413,7 @@ export class PermissionHelper {
           "This permission can create Telemetry Service Metrics this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.DeleteTelemetryServiceMetrics,
@@ -4013,6 +4422,7 @@ export class PermissionHelper {
           "This permission can delete Telemetry Service Metrics of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.EditTelemetryServiceMetrics,
@@ -4021,6 +4431,7 @@ export class PermissionHelper {
           "This permission can edit Telemetry Service Metrics of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
       {
         permission: Permission.ReadTelemetryServiceMetrics,
@@ -4029,6 +4440,7 @@ export class PermissionHelper {
           "This permission can read Telemetry Service Metrics of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Telemetry,
       },
 
       {
@@ -4038,6 +4450,7 @@ export class PermissionHelper {
           "This permission can create Scheduled Maintenance Team Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.DeleteScheduledMaintenanceOwnerTeam,
@@ -4046,6 +4459,7 @@ export class PermissionHelper {
           "This permission can delete Scheduled Maintenance Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.EditScheduledMaintenanceOwnerTeam,
@@ -4054,6 +4468,7 @@ export class PermissionHelper {
           "This permission can edit Scheduled Maintenance Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.ReadScheduledMaintenanceOwnerTeam,
@@ -4062,6 +4477,7 @@ export class PermissionHelper {
           "This permission can read Scheduled Maintenance Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
 
       {
@@ -4071,6 +4487,7 @@ export class PermissionHelper {
           "This permission can create Scheduled Maintenance User Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.DeleteScheduledMaintenanceOwnerUser,
@@ -4079,6 +4496,7 @@ export class PermissionHelper {
           "This permission can delete Scheduled Maintenance User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.EditScheduledMaintenanceOwnerUser,
@@ -4087,6 +4505,7 @@ export class PermissionHelper {
           "This permission can edit Scheduled Maintenance User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.ReadScheduledMaintenanceOwnerUser,
@@ -4095,6 +4514,7 @@ export class PermissionHelper {
           "This permission can read Scheduled Maintenance User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
 
       {
@@ -4104,6 +4524,7 @@ export class PermissionHelper {
           "This permission can create Scheduled Maintenance Template User Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.DeleteScheduledMaintenanceTemplateOwnerUser,
@@ -4112,6 +4533,7 @@ export class PermissionHelper {
           "This permission can delete Scheduled Maintenance Template User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.EditScheduledMaintenanceTemplateOwnerUser,
@@ -4120,6 +4542,7 @@ export class PermissionHelper {
           "This permission can edit Scheduled Maintenance Template User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.ReadScheduledMaintenanceTemplateOwnerUser,
@@ -4128,6 +4551,7 @@ export class PermissionHelper {
           "This permission can read Scheduled Maintenance Template User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
 
       {
@@ -4137,6 +4561,7 @@ export class PermissionHelper {
           "This permission can create Scheduled Maintenance Template User Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.DeleteScheduledMaintenanceTemplateOwnerTeam,
@@ -4145,6 +4570,7 @@ export class PermissionHelper {
           "This permission can delete Scheduled Maintenance Template User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.EditScheduledMaintenanceTemplateOwnerTeam,
@@ -4153,6 +4579,7 @@ export class PermissionHelper {
           "This permission can edit Scheduled Maintenance Template User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.ReadScheduledMaintenanceTemplateOwnerTeam,
@@ -4161,6 +4588,7 @@ export class PermissionHelper {
           "This permission can read Scheduled Maintenance Template User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
 
       {
@@ -4170,6 +4598,7 @@ export class PermissionHelper {
           "This permission can create Incident Team Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentOwnerTeam,
@@ -4178,6 +4607,7 @@ export class PermissionHelper {
           "This permission can delete Incident Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentOwnerTeam,
@@ -4186,6 +4616,7 @@ export class PermissionHelper {
           "This permission can edit Incident Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentOwnerTeam,
@@ -4194,6 +4625,7 @@ export class PermissionHelper {
           "This permission can read Incident Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -4203,6 +4635,7 @@ export class PermissionHelper {
           "This permission can create Alert Team Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertOwnerTeam,
@@ -4211,6 +4644,7 @@ export class PermissionHelper {
           "This permission can delete Alert Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertOwnerTeam,
@@ -4219,6 +4653,7 @@ export class PermissionHelper {
           "This permission can edit Alert Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertOwnerTeam,
@@ -4227,6 +4662,7 @@ export class PermissionHelper {
           "This permission can read Alert Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       {
@@ -4236,6 +4672,7 @@ export class PermissionHelper {
           "This permission can create Incident Note Template this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentNoteTemplate,
@@ -4244,6 +4681,7 @@ export class PermissionHelper {
           "This permission can delete Incident Note Template of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentNoteTemplate,
@@ -4252,6 +4690,7 @@ export class PermissionHelper {
           "This permission can edit Incident Note Template of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentNoteTemplate,
@@ -4260,6 +4699,7 @@ export class PermissionHelper {
           "This permission can read Incident Note Template of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -4269,6 +4709,7 @@ export class PermissionHelper {
           "This permission can create Alert Note Template this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertNoteTemplate,
@@ -4277,6 +4718,7 @@ export class PermissionHelper {
           "This permission can delete Alert Note Template of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertNoteTemplate,
@@ -4285,6 +4727,7 @@ export class PermissionHelper {
           "This permission can edit Alert Note Template of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertNoteTemplate,
@@ -4293,6 +4736,7 @@ export class PermissionHelper {
           "This permission can read Alert Note Template of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       {
@@ -4302,6 +4746,7 @@ export class PermissionHelper {
           "This permission can create Scheduled Maintenance Note Template this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.DeleteScheduledMaintenanceNoteTemplate,
@@ -4310,6 +4755,7 @@ export class PermissionHelper {
           "This permission can delete Scheduled Maintenance Note Template of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.EditScheduledMaintenanceNoteTemplate,
@@ -4318,6 +4764,7 @@ export class PermissionHelper {
           "This permission can edit Scheduled Maintenance Note Template of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.ReadScheduledMaintenanceNoteTemplate,
@@ -4326,6 +4773,7 @@ export class PermissionHelper {
           "This permission can read Scheduled Maintenance Note Template of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
 
       {
@@ -4335,6 +4783,7 @@ export class PermissionHelper {
           "This permission can create Incident Template this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentTemplate,
@@ -4343,6 +4792,7 @@ export class PermissionHelper {
           "This permission can delete Incident Template of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentTemplate,
@@ -4351,6 +4801,7 @@ export class PermissionHelper {
           "This permission can edit Incident Template of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentTemplate,
@@ -4359,6 +4810,7 @@ export class PermissionHelper {
           "This permission can read Incident Template of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -4368,6 +4820,7 @@ export class PermissionHelper {
           "This permission can create Incident User Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentOwnerUser,
@@ -4376,6 +4829,7 @@ export class PermissionHelper {
           "This permission can delete Incident User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentOwnerUser,
@@ -4384,6 +4838,7 @@ export class PermissionHelper {
           "This permission can edit Incident User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentOwnerUser,
@@ -4392,6 +4847,7 @@ export class PermissionHelper {
           "This permission can read Incident User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -4401,6 +4857,7 @@ export class PermissionHelper {
           "This permission can create Incident Roles for this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentRole,
@@ -4409,6 +4866,7 @@ export class PermissionHelper {
           "This permission can delete Incident Roles of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentRole,
@@ -4416,6 +4874,7 @@ export class PermissionHelper {
         description: "This permission can edit Incident Roles of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentRole,
@@ -4423,6 +4882,7 @@ export class PermissionHelper {
         description: "This permission can read Incident Roles of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -4432,6 +4892,7 @@ export class PermissionHelper {
           "This permission can create Incident Members for this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentMember,
@@ -4440,6 +4901,7 @@ export class PermissionHelper {
           "This permission can delete Incident Members of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentMember,
@@ -4448,6 +4910,7 @@ export class PermissionHelper {
           "This permission can edit Incident Members of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentMember,
@@ -4456,6 +4919,7 @@ export class PermissionHelper {
           "This permission can read Incident Members of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -4465,6 +4929,7 @@ export class PermissionHelper {
           "This permission can create Incident Episode Role Members for this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentEpisodeRoleMember,
@@ -4473,6 +4938,7 @@ export class PermissionHelper {
           "This permission can delete Incident Episode Role Members of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentEpisodeRoleMember,
@@ -4481,6 +4947,7 @@ export class PermissionHelper {
           "This permission can edit Incident Episode Role Members of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentEpisodeRoleMember,
@@ -4489,6 +4956,7 @@ export class PermissionHelper {
           "This permission can read Incident Episode Role Members of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -4498,6 +4966,7 @@ export class PermissionHelper {
           "This permission can create Alert User Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertOwnerUser,
@@ -4506,6 +4975,7 @@ export class PermissionHelper {
           "This permission can delete Alert User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertOwnerUser,
@@ -4514,6 +4984,7 @@ export class PermissionHelper {
           "This permission can edit Alert User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertOwnerUser,
@@ -4522,6 +4993,7 @@ export class PermissionHelper {
           "This permission can read Alert User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       {
@@ -4531,6 +5003,7 @@ export class PermissionHelper {
           "This permission can create Status Page Team Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageOwnerTeam,
@@ -4539,6 +5012,7 @@ export class PermissionHelper {
           "This permission can delete Status Page Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageOwnerTeam,
@@ -4547,6 +5021,7 @@ export class PermissionHelper {
           "This permission can edit Status Page Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageOwnerTeam,
@@ -4555,6 +5030,7 @@ export class PermissionHelper {
           "This permission can read Status Page Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -4564,6 +5040,7 @@ export class PermissionHelper {
           "This permission can create IncidentTemplate Team Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentTemplateOwnerTeam,
@@ -4572,6 +5049,7 @@ export class PermissionHelper {
           "This permission can delete IncidentTemplate Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentTemplateOwnerTeam,
@@ -4580,6 +5058,7 @@ export class PermissionHelper {
           "This permission can edit IncidentTemplate Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentTemplateOwnerTeam,
@@ -4588,6 +5067,7 @@ export class PermissionHelper {
           "This permission can read IncidentTemplate Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -4597,6 +5077,7 @@ export class PermissionHelper {
           "This permission can create Service Team Owner in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.DeleteServiceOwnerTeam,
@@ -4605,6 +5086,7 @@ export class PermissionHelper {
           "This permission can delete Service Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.EditServiceOwnerTeam,
@@ -4613,6 +5095,7 @@ export class PermissionHelper {
           "This permission can edit Service Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.ReadServiceOwnerTeam,
@@ -4621,6 +5104,7 @@ export class PermissionHelper {
           "This permission can read Service Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
 
       {
@@ -4630,6 +5114,7 @@ export class PermissionHelper {
           "This permission can create Service User Owner in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.DeleteServiceOwnerUser,
@@ -4638,6 +5123,7 @@ export class PermissionHelper {
           "This permission can delete Service User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.EditServiceOwnerUser,
@@ -4646,6 +5132,7 @@ export class PermissionHelper {
           "This permission can edit Service User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
       {
         permission: Permission.ReadServiceOwnerUser,
@@ -4654,6 +5141,7 @@ export class PermissionHelper {
           "This permission can read Service User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ServiceCatalog,
       },
 
       {
@@ -4663,6 +5151,7 @@ export class PermissionHelper {
           "This permission can create IncidentTemplate User Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentTemplateOwnerUser,
@@ -4671,6 +5160,7 @@ export class PermissionHelper {
           "This permission can delete IncidentTemplate User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentTemplateOwnerUser,
@@ -4679,6 +5169,7 @@ export class PermissionHelper {
           "This permission can edit IncidentTemplate User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentTemplateOwnerUser,
@@ -4687,6 +5178,7 @@ export class PermissionHelper {
           "This permission can read IncidentTemplate User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -4696,6 +5188,7 @@ export class PermissionHelper {
           "This permission can create Status Page Team Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageOwnerTeam,
@@ -4704,6 +5197,7 @@ export class PermissionHelper {
           "This permission can delete Status Page Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageOwnerTeam,
@@ -4712,6 +5206,7 @@ export class PermissionHelper {
           "This permission can edit Status Page Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageOwnerTeam,
@@ -4720,6 +5215,7 @@ export class PermissionHelper {
           "This permission can read Status Page Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -4729,6 +5225,7 @@ export class PermissionHelper {
           "This permission can create Status Page User Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageOwnerUser,
@@ -4737,6 +5234,7 @@ export class PermissionHelper {
           "This permission can delete Status Page User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageOwnerUser,
@@ -4745,6 +5243,7 @@ export class PermissionHelper {
           "This permission can edit Status Page User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageOwnerUser,
@@ -4753,6 +5252,7 @@ export class PermissionHelper {
           "This permission can read Status Page User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -4762,6 +5262,7 @@ export class PermissionHelper {
           "This permission can create Monitor Team Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.DeleteMonitorOwnerTeam,
@@ -4770,6 +5271,7 @@ export class PermissionHelper {
           "This permission can delete Monitor Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.EditMonitorOwnerTeam,
@@ -4778,6 +5280,7 @@ export class PermissionHelper {
           "This permission can edit Monitor Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.ReadMonitorOwnerTeam,
@@ -4786,6 +5289,7 @@ export class PermissionHelper {
           "This permission can read Monitor Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
 
       {
@@ -4795,6 +5299,7 @@ export class PermissionHelper {
           "This permission can create Monitor User Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.DeleteMonitorOwnerUser,
@@ -4803,6 +5308,7 @@ export class PermissionHelper {
           "This permission can delete Monitor User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.EditMonitorOwnerUser,
@@ -4811,6 +5317,7 @@ export class PermissionHelper {
           "This permission can edit Monitor User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.ReadMonitorOwnerUser,
@@ -4819,6 +5326,7 @@ export class PermissionHelper {
           "This permission can read Monitor User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
 
       {
@@ -4828,6 +5336,7 @@ export class PermissionHelper {
           "This permission can create Monitor Group Team Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.DeleteMonitorGroupOwnerTeam,
@@ -4836,6 +5345,7 @@ export class PermissionHelper {
           "This permission can delete Monitor Group Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.EditMonitorGroupOwnerTeam,
@@ -4844,6 +5354,7 @@ export class PermissionHelper {
           "This permission can edit Monitor Group Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.ReadMonitorGroupOwnerTeam,
@@ -4852,6 +5363,7 @@ export class PermissionHelper {
           "This permission can read Monitor Group Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
 
       {
@@ -4861,6 +5373,7 @@ export class PermissionHelper {
           "This permission can create On Call Duty Policy User Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.DeleteOnCallDutyPolicyOwnerUser,
@@ -4869,6 +5382,7 @@ export class PermissionHelper {
           "This permission can delete On Call Duty Policy User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditOnCallDutyPolicyOwnerUser,
@@ -4877,6 +5391,7 @@ export class PermissionHelper {
           "This permission can edit On Call Duty Policy User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadOnCallDutyPolicyOwnerUser,
@@ -4885,6 +5400,7 @@ export class PermissionHelper {
           "This permission can read On Call Duty Policy User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -4894,6 +5410,7 @@ export class PermissionHelper {
           "This permission can create On Call Duty Policy Team Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.DeleteOnCallDutyPolicyOwnerTeam,
@@ -4902,6 +5419,7 @@ export class PermissionHelper {
           "This permission can delete On Call Duty Policy Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.EditOnCallDutyPolicyOwnerTeam,
@@ -4910,6 +5428,7 @@ export class PermissionHelper {
           "This permission can edit On Call Duty Policy Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
       {
         permission: Permission.ReadOnCallDutyPolicyOwnerTeam,
@@ -4918,6 +5437,7 @@ export class PermissionHelper {
           "This permission can read On Call Duty Policy Team Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.OnCallDutyPolicy,
       },
 
       {
@@ -4927,6 +5447,7 @@ export class PermissionHelper {
           "This permission can create Monitor Group User Owner this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.DeleteMonitorGroupOwnerUser,
@@ -4935,6 +5456,7 @@ export class PermissionHelper {
           "This permission can delete Monitor Group User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.EditMonitorGroupOwnerUser,
@@ -4943,6 +5465,7 @@ export class PermissionHelper {
           "This permission can edit Monitor Group User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
       {
         permission: Permission.ReadMonitorGroupOwnerUser,
@@ -4951,6 +5474,7 @@ export class PermissionHelper {
           "This permission can read Monitor Group User Owner of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Monitor,
       },
 
       {
@@ -4959,6 +5483,7 @@ export class PermissionHelper {
         description: "This permission can create incident this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteProjectIncident,
@@ -4966,6 +5491,7 @@ export class PermissionHelper {
         description: "This permission can delete incident of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditProjectIncident,
@@ -4973,6 +5499,7 @@ export class PermissionHelper {
         description: "This permission can edit incident of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadProjectIncident,
@@ -4980,6 +5507,7 @@ export class PermissionHelper {
         description: "This permission can read incident of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Incident,
       },
 
       {
@@ -4988,6 +5516,7 @@ export class PermissionHelper {
         description: "This permission can create alerts for this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlert,
@@ -4995,6 +5524,7 @@ export class PermissionHelper {
         description: "This permission can delete alerts of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlert,
@@ -5002,6 +5532,7 @@ export class PermissionHelper {
         description: "This permission can edit alerts of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlert,
@@ -5009,6 +5540,7 @@ export class PermissionHelper {
         description: "This permission can read alerts of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Alert,
       },
 
       {
@@ -5018,6 +5550,7 @@ export class PermissionHelper {
           "This permission can create scheduled maintenance template in the project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.DeleteScheduledMaintenanceTemplate,
@@ -5026,6 +5559,7 @@ export class PermissionHelper {
           "This permission can delete scheduled maintenance template in the project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.EditScheduledMaintenanceTemplate,
@@ -5034,6 +5568,7 @@ export class PermissionHelper {
           "This permission can edit scheduled maintenance template in the project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.ReadScheduledMaintenanceTemplate,
@@ -5042,6 +5577,7 @@ export class PermissionHelper {
           "This permission can read scheduled maintenance template in the project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
 
       {
@@ -5051,6 +5587,7 @@ export class PermissionHelper {
           "This permission can create subscriber on status page this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPageSubscriber,
@@ -5059,6 +5596,7 @@ export class PermissionHelper {
           "This permission can delete subscriber on status page of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPageSubscriber,
@@ -5067,6 +5605,7 @@ export class PermissionHelper {
           "This permission can edit subscriber on status page of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPageSubscriber,
@@ -5075,6 +5614,7 @@ export class PermissionHelper {
           "This permission can read subscriber on status page of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       {
@@ -5084,6 +5624,7 @@ export class PermissionHelper {
           "This permission can create private user on status page this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.DeleteStatusPagePrivateUser,
@@ -5092,6 +5633,7 @@ export class PermissionHelper {
           "This permission can delete private user on status page of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.EditStatusPagePrivateUser,
@@ -5100,6 +5642,7 @@ export class PermissionHelper {
           "This permission can edit private user on status page of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
       {
         permission: Permission.ReadStatusPagePrivateUser,
@@ -5108,6 +5651,7 @@ export class PermissionHelper {
           "This permission can read private user on status page of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.StatusPage,
       },
 
       // Scheduled Maintenance Permissions.
@@ -5119,6 +5663,7 @@ export class PermissionHelper {
           "This permission can create Scheduled Maintenance states this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.DeleteScheduledMaintenanceState,
@@ -5127,6 +5672,7 @@ export class PermissionHelper {
           "This permission can delete Scheduled Maintenance states of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.EditScheduledMaintenanceState,
@@ -5135,6 +5681,7 @@ export class PermissionHelper {
           "This permission can edit Scheduled Maintenance states of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.ReadScheduledMaintenanceState,
@@ -5143,6 +5690,7 @@ export class PermissionHelper {
           "This permission can read Scheduled Maintenance states of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
 
       {
@@ -5152,6 +5700,7 @@ export class PermissionHelper {
           "This permission can create Scheduled Maintenance this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.DeleteProjectScheduledMaintenance,
@@ -5160,6 +5709,7 @@ export class PermissionHelper {
           "This permission can delete Scheduled Maintenance of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.EditProjectScheduledMaintenance,
@@ -5168,6 +5718,7 @@ export class PermissionHelper {
           "This permission can edit Scheduled Maintenance of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.ReadProjectScheduledMaintenance,
@@ -5176,6 +5727,7 @@ export class PermissionHelper {
           "This permission can read Scheduled Maintenance of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.ScheduledMaintenance,
       },
 
       {
@@ -5185,6 +5737,7 @@ export class PermissionHelper {
           "This permission can create Scheduled Maintenance state history of an Scheduled Maintenance in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.DeleteScheduledMaintenanceStateTimeline,
@@ -5193,6 +5746,7 @@ export class PermissionHelper {
           "This permission can delete Scheduled Maintenance state history of an Scheduled Maintenance in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.EditScheduledMaintenanceStateTimeline,
@@ -5201,6 +5755,7 @@ export class PermissionHelper {
           "This permission can edit Scheduled Maintenance state history of an Scheduled Maintenance in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.ReadScheduledMaintenanceStateTimeline,
@@ -5209,6 +5764,7 @@ export class PermissionHelper {
           "This permission can read Scheduled Maintenance state history of an Scheduled Maintenance in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
 
       {
@@ -5218,6 +5774,7 @@ export class PermissionHelper {
           "This permission can create Scheduled Maintenance Internal Note this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.DeleteScheduledMaintenanceInternalNote,
@@ -5226,6 +5783,7 @@ export class PermissionHelper {
           "This permission can delete Scheduled Maintenance Internal Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.EditScheduledMaintenanceInternalNote,
@@ -5234,6 +5792,7 @@ export class PermissionHelper {
           "This permission can edit Scheduled Maintenance Internal Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.ReadScheduledMaintenanceInternalNote,
@@ -5242,6 +5801,7 @@ export class PermissionHelper {
           "This permission can read Scheduled Maintenance Internal Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
 
       {
@@ -5251,6 +5811,7 @@ export class PermissionHelper {
           "This permission can create Scheduled Maintenance Status Page Note this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.DeleteScheduledMaintenancePublicNote,
@@ -5259,6 +5820,7 @@ export class PermissionHelper {
           "This permission can delete Scheduled Maintenance Status Page Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.EditScheduledMaintenancePublicNote,
@@ -5267,6 +5829,7 @@ export class PermissionHelper {
           "This permission can edit Scheduled Maintenance Status Page Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
       {
         permission: Permission.ReadScheduledMaintenancePublicNote,
@@ -5275,6 +5838,7 @@ export class PermissionHelper {
           "This permission can read Scheduled Maintenance Status Page Note of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.ScheduledMaintenance,
       },
 
       // Alert Episode Permissions
@@ -5285,6 +5849,7 @@ export class PermissionHelper {
           "This permission can create Alert Episodes in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertEpisode,
@@ -5293,6 +5858,7 @@ export class PermissionHelper {
           "This permission can delete Alert Episodes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertEpisode,
@@ -5300,6 +5866,7 @@ export class PermissionHelper {
         description: "This permission can edit Alert Episodes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertEpisode,
@@ -5307,6 +5874,7 @@ export class PermissionHelper {
         description: "This permission can read Alert Episodes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Alert,
       },
 
       // Alert Episode Member Permissions
@@ -5317,6 +5885,7 @@ export class PermissionHelper {
           "This permission can add alerts to Alert Episodes in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertEpisodeMember,
@@ -5325,6 +5894,7 @@ export class PermissionHelper {
           "This permission can remove alerts from Alert Episodes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertEpisodeMember,
@@ -5333,6 +5903,7 @@ export class PermissionHelper {
           "This permission can edit Alert Episode Members of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertEpisodeMember,
@@ -5341,6 +5912,7 @@ export class PermissionHelper {
           "This permission can read Alert Episode Members of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       // Alert Grouping Rule Permissions
@@ -5351,6 +5923,7 @@ export class PermissionHelper {
           "This permission can create Alert Grouping Rules in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertGroupingRule,
@@ -5359,6 +5932,7 @@ export class PermissionHelper {
           "This permission can delete Alert Grouping Rules of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertGroupingRule,
@@ -5367,6 +5941,7 @@ export class PermissionHelper {
           "This permission can edit Alert Grouping Rules of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertGroupingRule,
@@ -5375,6 +5950,7 @@ export class PermissionHelper {
           "This permission can read Alert Grouping Rules of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       // Alert Episode State Timeline Permissions
@@ -5385,6 +5961,7 @@ export class PermissionHelper {
           "This permission can create Alert Episode state history in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertEpisodeStateTimeline,
@@ -5393,6 +5970,7 @@ export class PermissionHelper {
           "This permission can delete Alert Episode state history of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertEpisodeStateTimeline,
@@ -5401,6 +5979,7 @@ export class PermissionHelper {
           "This permission can edit Alert Episode state history of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertEpisodeStateTimeline,
@@ -5409,6 +5988,7 @@ export class PermissionHelper {
           "This permission can read Alert Episode state history of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       // Alert Episode Owner User Permissions
@@ -5419,6 +5999,7 @@ export class PermissionHelper {
           "This permission can add user owners to Alert Episodes in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertEpisodeOwnerUser,
@@ -5427,6 +6008,7 @@ export class PermissionHelper {
           "This permission can remove user owners from Alert Episodes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertEpisodeOwnerUser,
@@ -5435,6 +6017,7 @@ export class PermissionHelper {
           "This permission can edit Alert Episode user owners of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertEpisodeOwnerUser,
@@ -5443,6 +6026,7 @@ export class PermissionHelper {
           "This permission can read Alert Episode user owners of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       // Alert Episode Owner Team Permissions
@@ -5453,6 +6037,7 @@ export class PermissionHelper {
           "This permission can add team owners to Alert Episodes in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertEpisodeOwnerTeam,
@@ -5461,6 +6046,7 @@ export class PermissionHelper {
           "This permission can remove team owners from Alert Episodes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertEpisodeOwnerTeam,
@@ -5469,6 +6055,7 @@ export class PermissionHelper {
           "This permission can edit Alert Episode team owners of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertEpisodeOwnerTeam,
@@ -5477,6 +6064,7 @@ export class PermissionHelper {
           "This permission can read Alert Episode team owners of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       // Alert Episode Internal Note Permissions
@@ -5487,6 +6075,7 @@ export class PermissionHelper {
           "This permission can create Alert Episode internal notes in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.DeleteAlertEpisodeInternalNote,
@@ -5495,6 +6084,7 @@ export class PermissionHelper {
           "This permission can delete Alert Episode internal notes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertEpisodeInternalNote,
@@ -5503,6 +6093,7 @@ export class PermissionHelper {
           "This permission can edit Alert Episode internal notes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertEpisodeInternalNote,
@@ -5511,6 +6102,7 @@ export class PermissionHelper {
           "This permission can read Alert Episode internal notes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       // Alert Episode Feed Permissions
@@ -5521,6 +6113,7 @@ export class PermissionHelper {
           "This permission can create Alert Episode feed items in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.EditAlertEpisodeFeed,
@@ -5529,6 +6122,7 @@ export class PermissionHelper {
           "This permission can edit Alert Episode feed items of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
       {
         permission: Permission.ReadAlertEpisodeFeed,
@@ -5537,6 +6131,7 @@ export class PermissionHelper {
           "This permission can read Alert Episode feed items of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Alert,
       },
 
       // Incident Episode Permissions
@@ -5547,6 +6142,7 @@ export class PermissionHelper {
           "This permission can create Incident Episodes in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentEpisode,
@@ -5555,6 +6151,7 @@ export class PermissionHelper {
           "This permission can delete Incident Episodes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentEpisode,
@@ -5563,6 +6160,7 @@ export class PermissionHelper {
           "This permission can edit Incident Episodes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentEpisode,
@@ -5571,6 +6169,7 @@ export class PermissionHelper {
           "This permission can read Incident Episodes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: true,
+        group: PermissionGroup.Incident,
       },
 
       // Incident Episode Member Permissions
@@ -5581,6 +6180,7 @@ export class PermissionHelper {
           "This permission can add incidents to Incident Episodes in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentEpisodeMember,
@@ -5589,6 +6189,7 @@ export class PermissionHelper {
           "This permission can remove incidents from Incident Episodes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentEpisodeMember,
@@ -5597,6 +6198,7 @@ export class PermissionHelper {
           "This permission can edit Incident Episode Members of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentEpisodeMember,
@@ -5605,6 +6207,7 @@ export class PermissionHelper {
           "This permission can read Incident Episode Members of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       // Incident Episode State Timeline Permissions
@@ -5615,6 +6218,7 @@ export class PermissionHelper {
           "This permission can create Incident Episode state history in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentEpisodeStateTimeline,
@@ -5623,6 +6227,7 @@ export class PermissionHelper {
           "This permission can delete Incident Episode state history of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentEpisodeStateTimeline,
@@ -5631,6 +6236,7 @@ export class PermissionHelper {
           "This permission can edit Incident Episode state history of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentEpisodeStateTimeline,
@@ -5639,6 +6245,7 @@ export class PermissionHelper {
           "This permission can read Incident Episode state history of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       // Incident Episode Owner User Permissions
@@ -5649,6 +6256,7 @@ export class PermissionHelper {
           "This permission can add user owners to Incident Episodes in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentEpisodeOwnerUser,
@@ -5657,6 +6265,7 @@ export class PermissionHelper {
           "This permission can remove user owners from Incident Episodes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentEpisodeOwnerUser,
@@ -5665,6 +6274,7 @@ export class PermissionHelper {
           "This permission can edit Incident Episode user owners of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentEpisodeOwnerUser,
@@ -5673,6 +6283,7 @@ export class PermissionHelper {
           "This permission can read Incident Episode user owners of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       // Incident Episode Owner Team Permissions
@@ -5683,6 +6294,7 @@ export class PermissionHelper {
           "This permission can add team owners to Incident Episodes in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentEpisodeOwnerTeam,
@@ -5691,6 +6303,7 @@ export class PermissionHelper {
           "This permission can remove team owners from Incident Episodes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentEpisodeOwnerTeam,
@@ -5699,6 +6312,7 @@ export class PermissionHelper {
           "This permission can edit Incident Episode team owners of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentEpisodeOwnerTeam,
@@ -5707,6 +6321,7 @@ export class PermissionHelper {
           "This permission can read Incident Episode team owners of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       // Incident Episode Internal Note Permissions
@@ -5717,6 +6332,7 @@ export class PermissionHelper {
           "This permission can create Incident Episode internal notes in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentEpisodeInternalNote,
@@ -5725,6 +6341,7 @@ export class PermissionHelper {
           "This permission can delete Incident Episode internal notes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentEpisodeInternalNote,
@@ -5733,6 +6350,7 @@ export class PermissionHelper {
           "This permission can edit Incident Episode internal notes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentEpisodeInternalNote,
@@ -5741,6 +6359,7 @@ export class PermissionHelper {
           "This permission can read Incident Episode internal notes of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       // Incident Episode Feed Permissions
@@ -5751,6 +6370,7 @@ export class PermissionHelper {
           "This permission can create Incident Episode feed items in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentEpisodeFeed,
@@ -5759,6 +6379,7 @@ export class PermissionHelper {
           "This permission can edit Incident Episode feed items of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentEpisodeFeed,
@@ -5767,6 +6388,45 @@ export class PermissionHelper {
           "This permission can read Incident Episode feed items of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
+      },
+
+      // Incident Episode Public Note Permissions
+      {
+        permission: Permission.CreateIncidentEpisodePublicNote,
+        title: "Create Incident Episode Public Note",
+        description:
+          "This permission can create Incident Episode public notes in this project.",
+        isAssignableToTenant: true,
+        isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
+      },
+      {
+        permission: Permission.DeleteIncidentEpisodePublicNote,
+        title: "Delete Incident Episode Public Note",
+        description:
+          "This permission can delete Incident Episode public notes of this project.",
+        isAssignableToTenant: true,
+        isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
+      },
+      {
+        permission: Permission.EditIncidentEpisodePublicNote,
+        title: "Edit Incident Episode Public Note",
+        description:
+          "This permission can edit Incident Episode public notes of this project.",
+        isAssignableToTenant: true,
+        isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
+      },
+      {
+        permission: Permission.ReadIncidentEpisodePublicNote,
+        title: "Read Incident Episode Public Note",
+        description:
+          "This permission can read Incident Episode public notes of this project.",
+        isAssignableToTenant: true,
+        isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       // Incident Grouping Rule Permissions
@@ -5777,6 +6437,7 @@ export class PermissionHelper {
           "This permission can create Incident Grouping Rules in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentGroupingRule,
@@ -5785,6 +6446,7 @@ export class PermissionHelper {
           "This permission can delete Incident Grouping Rules of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentGroupingRule,
@@ -5793,6 +6455,7 @@ export class PermissionHelper {
           "This permission can edit Incident Grouping Rules of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentGroupingRule,
@@ -5801,6 +6464,7 @@ export class PermissionHelper {
           "This permission can read Incident Grouping Rules of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       // Incident SLA Rule Permissions
@@ -5811,6 +6475,7 @@ export class PermissionHelper {
           "This permission can create Incident SLA Rules in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentSlaRule,
@@ -5819,6 +6484,7 @@ export class PermissionHelper {
           "This permission can delete Incident SLA Rules of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentSlaRule,
@@ -5827,6 +6493,7 @@ export class PermissionHelper {
           "This permission can edit Incident SLA Rules of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentSlaRule,
@@ -5835,6 +6502,7 @@ export class PermissionHelper {
           "This permission can read Incident SLA Rules of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       // Incident SLA Permissions
@@ -5845,6 +6513,7 @@ export class PermissionHelper {
           "This permission can create Incident SLA records in this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.DeleteIncidentSla,
@@ -5853,6 +6522,7 @@ export class PermissionHelper {
           "This permission can delete Incident SLA records of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.EditIncidentSla,
@@ -5861,6 +6531,7 @@ export class PermissionHelper {
           "This permission can edit Incident SLA records of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
       {
         permission: Permission.ReadIncidentSla,
@@ -5869,6 +6540,7 @@ export class PermissionHelper {
           "This permission can read Incident SLA records of this project.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Incident,
       },
 
       // Read All Project Resources Permission
@@ -5879,10 +6551,19 @@ export class PermissionHelper {
           "This permission grants read access to all resources in this project. Users with this permission can view all project data including monitors, incidents, alerts, status pages, on-call policies, and other project resources.",
         isAssignableToTenant: true,
         isAccessControlPermission: false,
+        group: PermissionGroup.Project,
       },
     ];
 
     return permissions;
+  }
+
+  public static getPermissionsByGroup(
+    group: PermissionGroup,
+  ): Array<PermissionProps> {
+    return this.getAllPermissionProps().filter((item: PermissionProps) => {
+      return item.group === group;
+    });
   }
 
   public static getAllPermissionPropsAsDictionary(): Dictionary<PermissionProps> {

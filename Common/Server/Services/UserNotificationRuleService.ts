@@ -29,6 +29,7 @@ import EmailTemplateType from "../../Types/Email/EmailTemplateType";
 import BadDataException from "../../Types/Exception/BadDataException";
 import NotificationRuleType from "../../Types/NotificationRule/NotificationRuleType";
 import ObjectID from "../../Types/ObjectID";
+import PushDeviceType from "../../Types/PushNotification/PushDeviceType";
 import Phone from "../../Types/Phone";
 import SMS from "../../Types/SMS/SMS";
 import WhatsAppMessage from "../../Types/WhatsApp/WhatsAppMessage";
@@ -257,6 +258,7 @@ export class Service extends DatabaseService<Model> {
           },
           rootCause: true,
           incidentNumber: true,
+          incidentNumberWithPrefix: true,
         },
       });
     }
@@ -286,6 +288,7 @@ export class Service extends DatabaseService<Model> {
             name: true,
           },
           alertNumber: true,
+          alertNumberWithPrefix: true,
         },
       });
     }
@@ -315,6 +318,7 @@ export class Service extends DatabaseService<Model> {
             name: true,
           },
           episodeNumber: true,
+          episodeNumberWithPrefix: true,
           rootCause: true,
         },
       });
@@ -347,6 +351,7 @@ export class Service extends DatabaseService<Model> {
             name: true,
           },
           episodeNumber: true,
+          episodeNumberWithPrefix: true,
           rootCause: true,
         },
       });
@@ -1097,6 +1102,8 @@ export class Service extends DatabaseService<Model> {
             ...(alert.alertNumber !== undefined && {
               alertNumber: alert.alertNumber,
             }),
+            alertId: alert.id!.toString(),
+            projectId: alert.projectId!.toString(),
           });
 
         // send push notification.
@@ -1111,7 +1118,8 @@ export class Service extends DatabaseService<Model> {
               },
             ],
             message: pushMessage,
-            deviceType: notificationRuleItem.userPush.deviceType!,
+            deviceType: notificationRuleItem.userPush
+              .deviceType! as PushDeviceType,
           },
           {
             projectId: options.projectId,
@@ -1171,6 +1179,8 @@ export class Service extends DatabaseService<Model> {
             ...(incident.incidentNumber !== undefined && {
               incidentNumber: incident.incidentNumber,
             }),
+            incidentId: incident.id!.toString(),
+            projectId: incident.projectId!.toString(),
           });
 
         // send push notification.
@@ -1185,7 +1195,8 @@ export class Service extends DatabaseService<Model> {
               },
             ],
             message: pushMessage,
-            deviceType: notificationRuleItem.userPush.deviceType!,
+            deviceType: notificationRuleItem.userPush
+              .deviceType! as PushDeviceType,
           },
           {
             projectId: options.projectId,
@@ -1244,6 +1255,11 @@ export class Service extends DatabaseService<Model> {
             ...(alertEpisode.episodeNumber !== undefined && {
               episodeNumber: alertEpisode.episodeNumber,
             }),
+            ...(alertEpisode.episodeNumberWithPrefix && {
+              episodeNumberWithPrefix: alertEpisode.episodeNumberWithPrefix,
+            }),
+            alertEpisodeId: alertEpisode.id!.toString(),
+            projectId: alertEpisode.projectId!.toString(),
           });
 
         PushNotificationService.sendPushNotification(
@@ -1257,7 +1273,8 @@ export class Service extends DatabaseService<Model> {
               },
             ],
             message: pushMessage,
-            deviceType: notificationRuleItem.userPush.deviceType!,
+            deviceType: notificationRuleItem.userPush
+              .deviceType! as PushDeviceType,
           },
           {
             projectId: options.projectId,
@@ -1371,7 +1388,7 @@ export class Service extends DatabaseService<Model> {
 
     const incidentIdentifier: string =
       incident.incidentNumber !== undefined
-        ? `Incident number ${incident.incidentNumber}, ${incident.title || "Incident"}`
+        ? `Incident number ${incident.incidentNumberWithPrefix || incident.incidentNumber}, ${incident.title || "Incident"}`
         : incident.title || "Incident";
 
     const callRequest: CallRequest = {
@@ -1425,8 +1442,9 @@ export class Service extends DatabaseService<Model> {
 
     const httpProtocol: Protocol = await DatabaseConfig.getHttpProtocol();
 
-    const episodeIdentifier: string =
-      alertEpisode.episodeNumber !== undefined
+    const episodeIdentifier: string = alertEpisode.episodeNumberWithPrefix
+      ? `Alert episode ${alertEpisode.episodeNumberWithPrefix}, ${alertEpisode.title || "Alert Episode"}`
+      : alertEpisode.episodeNumber !== undefined
         ? `Alert episode number ${alertEpisode.episodeNumber}, ${alertEpisode.title || "Alert Episode"}`
         : alertEpisode.title || "Alert Episode";
 
@@ -1493,7 +1511,7 @@ export class Service extends DatabaseService<Model> {
 
     const alertIdentifier: string =
       alert.alertNumber !== undefined
-        ? `#${alert.alertNumber} (${alert.title || "Alert"})`
+        ? `${alert.alertNumberWithPrefix || "#" + alert.alertNumber} (${alert.title || "Alert"})`
         : alert.title || "Alert";
 
     const sms: SMS = {
@@ -1526,7 +1544,7 @@ export class Service extends DatabaseService<Model> {
 
     const incidentIdentifier: string =
       incident.incidentNumber !== undefined
-        ? `#${incident.incidentNumber} (${incident.title || "Incident"})`
+        ? `${incident.incidentNumberWithPrefix || "#" + incident.incidentNumber} (${incident.title || "Incident"})`
         : incident.title || "Incident";
 
     const sms: SMS = {
@@ -1557,8 +1575,9 @@ export class Service extends DatabaseService<Model> {
     );
     const url: URL = await ShortLinkService.getShortenedUrl(shortUrl);
 
-    const episodeIdentifier: string =
-      alertEpisode.episodeNumber !== undefined
+    const episodeIdentifier: string = alertEpisode.episodeNumberWithPrefix
+      ? `${alertEpisode.episodeNumberWithPrefix} (${alertEpisode.title || "Alert Episode"})`
+      : alertEpisode.episodeNumber !== undefined
         ? `#${alertEpisode.episodeNumber} (${alertEpisode.title || "Alert Episode"})`
         : alertEpisode.title || "Alert Episode";
 
@@ -1726,9 +1745,10 @@ export class Service extends DatabaseService<Model> {
       episode_title: alertEpisode.title || "",
       acknowledge_url: acknowledgeUrl.toString(),
       episode_number:
-        alertEpisode.episodeNumber !== undefined
+        alertEpisode.episodeNumberWithPrefix ||
+        (alertEpisode.episodeNumber !== undefined
           ? alertEpisode.episodeNumber.toString()
-          : "",
+          : ""),
       episode_link: episodeLinkOnDashboard,
     };
 
@@ -1752,9 +1772,9 @@ export class Service extends DatabaseService<Model> {
     const host: Hostname = await DatabaseConfig.getHost();
     const httpProtocol: Protocol = await DatabaseConfig.getHttpProtocol();
 
-    const alertNumber: string = alert.alertNumber
-      ? `#${alert.alertNumber}`
-      : "";
+    const alertNumber: string =
+      alert.alertNumberWithPrefix ||
+      (alert.alertNumber ? `#${alert.alertNumber}` : "");
 
     const vars: Dictionary<string> = {
       alertTitle: alert.title!,
@@ -1797,9 +1817,9 @@ export class Service extends DatabaseService<Model> {
     const host: Hostname = await DatabaseConfig.getHost();
     const httpProtocol: Protocol = await DatabaseConfig.getHttpProtocol();
 
-    const incidentNumber: string = incident.incidentNumber
-      ? `#${incident.incidentNumber}`
-      : "";
+    const incidentNumber: string =
+      incident.incidentNumberWithPrefix ||
+      (incident.incidentNumber ? `#${incident.incidentNumber}` : "");
 
     const vars: Dictionary<string> = {
       incidentTitle: incident.title!,
@@ -1883,6 +1903,7 @@ export class Service extends DatabaseService<Model> {
               _id: true,
               title: true,
               alertNumber: true,
+              alertNumberWithPrefix: true,
               monitor: {
                 _id: true,
                 name: true,
@@ -1915,9 +1936,9 @@ export class Service extends DatabaseService<Model> {
       const alertRows: string[] = [];
       for (const alert of alerts) {
         const alertTitle: string = alert.title || "Untitled Alert";
-        const alertNumber: string = alert.alertNumber
-          ? `#${alert.alertNumber}`
-          : "";
+        const alertNumber: string =
+          alert.alertNumberWithPrefix ||
+          (alert.alertNumber ? `#${alert.alertNumber}` : "");
         const alertLink: string = (
           await AlertService.getAlertLinkInDashboard(
             alertEpisode.projectId!,
@@ -1956,9 +1977,9 @@ export class Service extends DatabaseService<Model> {
       }
     }
 
-    const episodeNumber: string = alertEpisode.episodeNumber
-      ? `#${alertEpisode.episodeNumber}`
-      : "";
+    const episodeNumber: string =
+      alertEpisode.episodeNumberWithPrefix ||
+      (alertEpisode.episodeNumber ? `#${alertEpisode.episodeNumber}` : "");
 
     const vars: Dictionary<string> = {
       alertEpisodeTitle: alertEpisode.title!,

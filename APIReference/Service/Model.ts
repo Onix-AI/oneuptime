@@ -3,8 +3,10 @@ import CodeExampleGenerator, {
   CodeExamples,
 } from "../Utils/CodeExampleGenerator";
 import ResourceUtil, { ModelDocumentation } from "../Utils/Resources";
+import DataTypeUtil, { DataTypeDocumentation } from "../Utils/DataTypes";
 import PageNotFoundServiceHandler from "./PageNotFound";
 import { AppApiRoute } from "Common/ServiceRoute";
+import BaseModel from "Common/Models/DatabaseModels/DatabaseBaseModel/DatabaseBaseModel";
 import { ColumnAccessControl } from "Common/Types/BaseDatabase/AccessControl";
 import {
   getTableColumns,
@@ -314,8 +316,12 @@ function generateApiCodeExamples(
 
 // Get all resources and resource dictionary
 const Resources: Array<ModelDocumentation> = ResourceUtil.getResources();
+const DataTypes: Array<DataTypeDocumentation> = DataTypeUtil.getDataTypes();
 const ResourceDictionary: Dictionary<ModelDocumentation> =
   ResourceUtil.getResourceDictionaryByPath();
+
+// Dynamically built from DataTypes registry — no manual updates needed when new types are added
+const TypeToDocPath: Dictionary<string> = DataTypeUtil.getTypeToDocPathMap();
 
 // Get all permission props
 const PermissionDictionary: Dictionary<PermissionProps> =
@@ -391,6 +397,32 @@ export default class ServiceHandler {
     delete tableColumns["deletedByUserId"];
     delete tableColumns["deletedByUser"];
     delete tableColumns["version"];
+
+    // For columns with a modelType (Entity/EntityArray), resolve the related model's documentation path
+    for (const key in tableColumns) {
+      const column: TableColumnMetadata | undefined = tableColumns[key];
+      if (column?.modelType) {
+        try {
+          const relatedModelInstance: BaseModel = new column.modelType();
+          if (relatedModelInstance.enableDocumentation) {
+            (column as any).modelDocumentationPath =
+              relatedModelInstance.getAPIDocumentationPath();
+            (column as any).modelName = relatedModelInstance.singularName;
+          }
+        } catch {
+          // If model instantiation fails, skip linking
+        }
+      }
+
+      // Resolve non-entity complex types to their documentation paths
+      if (column?.type && !(column as any).modelDocumentationPath) {
+        const typeStr: string = column.type.toString();
+        const docPath: string | undefined = TypeToDocPath[typeStr];
+        if (docPath) {
+          (column as any).typeDocumentationPath = docPath;
+        }
+      }
+    }
 
     // Set page data
     pageData["title"] = currentResource.model.singularName;
@@ -586,6 +618,7 @@ export default class ServiceHandler {
     return res.render(`${ViewsPath}/pages/index`, {
       page: page,
       resources: Resources,
+      dataTypes: DataTypes,
       pageTitle: pageTitle,
       enableGoogleTagManager: IsBillingEnabled,
       pageDescription: pageDescription,

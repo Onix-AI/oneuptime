@@ -59,6 +59,7 @@ import NotificationRuleWorkspaceChannel from "../../Types/Workspace/Notification
 import { MessageBlocksByWorkspaceType } from "./WorkspaceNotificationRuleService";
 import ScheduledMaintenanceWorkspaceMessages from "../Utils/Workspace/WorkspaceMessages/ScheduledMaintenance";
 import CaptureSpan from "../Utils/Telemetry/CaptureSpan";
+import ProjectService from "./ProjectService";
 import StatusPageSubscriberNotificationTemplateService, {
   Service as StatusPageSubscriberNotificationTemplateServiceClass,
 } from "./StatusPageSubscriberNotificationTemplateService";
@@ -72,35 +73,6 @@ export class Service extends DatabaseService<Model> {
     if (IsBillingEnabled) {
       this.hardDeleteItemsOlderThanInDays("createdAt", 3 * 365); // 3 years
     }
-  }
-
-  @CaptureSpan()
-  public async getExistingScheduledMaintenanceNumberForProject(data: {
-    projectId: ObjectID;
-  }): Promise<number> {
-    // get last scheduledMaintenance number.
-    const lastScheduledMaintenance: Model | null = await this.findOneBy({
-      query: {
-        projectId: data.projectId,
-      },
-      select: {
-        scheduledMaintenanceNumber: true,
-      },
-      sort: {
-        createdAt: SortOrder.Descending,
-      },
-      props: {
-        isRoot: true,
-      },
-    });
-
-    if (!lastScheduledMaintenance) {
-      return 0;
-    }
-
-    return lastScheduledMaintenance.scheduledMaintenanceNumber
-      ? Number(lastScheduledMaintenance.scheduledMaintenanceNumber)
-      : 0;
   }
 
   @CaptureSpan()
@@ -751,13 +723,20 @@ ${resourcesAffected ? `**Resources Affected:** ${resourcesAffected}` : ""}
     createBy.data.currentScheduledMaintenanceStateId =
       scheduledMaintenanceState.id;
 
-    const scheduledMaintenanceNumberForThisScheduledMaintenance: number =
-      (await this.getExistingScheduledMaintenanceNumberForProject({
-        projectId: projectId,
-      })) + 1;
+    const scheduledMaintenanceCounterResult: {
+      counter: number;
+      prefix: string | undefined;
+    } =
+      await ProjectService.incrementAndGetScheduledMaintenanceCounter(
+        projectId,
+      );
 
     createBy.data.scheduledMaintenanceNumber =
-      scheduledMaintenanceNumberForThisScheduledMaintenance;
+      scheduledMaintenanceCounterResult.counter;
+    createBy.data.scheduledMaintenanceNumberWithPrefix =
+      scheduledMaintenanceCounterResult.prefix
+        ? `${scheduledMaintenanceCounterResult.prefix}${scheduledMaintenanceCounterResult.counter}`
+        : `#${scheduledMaintenanceCounterResult.counter}`;
 
     // get next notification date.
 
@@ -808,6 +787,7 @@ ${resourcesAffected ? `**Resources Affected:** ${resourcesAffected}` : ""}
       select: {
         projectId: true,
         scheduledMaintenanceNumber: true,
+        scheduledMaintenanceNumberWithPrefix: true,
         title: true,
         description: true,
         currentScheduledMaintenanceState: {
@@ -971,7 +951,7 @@ ${resourcesAffected ? `**Resources Affected:** ${resourcesAffected}` : ""}
         scheduledMaintenance.createdByUserId ||
         scheduledMaintenance.createdByUser?.id;
 
-      let feedInfoInMarkdown: string = `#### 🕒 Scheduled Maintenance ${scheduledMaintenance.scheduledMaintenanceNumber?.toString()} Created: 
+      let feedInfoInMarkdown: string = `#### 🕒 Scheduled Maintenance ${scheduledMaintenance.scheduledMaintenanceNumberWithPrefix || "#" + scheduledMaintenance.scheduledMaintenanceNumber?.toString()} Created:
             
 **${scheduledMaintenance.title || "No title provided."}**:
       
@@ -1641,11 +1621,15 @@ ${labels
   @CaptureSpan()
   public async getScheduledMaintenanceNumber(data: {
     scheduledMaintenanceId: ObjectID;
-  }): Promise<number | null> {
+  }): Promise<{
+    number: number | null;
+    numberWithPrefix: string | null;
+  }> {
     const scheduledMaintenance: Model | null = await this.findOneById({
       id: data.scheduledMaintenanceId,
       select: {
         scheduledMaintenanceNumber: true,
+        scheduledMaintenanceNumberWithPrefix: true,
       },
       props: {
         isRoot: true,
@@ -1656,9 +1640,13 @@ ${labels
       throw new BadDataException("ScheduledMaintenance not found.");
     }
 
-    return scheduledMaintenance.scheduledMaintenanceNumber
-      ? Number(scheduledMaintenance.scheduledMaintenanceNumber)
-      : null;
+    return {
+      number: scheduledMaintenance.scheduledMaintenanceNumber
+        ? Number(scheduledMaintenance.scheduledMaintenanceNumber)
+        : null,
+      numberWithPrefix:
+        scheduledMaintenance.scheduledMaintenanceNumberWithPrefix || null,
+    };
   }
 
   @CaptureSpan()

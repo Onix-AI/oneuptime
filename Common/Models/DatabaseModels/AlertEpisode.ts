@@ -261,6 +261,32 @@ export default class AlertEpisode extends BaseModel {
   public episodeNumber?: number = undefined;
 
   @ColumnAccessControl({
+    create: [],
+    read: [
+      Permission.ProjectOwner,
+      Permission.ProjectAdmin,
+      Permission.ProjectMember,
+      Permission.ReadAlertEpisode,
+      Permission.ReadAllProjectResources,
+    ],
+    update: [],
+  })
+  @TableColumn({
+    isDefaultValueColumn: false,
+    required: false,
+    type: TableColumnType.ShortText,
+    title: "Episode Number With Prefix",
+    description: "Episode number with prefix (e.g., 'AE-42' or '#42')",
+    computed: true,
+  })
+  @Column({
+    type: ColumnType.ShortText,
+    length: ColumnLength.ShortText,
+    nullable: true,
+  })
+  public episodeNumberWithPrefix?: string = undefined;
+
+  @ColumnAccessControl({
     create: [
       Permission.ProjectOwner,
       Permission.ProjectAdmin,
@@ -516,6 +542,31 @@ export default class AlertEpisode extends BaseModel {
     unique: false,
   })
   public resolvedAt?: Date = undefined;
+
+  @ColumnAccessControl({
+    create: [],
+    read: [
+      Permission.ProjectOwner,
+      Permission.ProjectAdmin,
+      Permission.ProjectMember,
+      Permission.ReadAlertEpisode,
+      Permission.ReadAllProjectResources,
+    ],
+    update: [],
+  })
+  @Index()
+  @TableColumn({
+    type: TableColumnType.Date,
+    title: "All Alerts Resolved At",
+    description:
+      "When all alerts in this episode were first detected as resolved. Used for resolve delay calculation.",
+  })
+  @Column({
+    type: ColumnType.Date,
+    nullable: true,
+    unique: false,
+  })
+  public allAlertsResolvedAt?: Date = undefined;
 
   @ColumnAccessControl({
     create: [
@@ -840,6 +891,7 @@ export default class AlertEpisode extends BaseModel {
     type: TableColumnType.Number,
     required: true,
     isDefaultValueColumn: true,
+    computed: true,
     title: "Alert Count",
     description: "Denormalized count of alerts in this episode",
     defaultValue: 0,

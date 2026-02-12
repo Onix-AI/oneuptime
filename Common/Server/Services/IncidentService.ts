@@ -44,9 +44,6 @@ import Metric, {
 import OneUptimeDate from "../../Types/Date";
 import TelemetryUtil from "../Utils/Telemetry/Telemetry";
 import logger from "../Utils/Logger";
-import Semaphore, {
-  SemaphoreMutex,
-} from "../../Server/Infrastructure/Semaphore";
 import IncidentFeedService from "./IncidentFeedService";
 import IncidentSlaService from "./IncidentSlaService";
 import { IncidentFeedEventType } from "../../Models/DatabaseModels/IncidentFeed";
@@ -65,6 +62,7 @@ import MetricType from "../../Models/DatabaseModels/MetricType";
 import UpdateBy from "../Types/Database/UpdateBy";
 import OnCallDutyPolicy from "../../Models/DatabaseModels/OnCallDutyPolicy";
 import Dictionary from "../../Types/Dictionary";
+import ProjectService from "./ProjectService";
 import IncidentTemplateService from "./IncidentTemplateService";
 import IncidentTemplate from "../../Models/DatabaseModels/IncidentTemplate";
 import LLMService, {
@@ -333,35 +331,6 @@ export class Service extends DatabaseService<Model> {
     return incident;
   }
 
-  @CaptureSpan()
-  public async getExistingIncidentNumberForProject(data: {
-    projectId: ObjectID;
-  }): Promise<number> {
-    // get last incident number.
-    const lastIncident: Model | null = await this.findOneBy({
-      query: {
-        projectId: data.projectId,
-      },
-      select: {
-        incidentNumber: true,
-      },
-      sort: {
-        createdAt: SortOrder.Descending,
-      },
-      props: {
-        isRoot: true,
-      },
-    });
-
-    if (!lastIncident) {
-      return 0;
-    }
-
-    return lastIncident.incidentNumber
-      ? Number(lastIncident.incidentNumber)
-      : 0;
-  }
-
   protected override async onBeforeUpdate(
     updateBy: UpdateBy<Model>,
   ): Promise<OnUpdate<Model>> {
@@ -593,39 +562,16 @@ export class Service extends DatabaseService<Model> {
       initialIncidentStateId = incidentState.id;
     }
 
-    let mutex: SemaphoreMutex | null = null;
-
-    try {
-      mutex = await Semaphore.lock({
-        key: projectId.toString(),
-        namespace: "IncidentService.incident-create",
-        lockTimeout: 15000,
-        acquireTimeout: 20000,
-      });
-
-      logger.debug(
-        "Mutex acquired - IncidentService.incident-create " +
-          projectId.toString() +
-          " at " +
-          OneUptimeDate.getCurrentDateAsFormattedString(),
-      );
-    } catch (err) {
-      logger.debug(
-        "Mutex acquire failed - IncidentService.incident-create " +
-          projectId.toString() +
-          " at " +
-          OneUptimeDate.getCurrentDateAsFormattedString(),
-      );
-      logger.error(err);
-    }
-
-    const incidentNumberForThisIncident: number =
-      (await this.getExistingIncidentNumberForProject({
-        projectId: projectId,
-      })) + 1;
+    const incidentCounterResult: {
+      counter: number;
+      prefix: string | undefined;
+    } = await ProjectService.incrementAndGetIncidentCounter(projectId);
 
     createBy.data.currentIncidentStateId = initialIncidentStateId;
-    createBy.data.incidentNumber = incidentNumberForThisIncident;
+    createBy.data.incidentNumber = incidentCounterResult.counter;
+    createBy.data.incidentNumberWithPrefix = incidentCounterResult.prefix
+      ? `${incidentCounterResult.prefix}${incidentCounterResult.counter}`
+      : `#${incidentCounterResult.counter}`;
 
     if (
       (createBy.data.createdByUserId ||
@@ -672,9 +618,7 @@ export class Service extends DatabaseService<Model> {
 
     return {
       createBy,
-      carryForward: {
-        mutex: mutex,
-      },
+      carryForward: null,
     };
   }
 
@@ -698,6 +642,7 @@ export class Service extends DatabaseService<Model> {
       select: {
         projectId: true,
         incidentNumber: true,
+        incidentNumberWithPrefix: true,
         title: true,
         description: true,
         incidentSeverity: {
@@ -730,9 +675,6 @@ export class Service extends DatabaseService<Model> {
     if (!incident) {
       throw new BadDataException("Incident not found");
     }
-
-    // Release mutex immediately
-    this.releaseMutexAsync(onCreate, createdItem.projectId!);
 
     // Execute operations sequentially with error handling
     Promise.resolve()
@@ -901,6 +843,11 @@ export class Service extends DatabaseService<Model> {
           projectId: createdItem.projectId,
           incidentId: createdItem.id,
           incidentNumber: createdItem.incidentNumber!,
+          ...(createdItem.incidentNumberWithPrefix
+            ? {
+                incidentNumberWithPrefix: createdItem.incidentNumberWithPrefix,
+              }
+            : {}),
         });
 
       if (workspaceResult && workspaceResult.channelsCreated?.length > 0) {
@@ -928,7 +875,11 @@ export class Service extends DatabaseService<Model> {
       const createdByUserId: ObjectID | undefined | null =
         incident.createdByUserId || incident.createdByUser?.id;
 
-      let feedInfoInMarkdown: string = `#### 🚨 Incident ${incident.incidentNumber?.toString()} Created: 
+      const incidentNumberDisplay: string =
+        incident.incidentNumberWithPrefix ||
+        "#" + incident.incidentNumber?.toString();
+
+      let feedInfoInMarkdown: string = `#### 🚨 Incident ${incidentNumberDisplay} Created:
         
 **${incident.title || "No title provided."}**:
 
@@ -1082,8 +1033,9 @@ ${incident.remediationNotes || "No remediation notes provided."}
           createdItem.changeMonitorStatusToId,
           true, // notifyMonitorOwners
           createdItem.rootCause ||
-            "Status was changed because Incident #" +
-              createdItem.incidentNumber?.toString() +
+            "Status was changed because Incident " +
+              (createdItem.incidentNumberWithPrefix ||
+                "#" + createdItem.incidentNumber?.toString()) +
               " was created.",
           createdItem.createdStateLog,
           onCreate.createBy.props,
@@ -1092,37 +1044,6 @@ ${incident.remediationNotes || "No remediation notes provided."}
     } catch (error) {
       logger.error(`Error in handleMonitorStatusChangeAsync: ${error}`);
       throw error;
-    }
-  }
-
-  @CaptureSpan()
-  private releaseMutexAsync(
-    onCreate: OnCreate<Model>,
-    projectId: ObjectID,
-  ): void {
-    // Release mutex in background without blocking
-    if (onCreate.carryForward && onCreate.carryForward.mutex) {
-      const mutex: SemaphoreMutex = onCreate.carryForward.mutex;
-
-      setImmediate(async () => {
-        try {
-          await Semaphore.release(mutex);
-          logger.debug(
-            "Mutex released - IncidentService.incident-create " +
-              projectId.toString() +
-              " at " +
-              OneUptimeDate.getCurrentDateAsFormattedString(),
-          );
-        } catch (err) {
-          logger.debug(
-            "Mutex release failed - IncidentService.incident-create " +
-              projectId.toString() +
-              " at " +
-              OneUptimeDate.getCurrentDateAsFormattedString(),
-          );
-          logger.error(err);
-        }
-      });
     }
   }
 
@@ -1351,6 +1272,7 @@ ${incident.remediationNotes || "No remediation notes provided."}
           select: {
             projectId: true,
             incidentNumber: true,
+            incidentNumberWithPrefix: true,
           },
           props: {
             isRoot: true,
@@ -1359,7 +1281,9 @@ ${incident.remediationNotes || "No remediation notes provided."}
 
         const projectId: ObjectID = incident!.projectId!;
         const incidentNumber: number = incident!.incidentNumber!;
-        const incidentLabel: string = `Incident ${incidentNumber}`;
+        const incidentNumberDisplay: string =
+          incident!.incidentNumberWithPrefix || "#" + incidentNumber;
+        const incidentLabel: string = `Incident ${incidentNumberDisplay}`;
         const incidentLink: URL = await this.getIncidentLinkInDashboard(
           projectId,
           incidentId,
@@ -1700,8 +1624,8 @@ ${incidentSeverity.name}
                 }),
                 changeNewMonitorStatusTo,
                 true, // notifyMonitorOwners
-                "Status was changed because Incident #" +
-                  incidentNumber?.toString() +
+                "Status was changed because Incident " +
+                  incidentNumberDisplay +
                   " was updated.",
                 undefined,
                 onUpdate.updateBy.props,
@@ -2369,13 +2293,15 @@ ${incidentSeverity.name}
   }
 
   @CaptureSpan()
-  public async getIncidentNumber(data: {
-    incidentId: ObjectID;
-  }): Promise<number | null> {
+  public async getIncidentNumber(data: { incidentId: ObjectID }): Promise<{
+    number: number | null;
+    numberWithPrefix: string | null;
+  }> {
     const incident: Model | null = await this.findOneById({
       id: data.incidentId,
       select: {
         incidentNumber: true,
+        incidentNumberWithPrefix: true,
       },
       props: {
         isRoot: true,
@@ -2386,7 +2312,10 @@ ${incidentSeverity.name}
       throw new BadDataException("Incident not found.");
     }
 
-    return incident.incidentNumber ? Number(incident.incidentNumber) : null;
+    return {
+      number: incident.incidentNumber ? Number(incident.incidentNumber) : null,
+      numberWithPrefix: incident.incidentNumberWithPrefix || null,
+    };
   }
 
   /**

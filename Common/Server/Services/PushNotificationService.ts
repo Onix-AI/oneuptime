@@ -1,5 +1,6 @@
 import PushNotificationRequest from "../../Types/PushNotification/PushNotificationRequest";
 import PushNotificationMessage from "../../Types/PushNotification/PushNotificationMessage";
+import PushDeviceType from "../../Types/PushNotification/PushDeviceType";
 import ObjectID from "../../Types/ObjectID";
 import logger from "../Utils/Logger";
 import UserPushService from "./UserPushService";
@@ -11,6 +12,7 @@ import {
   VapidSubject,
 } from "../EnvironmentConfig";
 import webpush from "web-push";
+import { Expo, ExpoPushMessage, ExpoPushTicket } from "expo-server-sdk";
 import PushNotificationUtil from "../Utils/PushNotificationUtil";
 import { LIMIT_PER_PROJECT } from "../../Types/Database/LimitMax";
 import UserPush from "../../Models/DatabaseModels/UserPush";
@@ -41,6 +43,7 @@ export interface PushNotificationOptions {
 
 export default class PushNotificationService {
   public static isWebPushInitialized = false;
+  private static expoClient: Expo = new Expo();
 
   public static initializeWebPush(): void {
     if (this.isWebPushInitialized) {
@@ -76,13 +79,8 @@ export default class PushNotificationService {
       throw new Error("No devices provided");
     }
 
-    if (request.deviceType !== "web") {
-      logger.error(`Unsupported device type: ${request.deviceType}`);
-      throw new Error("Only web push notifications are supported");
-    }
-
     logger.info(
-      `Sending web push notifications to ${request.devices.length} devices`,
+      `Sending ${request.deviceType} push notifications to ${request.devices.length} devices`,
     );
     logger.info(`Notification message: ${JSON.stringify(request.message)}`);
 
@@ -98,9 +96,25 @@ export default class PushNotificationService {
     const promises: Promise<void>[] = [];
 
     for (const device of request.devices) {
-      promises.push(
-        this.sendWebPushNotification(device.token, request.message, options),
-      );
+      if (request.deviceType === PushDeviceType.Web) {
+        promises.push(
+          this.sendWebPushNotification(device.token, request.message, options),
+        );
+      } else if (
+        request.deviceType === PushDeviceType.iOS ||
+        request.deviceType === PushDeviceType.Android
+      ) {
+        promises.push(
+          this.sendExpoPushNotification(
+            device.token,
+            request.message,
+            request.deviceType,
+            options,
+          ),
+        );
+      } else {
+        logger.error(`Unsupported device type: ${request.deviceType}`);
+      }
     }
 
     const results: Array<any> = await Promise.allSettled(promises);
@@ -314,6 +328,81 @@ export default class PushNotificationService {
     }
   }
 
+  private static async sendExpoPushNotification(
+    expoPushToken: string,
+    message: PushNotificationMessage,
+    deviceType: PushDeviceType,
+    _options: PushNotificationOptions,
+  ): Promise<void> {
+    if (!Expo.isExpoPushToken(expoPushToken)) {
+      throw new Error(
+        `Invalid Expo push token for ${deviceType} device: ${expoPushToken}`,
+      );
+    }
+
+    try {
+      const dataPayload: { [key: string]: string } = {};
+      if (message.data) {
+        for (const key of Object.keys(message.data)) {
+          dataPayload[key] = String(message.data[key]);
+        }
+      }
+      if (message.url || message.clickAction) {
+        dataPayload["url"] = message.url || message.clickAction || "";
+      }
+
+      const channelId: string =
+        deviceType === PushDeviceType.Android ? "oncall_high" : "default";
+
+      const expoPushMessage: ExpoPushMessage = {
+        to: expoPushToken,
+        title: message.title,
+        body: message.body,
+        data: dataPayload,
+        sound: "default",
+        priority: "high",
+        channelId: channelId,
+      };
+
+      const tickets: ExpoPushTicket[] =
+        await this.expoClient.sendPushNotificationsAsync([expoPushMessage]);
+
+      const ticket: ExpoPushTicket | undefined = tickets[0];
+
+      if (ticket && ticket.status === "error") {
+        const errorTicket: ExpoPushTicket & {
+          message?: string;
+          details?: { error?: string };
+        } = ticket as ExpoPushTicket & {
+          message?: string;
+          details?: { error?: string };
+        };
+        logger.error(
+          `Expo push notification error for ${deviceType} device: ${errorTicket.message}`,
+        );
+
+        if (errorTicket.details?.error === "DeviceNotRegistered") {
+          logger.info(
+            "Expo push token is no longer valid (DeviceNotRegistered)",
+          );
+        }
+
+        throw new Error(
+          `Expo push notification failed: ${errorTicket.message}`,
+        );
+      }
+
+      logger.info(
+        `Expo push notification sent successfully to ${deviceType} device`,
+      );
+    } catch (error: any) {
+      logger.error(
+        `Failed to send Expo push notification to ${deviceType} device: ${error.message}`,
+      );
+      throw error;
+    }
+  }
+
   public static async sendPushNotificationToUser(
     userId: ObjectID,
     projectId: ObjectID,
@@ -342,33 +431,46 @@ export default class PushNotificationService {
 
     if (userPushDevices.length === 0) {
       logger.info(
-        `No verified web push devices found for user ${userId.toString()}`,
+        `No verified push devices found for user ${userId.toString()}`,
       );
       return;
     }
 
-    // Get web devices with tokens and names
-    const webDevices: Array<{ token: string; name?: string }> = [];
+    // Group devices by type
+    const devicesByType: Map<
+      string,
+      Array<{ token: string; name?: string }>
+    > = new Map();
 
     for (const device of userPushDevices) {
-      if (device.deviceType === "web") {
-        webDevices.push({
-          token: device.deviceToken!,
-          name: device.deviceName || "Unknown Device",
-        });
+      const type: string = device.deviceType || PushDeviceType.Web;
+      if (!devicesByType.has(type)) {
+        devicesByType.set(type, []);
+      }
+      devicesByType.get(type)!.push({
+        token: device.deviceToken!,
+        name: device.deviceName || "Unknown Device",
+      });
+    }
+
+    // Send notifications to each device type group
+    const sendPromises: Promise<void>[] = [];
+
+    for (const [deviceType, devices] of devicesByType.entries()) {
+      if (devices.length > 0) {
+        sendPromises.push(
+          this.sendPushNotification(
+            {
+              devices: devices,
+              message: message,
+              deviceType: deviceType as PushDeviceType,
+            },
+            options,
+          ),
+        );
       }
     }
 
-    // Send notifications to web devices
-    if (webDevices.length > 0) {
-      await this.sendPushNotification(
-        {
-          devices: webDevices,
-          message: message,
-          deviceType: "web",
-        },
-        options,
-      );
-    }
+    await Promise.allSettled(sendPromises);
   }
 }

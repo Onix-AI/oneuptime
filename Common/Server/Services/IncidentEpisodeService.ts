@@ -33,11 +33,15 @@ import User from "../../Models/DatabaseModels/User";
 import { LIMIT_PER_PROJECT } from "../../Types/Database/LimitMax";
 import NotificationRuleWorkspaceChannel from "../../Types/Workspace/NotificationRules/NotificationRuleWorkspaceChannel";
 import WorkspaceType from "../../Types/Workspace/WorkspaceType";
+import IncidentEpisodeWorkspaceMessages from "../Utils/Workspace/WorkspaceMessages/IncidentEpisode";
+import { MessageBlocksByWorkspaceType } from "./WorkspaceNotificationRuleService";
 import IncidentService from "./IncidentService";
-import Semaphore, { SemaphoreMutex } from "../Infrastructure/Semaphore";
 import OnCallDutyPolicyService from "./OnCallDutyPolicyService";
 import OnCallDutyPolicy from "../../Models/DatabaseModels/OnCallDutyPolicy";
 import UserNotificationEventType from "../../Types/UserNotification/UserNotificationEventType";
+import IncidentGroupingRuleService from "./IncidentGroupingRuleService";
+import ProjectService from "./ProjectService";
+import IncidentGroupingRule from "../../Models/DatabaseModels/IncidentGroupingRule";
 
 export class Service extends DatabaseService<Model> {
   public constructor() {
@@ -45,32 +49,6 @@ export class Service extends DatabaseService<Model> {
     if (IsBillingEnabled) {
       this.hardDeleteItemsOlderThanInDays("createdAt", 3 * 365); // 3 years
     }
-  }
-
-  @CaptureSpan()
-  public async getExistingEpisodeNumberForProject(data: {
-    projectId: ObjectID;
-  }): Promise<number> {
-    const lastEpisode: Model | null = await this.findOneBy({
-      query: {
-        projectId: data.projectId,
-      },
-      select: {
-        episodeNumber: true,
-      },
-      sort: {
-        episodeNumber: SortOrder.Descending,
-      },
-      props: {
-        isRoot: true,
-      },
-    });
-
-    if (!lastEpisode) {
-      return 0;
-    }
-
-    return lastEpisode.episodeNumber ? Number(lastEpisode.episodeNumber) : 0;
   }
 
   @CaptureSpan()
@@ -86,84 +64,77 @@ export class Service extends DatabaseService<Model> {
     const projectId: ObjectID =
       createBy.props.tenantId || createBy.data.projectId!;
 
-    let mutex: SemaphoreMutex | null = null;
+    // Get the created state for episodes
+    const incidentState: IncidentState | null =
+      await IncidentStateService.findOneBy({
+        query: {
+          projectId: projectId,
+          isCreatedState: true,
+        },
+        select: {
+          _id: true,
+        },
+        props: {
+          isRoot: true,
+        },
+      });
 
-    try {
-      // Acquire mutex to prevent race conditions when generating episode numbers
-      try {
-        mutex = await Semaphore.lock({
-          key: projectId.toString(),
-          namespace: "IncidentEpisode.create",
-        });
-      } catch (err) {
-        logger.error(err);
-      }
+    if (!incidentState || !incidentState.id) {
+      throw new BadDataException(
+        "Created incident state not found for this project. Please add created incident state from settings.",
+      );
+    }
 
-      // Get the created state for episodes
-      const incidentState: IncidentState | null =
-        await IncidentStateService.findOneBy({
-          query: {
-            projectId: projectId,
-            isCreatedState: true,
-          },
+    createBy.data.currentIncidentStateId = incidentState.id;
+
+    // Auto-generate episode number
+    const episodeCounterResult: {
+      counter: number;
+      prefix: string | undefined;
+    } = await ProjectService.incrementAndGetIncidentEpisodeCounter(projectId);
+
+    createBy.data.episodeNumber = episodeCounterResult.counter;
+    createBy.data.episodeNumberWithPrefix = episodeCounterResult.prefix
+      ? `${episodeCounterResult.prefix}${episodeCounterResult.counter}`
+      : `#${episodeCounterResult.counter}`;
+
+    // Set initial lastIncidentAddedAt
+    if (!createBy.data.lastIncidentAddedAt) {
+      createBy.data.lastIncidentAddedAt = OneUptimeDate.getCurrentDate();
+    }
+
+    // Set declaredAt if not provided
+    if (!createBy.data.declaredAt) {
+      createBy.data.declaredAt = OneUptimeDate.getCurrentDate();
+    }
+
+    // Copy showEpisodeOnStatusPage from grouping rule if available
+    if (createBy.data.incidentGroupingRuleId) {
+      const groupingRule: IncidentGroupingRule | null =
+        await IncidentGroupingRuleService.findOneById({
+          id: createBy.data.incidentGroupingRuleId,
           select: {
-            _id: true,
+            showEpisodeOnStatusPage: true,
           },
           props: {
             isRoot: true,
           },
         });
 
-      if (!incidentState || !incidentState.id) {
-        throw new BadDataException(
-          "Created incident state not found for this project. Please add created incident state from settings.",
-        );
+      if (groupingRule) {
+        createBy.data.isVisibleOnStatusPage =
+          groupingRule.showEpisodeOnStatusPage ?? true;
       }
-
-      createBy.data.currentIncidentStateId = incidentState.id;
-
-      // Auto-generate episode number
-      const episodeNumberForThisEpisode: number =
-        (await this.getExistingEpisodeNumberForProject({
-          projectId: projectId,
-        })) + 1;
-
-      createBy.data.episodeNumber = episodeNumberForThisEpisode;
-
-      // Set initial lastIncidentAddedAt
-      if (!createBy.data.lastIncidentAddedAt) {
-        createBy.data.lastIncidentAddedAt = OneUptimeDate.getCurrentDate();
-      }
-
-      return { createBy, carryForward: { mutex } };
-    } catch (error) {
-      // Release the mutex if it was acquired and an error occurred
-      if (mutex) {
-        try {
-          await Semaphore.release(mutex);
-        } catch (err) {
-          logger.error(err);
-        }
-      }
-      throw error;
     }
+
+    return { createBy, carryForward: null };
   }
 
   @CaptureSpan()
   protected override async onCreateSuccess(
-    onCreate: OnCreate<Model>,
+    _onCreate: OnCreate<Model>,
     createdItem: Model,
   ): Promise<Model> {
-    // Release the mutex acquired in onBeforeCreate
-    const mutex: SemaphoreMutex | null = onCreate.carryForward?.mutex || null;
-    if (mutex) {
-      try {
-        await Semaphore.release(mutex);
-      } catch (err) {
-        logger.error(err);
-      }
-    }
-
     if (!createdItem.projectId) {
       throw new BadDataException("projectId is required");
     }
@@ -178,6 +149,17 @@ export class Service extends DatabaseService<Model> {
 
     // Create initial state timeline entry
     Promise.resolve()
+      .then(async () => {
+        try {
+          if (createdItem.projectId && createdItem.id) {
+            await this.handleEpisodeWorkspaceOperationsAsync(createdItem);
+          }
+        } catch (error) {
+          logger.error(
+            `Workspace operations failed in IncidentEpisodeService.onCreateSuccess: ${error}`,
+          );
+        }
+      })
       .then(async () => {
         try {
           await this.changeEpisodeState({
@@ -225,12 +207,57 @@ export class Service extends DatabaseService<Model> {
   }
 
   @CaptureSpan()
+  private async handleEpisodeWorkspaceOperationsAsync(
+    createdItem: Model,
+  ): Promise<void> {
+    try {
+      if (!createdItem.projectId || !createdItem.id) {
+        throw new BadDataException(
+          "projectId and id are required for workspace operations",
+        );
+      }
+
+      const workspaceResult: {
+        channelsCreated: Array<NotificationRuleWorkspaceChannel>;
+      } | null =
+        await IncidentEpisodeWorkspaceMessages.createChannelsAndInviteUsersToChannels(
+          {
+            projectId: createdItem.projectId,
+            incidentEpisodeId: createdItem.id,
+            episodeNumber: createdItem.episodeNumber || 0,
+            ...(createdItem.episodeNumberWithPrefix
+              ? {
+                  episodeNumberWithPrefix: createdItem.episodeNumberWithPrefix,
+                }
+              : {}),
+          },
+        );
+
+      if (workspaceResult && workspaceResult.channelsCreated?.length > 0) {
+        await this.updateOneById({
+          id: createdItem.id,
+          data: {
+            postUpdatesToWorkspaceChannels:
+              workspaceResult.channelsCreated || [],
+          },
+          props: {
+            isRoot: true,
+          },
+        });
+      }
+    } catch (error) {
+      logger.error(`Error in handleEpisodeWorkspaceOperationsAsync: ${error}`);
+      throw error;
+    }
+  }
+
+  @CaptureSpan()
   private async createEpisodeCreatedFeed(episode: Model): Promise<void> {
     if (!episode.id || !episode.projectId) {
       return;
     }
 
-    let feedInfoInMarkdown: string = `#### Episode ${episode.episodeNumber?.toString()} Created
+    let feedInfoInMarkdown: string = `#### Episode ${episode.episodeNumberWithPrefix || "#" + episode.episodeNumber?.toString()} Created
 
 **${episode.title || "No title provided."}**
 
@@ -244,6 +271,14 @@ export class Service extends DatabaseService<Model> {
       feedInfoInMarkdown += `This episode was manually created.\n\n`;
     }
 
+    const episodeCreateMessageBlocks: Array<MessageBlocksByWorkspaceType> =
+      await IncidentEpisodeWorkspaceMessages.getIncidentEpisodeCreateMessageBlocks(
+        {
+          incidentEpisodeId: episode.id,
+          projectId: episode.projectId,
+        },
+      );
+
     await IncidentEpisodeFeedService.createIncidentEpisodeFeedItem({
       incidentEpisodeId: episode.id,
       projectId: episode.projectId,
@@ -251,6 +286,10 @@ export class Service extends DatabaseService<Model> {
       displayColor: Red500,
       feedInfoInMarkdown: feedInfoInMarkdown,
       userId: episode.createdByUserId || undefined,
+      workspaceNotification: {
+        appendMessageBlocks: episodeCreateMessageBlocks,
+        sendWorkspaceNotification: true,
+      },
     });
   }
 
@@ -640,6 +679,18 @@ export class Service extends DatabaseService<Model> {
       },
       cascadeToIncidents: cascadeToIncidents,
     });
+
+    // Clear resolved timestamp and allIncidentsResolvedAt when episode is reopened
+    await this.updateOneById({
+      id: episodeId,
+      data: {
+        resolvedAt: null,
+        allIncidentsResolvedAt: null,
+      },
+      props: {
+        isRoot: true,
+      },
+    });
   }
 
   @CaptureSpan()
@@ -743,15 +794,65 @@ export class Service extends DatabaseService<Model> {
       },
     });
 
-    await this.updateOneById({
+    const incidentCount: number = count.toNumber();
+
+    // Get the episode to check for templates
+    const episode: Model | null = await this.findOneById({
       id: episodeId,
-      data: {
-        incidentCount: count.toNumber(),
+      select: {
+        titleTemplate: true,
+        descriptionTemplate: true,
+        title: true,
+        description: true,
       },
       props: {
         isRoot: true,
       },
     });
+
+    const updateData: {
+      incidentCount: number;
+      title?: string;
+      description?: string;
+    } = {
+      incidentCount: incidentCount,
+    };
+
+    // Update title with dynamic variables if template exists
+    if (episode?.titleTemplate) {
+      updateData.title = this.renderTemplateWithDynamicValues(
+        episode.titleTemplate,
+        incidentCount,
+      );
+    }
+
+    // Update description with dynamic variables if template exists
+    if (episode?.descriptionTemplate) {
+      updateData.description = this.renderTemplateWithDynamicValues(
+        episode.descriptionTemplate,
+        incidentCount,
+      );
+    }
+
+    await this.updateOneById({
+      id: episodeId,
+      data: updateData,
+      props: {
+        isRoot: true,
+      },
+    });
+  }
+
+  private renderTemplateWithDynamicValues(
+    template: string,
+    incidentCount: number,
+  ): string {
+    let result: string = template;
+
+    // Replace dynamic variables
+    result = result.replace(/\{\{incidentCount\}\}/g, incidentCount.toString());
+
+    return result;
   }
 
   @CaptureSpan()
@@ -921,21 +1022,30 @@ export class Service extends DatabaseService<Model> {
   }
 
   @CaptureSpan()
-  public getWorkspaceChannelForEpisode(
-    episode: Model,
-    workspaceType: WorkspaceType,
-  ): Array<NotificationRuleWorkspaceChannel> {
-    if (
-      !episode.postUpdatesToWorkspaceChannels ||
-      !Array.isArray(episode.postUpdatesToWorkspaceChannels) ||
-      episode.postUpdatesToWorkspaceChannels.length === 0
-    ) {
-      return [];
+  public async getWorkspaceChannelForEpisode(data: {
+    episodeId: ObjectID;
+    workspaceType?: WorkspaceType | null;
+  }): Promise<Array<NotificationRuleWorkspaceChannel>> {
+    const episode: Model | null = await this.findOneById({
+      id: data.episodeId,
+      select: {
+        postUpdatesToWorkspaceChannels: true,
+      },
+      props: {
+        isRoot: true,
+      },
+    });
+
+    if (!episode) {
+      throw new BadDataException("Incident Episode not found.");
     }
 
-    return episode.postUpdatesToWorkspaceChannels.filter(
+    return (episode.postUpdatesToWorkspaceChannels || []).filter(
       (channel: NotificationRuleWorkspaceChannel) => {
-        return channel.workspaceType === workspaceType;
+        if (!data.workspaceType) {
+          return true;
+        }
+        return channel.workspaceType === data.workspaceType;
       },
     );
   }
@@ -1021,13 +1131,15 @@ export class Service extends DatabaseService<Model> {
   }
 
   @CaptureSpan()
-  public async getEpisodeNumber(data: {
-    episodeId: ObjectID;
-  }): Promise<number | null> {
+  public async getEpisodeNumber(data: { episodeId: ObjectID }): Promise<{
+    number: number | null;
+    numberWithPrefix: string | null;
+  }> {
     const episode: Model | null = await this.findOneById({
       id: data.episodeId,
       select: {
         episodeNumber: true,
+        episodeNumberWithPrefix: true,
       },
       props: {
         isRoot: true,
@@ -1038,7 +1150,10 @@ export class Service extends DatabaseService<Model> {
       throw new BadDataException("Episode not found.");
     }
 
-    return episode.episodeNumber ? Number(episode.episodeNumber) : null;
+    return {
+      number: episode.episodeNumber ? Number(episode.episodeNumber) : null,
+      numberWithPrefix: episode.episodeNumberWithPrefix || null,
+    };
   }
 }
 

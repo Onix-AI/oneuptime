@@ -23,6 +23,7 @@ import WhatsAppLogAPI from "./WhatsAppLogAPI";
 // Import API
 import ResellerPlanAPI from "Common/Server/API/ResellerPlanAPI";
 import EnterpriseLicenseAPI from "Common/Server/API/EnterpriseLicenseAPI";
+import OpenSourceDeploymentAPI from "Common/Server/API/OpenSourceDeploymentAPI";
 import MonitorAPI from "Common/Server/API/MonitorAPI";
 import ShortLinkAPI from "Common/Server/API/ShortLinkAPI";
 import StatusPageAPI from "Common/Server/API/StatusPageAPI";
@@ -35,6 +36,7 @@ import UserWebAuthnAPI from "Common/Server/API/UserWebAuthnAPI";
 import MonitorTest from "Common/Models/DatabaseModels/MonitorTest";
 import IncidentInternalNoteAPI from "Common/Server/API/IncidentInternalNoteAPI";
 import IncidentPublicNoteAPI from "Common/Server/API/IncidentPublicNoteAPI";
+import IncidentEpisodePublicNoteAPI from "Common/Server/API/IncidentEpisodePublicNoteAPI";
 import ScheduledMaintenanceInternalNoteAPI from "Common/Server/API/ScheduledMaintenanceInternalNoteAPI";
 import ScheduledMaintenancePublicNoteAPI from "Common/Server/API/ScheduledMaintenancePublicNoteAPI";
 import IncidentAPI from "Common/Server/API/IncidentAPI";
@@ -2006,6 +2008,10 @@ const BaseAPIFeatureSet: FeatureSet = {
       `/${APP_NAME.toLocaleLowerCase()}`,
       new EnterpriseLicenseAPI().getRouter(),
     );
+    app.use(
+      `/${APP_NAME.toLocaleLowerCase()}`,
+      new OpenSourceDeploymentAPI().getRouter(),
+    );
     app.use(`/${APP_NAME.toLocaleLowerCase()}`, new SlackAPI().getRouter());
     app.use(
       `/${APP_NAME.toLocaleLowerCase()}`,
@@ -2138,6 +2144,11 @@ const BaseAPIFeatureSet: FeatureSet = {
     app.use(
       `/${APP_NAME.toLocaleLowerCase()}`,
       new IncidentPublicNoteAPI().getRouter(),
+    );
+
+    app.use(
+      `/${APP_NAME.toLocaleLowerCase()}`,
+      new IncidentEpisodePublicNoteAPI().getRouter(),
     );
 
     app.use(

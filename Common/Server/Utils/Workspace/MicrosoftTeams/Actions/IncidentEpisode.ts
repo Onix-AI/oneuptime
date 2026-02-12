@@ -403,7 +403,7 @@ export default class MicrosoftTeamsIncidentEpisodeActions {
         );
       if (!card) {
         await turnContext.sendActivity(
-          "No on-call policies found in the project",
+          "No on-call policies have been configured for this project yet. Please add an on-call policy in the OneUptime Dashboard under On-Call Duty > Policies to use this feature.",
         );
         return;
       }
@@ -505,11 +505,12 @@ export default class MicrosoftTeamsIncidentEpisodeActions {
         // Update the state
         const episodeId: ObjectID = new ObjectID(actionValue);
 
-        await IncidentEpisodeService.updateOneById({
-          id: episodeId,
-          data: {
-            currentIncidentStateId: new ObjectID(incidentStateId.toString()),
-          },
+        await IncidentEpisodeService.changeEpisodeState({
+          projectId: projectId,
+          episodeId: episodeId,
+          incidentStateId: new ObjectID(incidentStateId.toString()),
+          notifyOwners: true,
+          rootCause: "State changed via Microsoft Teams.",
           props: {
             isRoot: true,
           },

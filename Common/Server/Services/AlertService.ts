@@ -55,6 +55,7 @@ import MetricType from "../../Models/DatabaseModels/MetricType";
 import Dictionary from "../../Types/Dictionary";
 import OnCallDutyPolicy from "../../Models/DatabaseModels/OnCallDutyPolicy";
 import AlertGroupingEngineService from "./AlertGroupingEngineService";
+import ProjectService from "./ProjectService";
 
 export class Service extends DatabaseService<Model> {
   public constructor() {
@@ -107,33 +108,6 @@ export class Service extends DatabaseService<Model> {
     }
 
     return false;
-  }
-
-  @CaptureSpan()
-  public async getExistingAlertNumberForProject(data: {
-    projectId: ObjectID;
-  }): Promise<number> {
-    // get last alert number.
-    const lastAlert: Model | null = await this.findOneBy({
-      query: {
-        projectId: data.projectId,
-      },
-      select: {
-        alertNumber: true,
-      },
-      sort: {
-        createdAt: SortOrder.Descending,
-      },
-      props: {
-        isRoot: true,
-      },
-    });
-
-    if (!lastAlert) {
-      return 0;
-    }
-
-    return lastAlert.alertNumber ? Number(lastAlert.alertNumber) : 0;
   }
 
   @CaptureSpan()
@@ -220,12 +194,15 @@ export class Service extends DatabaseService<Model> {
 
     createBy.data.currentAlertStateId = alertState.id;
 
-    const alertNumberForThisAlert: number =
-      (await this.getExistingAlertNumberForProject({
-        projectId: projectId,
-      })) + 1;
+    const alertCounterResult: {
+      counter: number;
+      prefix: string | undefined;
+    } = await ProjectService.incrementAndGetAlertCounter(projectId);
 
-    createBy.data.alertNumber = alertNumberForThisAlert;
+    createBy.data.alertNumber = alertCounterResult.counter;
+    createBy.data.alertNumberWithPrefix = alertCounterResult.prefix
+      ? `${alertCounterResult.prefix}${alertCounterResult.counter}`
+      : `#${alertCounterResult.counter}`;
 
     if (
       (createBy.data.createdByUserId ||
@@ -391,6 +368,9 @@ export class Service extends DatabaseService<Model> {
           projectId: createdItem.projectId,
           alertId: createdItem.id,
           alertNumber: createdItem.alertNumber!,
+          ...(createdItem.alertNumberWithPrefix
+            ? { alertNumberWithPrefix: createdItem.alertNumberWithPrefix }
+            : {}),
         });
 
       logger.debug("Alert created. Workspace result:");
@@ -424,6 +404,7 @@ export class Service extends DatabaseService<Model> {
         select: {
           projectId: true,
           alertNumber: true,
+          alertNumberWithPrefix: true,
           title: true,
           description: true,
           alertSeverity: {
@@ -460,7 +441,7 @@ export class Service extends DatabaseService<Model> {
       const createdByUserId: ObjectID | undefined | null =
         alert.createdByUserId || alert.createdByUser?.id;
 
-      let feedInfoInMarkdown: string = `#### 🚨 Alert ${alert.alertNumber?.toString()} Created: 
+      let feedInfoInMarkdown: string = `#### 🚨 Alert ${alert.alertNumberWithPrefix || "#" + alert.alertNumber?.toString()} Created:
            
 **${alert.title || "No title provided."}**:
      
@@ -800,6 +781,7 @@ ${alert.remediationNotes || "No remediation notes provided."}
           select: {
             projectId: true,
             alertNumber: true,
+            alertNumberWithPrefix: true,
           },
           props: {
             isRoot: true,
@@ -808,8 +790,10 @@ ${alert.remediationNotes || "No remediation notes provided."}
 
         const projectId: ObjectID = alert!.projectId!;
         const alertNumber: number = alert!.alertNumber!;
+        const alertNumberWithPrefix: string | undefined =
+          alert!.alertNumberWithPrefix || undefined;
 
-        let feedInfoInMarkdown: string = `**[Alert ${alertNumber}](${(await this.getAlertLinkInDashboard(projectId!, alertId!)).toString()}) was updated.**`;
+        let feedInfoInMarkdown: string = `**[Alert ${alertNumberWithPrefix || "#" + alertNumber}](${(await this.getAlertLinkInDashboard(projectId!, alertId!)).toString()}) was updated.**`;
 
         const createdByUserId: ObjectID | undefined | null =
           onUpdate.updateBy.props.userId;
@@ -1404,13 +1388,15 @@ ${alertSeverity.name}
   }
 
   @CaptureSpan()
-  public async getAlertNumber(data: {
-    alertId: ObjectID;
-  }): Promise<number | null> {
+  public async getAlertNumber(data: { alertId: ObjectID }): Promise<{
+    number: number | null;
+    numberWithPrefix: string | null;
+  }> {
     const alert: Model | null = await this.findOneById({
       id: data.alertId,
       select: {
         alertNumber: true,
+        alertNumberWithPrefix: true,
       },
       props: {
         isRoot: true,
@@ -1421,7 +1407,10 @@ ${alertSeverity.name}
       throw new BadDataException("Alert not found.");
     }
 
-    return alert.alertNumber ? Number(alert.alertNumber) : null;
+    return {
+      number: alert.alertNumber ? Number(alert.alertNumber) : null,
+      numberWithPrefix: alert.alertNumberWithPrefix || null,
+    };
   }
 
   @CaptureSpan()
