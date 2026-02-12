@@ -18,6 +18,8 @@ Onix/
 │   ├── cloud-run/                 Cloud Run service config (managed by Cloud Functions)
 │   └── cloud-scheduler/           Scheduler job config
 │
+├── patches/                       Patched TypeScript files mounted into containers
+│
 ├── cloudflare/                    Cloudflare DNS records for onixai.ai
 │
 └── doppler/                       Doppler secret management config
