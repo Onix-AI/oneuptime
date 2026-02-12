@@ -1,0 +1,15 @@
+allowSubnetCidrRoutesOverlap: false
+creationTimestamp: '2026-02-03T18:15:15.884-08:00'
+fingerprint: vOPy7OLKWLU=
+gatewayAddress: 10.10.0.1
+id: '1412216513065063772'
+ipCidrRange: 10.10.0.0/24
+kind: compute#subnetwork
+name: oneuptime-subnet
+network: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/networks/oneuptime-vpc
+privateIpGoogleAccess: true
+privateIpv6GoogleAccess: DISABLE_GOOGLE_ACCESS
+purpose: PRIVATE
+region: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/regions/northamerica-northeast1
+selfLink: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/regions/northamerica-northeast1/subnetworks/oneuptime-subnet
+stackType: IPV4_ONLY

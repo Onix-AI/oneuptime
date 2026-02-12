@@ -1,0 +1,8 @@
+etag: BwZKpdNg6ug=
+includedPermissions:
+- compute.instances.get
+- compute.instances.start
+- compute.zoneOperations.list
+name: projects/onix-ai-oneuptime-production/roles/vmAutoRestart
+stage: ALPHA
+title: VM Auto-Restart

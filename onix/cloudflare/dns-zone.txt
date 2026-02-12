@@ -1,0 +1,13 @@
+;; OneUptime-related DNS records for onixai.ai
+;; Managed in Cloudflare (Full Strict SSL mode)
+;; Exported: 2026-02-12
+
+;; A Records
+monitor.onixai.ai.	1	IN	A	34.19.198.23	; proxied
+
+;; CNAME Records
+internal-status.onixai.ai.	1	IN	CNAME	monitor.onixai.ai.	; proxied
+status.onixai.ai.	1	IN	CNAME	monitor.onixai.ai.	; proxied
+
+;; TXT Records
+onixai.ai.	1	IN	TXT	"oneuptime-verification-KNTaSrEdAWWEzXDetlBs"

@@ -1,0 +1,28 @@
+# Doppler Configuration for OneUptime
+# This file documents the Doppler setup. No secret values are stored here.
+
+project: oneuptime
+description: Uptime monitoring application
+
+config:
+  name: production
+  root: true
+  locked: true
+  environment: production
+
+# Doppler auto-syncs secrets to GCP Secret Manager.
+# Each secret is created in GCP with a "doppler-" prefix.
+# For example, Doppler secret "DATABASE_PASSWORD" becomes "doppler-DATABASE_PASSWORD" in GCP.
+integration:
+  type: gcp-secret-manager
+  gcp_project: onix-ai-oneuptime-production
+  service_account: doppler-secret-manager@onix-ai-oneuptime-production.iam.gserviceaccount.com
+  # The SA has conditional IAM: roles/secretmanager.admin only for secrets
+  # where resource.name matches the "doppler-" prefix.
+  iam_condition:
+    title: doppler-secrets-only
+    expression: resource.name.extract("secrets/{rest}").startsWith("doppler-")
+
+# On the VM, secrets are loaded at startup by /opt/oneuptime/fetch-secrets.sh
+# which reads from GCP Secret Manager and writes them to the local config.env file.
+# The startup script in VM metadata runs: ./fetch-secrets.sh && npm start

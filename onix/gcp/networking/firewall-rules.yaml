@@ -1,0 +1,117 @@
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '443'
+creationTimestamp: '2026-02-03T18:18:26.126-08:00'
+description: ''
+direction: INGRESS
+disabled: false
+id: '4491987026717905565'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: allow-cloudflare
+network: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/networks/oneuptime-vpc
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/firewalls/allow-cloudflare
+sourceRanges:
+- 173.245.48.0/20
+- 103.21.244.0/22
+- 103.22.200.0/22
+- 103.31.4.0/22
+- 141.101.64.0/18
+- 108.162.192.0/18
+- 190.93.240.0/20
+- 188.114.96.0/20
+- 197.234.240.0/22
+- 198.41.128.0/17
+- 162.158.0.0/15
+- 104.16.0.0/13
+- 104.24.0.0/14
+- 172.64.0.0/13
+- 131.0.72.0/22
+targetTags:
+- oneuptime-vm
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '22'
+creationTimestamp: '2026-02-03T18:18:42.450-08:00'
+description: ''
+direction: INGRESS
+disabled: false
+id: '3628729382252515949'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: allow-ssh-iap
+network: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/networks/oneuptime-vpc
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/firewalls/allow-ssh-iap
+sourceRanges:
+- 35.235.240.0/20
+targetTags:
+- oneuptime-vm
+---
+creationTimestamp: '2026-02-03T18:18:57.141-08:00'
+denied:
+- IPProtocol: all
+description: ''
+direction: INGRESS
+disabled: false
+id: '6804706604990009982'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: deny-all-ingress
+network: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/networks/oneuptime-vpc
+priority: 65534
+selfLink: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/firewalls/deny-all-ingress
+sourceRanges:
+- 0.0.0.0/0
+targetTags:
+- oneuptime-vm
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '80'
+creationTimestamp: '2026-02-03T19:15:15.213-08:00'
+description: ''
+direction: INGRESS
+disabled: false
+id: '4841752876788156204'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: oneuptime-vpc-allow-http
+network: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/networks/oneuptime-vpc
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/firewalls/oneuptime-vpc-allow-http
+sourceRanges:
+- 0.0.0.0/0
+targetTags:
+- http-server
+---
+allowed:
+- IPProtocol: tcp
+  ports:
+  - '443'
+creationTimestamp: '2026-02-03T19:15:15.252-08:00'
+description: ''
+direction: INGRESS
+disabled: false
+id: '5334607907376793388'
+kind: compute#firewall
+logConfig:
+  enable: false
+name: oneuptime-vpc-allow-https
+network: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/networks/oneuptime-vpc
+priority: 1000
+selfLink: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/firewalls/oneuptime-vpc-allow-https
+sourceRanges:
+- 0.0.0.0/0
+targetTags:
+- https-server

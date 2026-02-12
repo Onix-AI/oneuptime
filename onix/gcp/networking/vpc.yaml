@@ -1,0 +1,15 @@
+autoCreateSubnetworks: false
+creationTimestamp: '2026-02-03T18:14:27.932-08:00'
+id: '2471229064551011692'
+kind: compute#network
+name: oneuptime-vpc
+networkFirewallPolicyEnforcementOrder: AFTER_CLASSIC_FIREWALL
+routingConfig:
+  bgpBestPathSelectionMode: LEGACY
+  routingMode: REGIONAL
+selfLink: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/networks/oneuptime-vpc
+selfLinkWithId: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/networks/2471229064551011692
+subnetworks:
+- https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/regions/northamerica-northeast1/subnetworks/oneuptime-subnet
+x_gcloud_bgp_routing_mode: REGIONAL
+x_gcloud_subnet_mode: CUSTOM

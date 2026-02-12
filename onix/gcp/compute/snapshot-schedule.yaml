@@ -1,0 +1,21 @@
+creationTimestamp: '2026-02-06T11:12:18.378-08:00'
+description: Daily (2-3am EST) snapshots for the last 10 days
+id: '2609705463078159357'
+kind: compute#resourcePolicy
+name: daily-last-10-days
+region: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/regions/northamerica-northeast1
+selfLink: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/regions/northamerica-northeast1/resourcePolicies/daily-last-10-days
+snapshotSchedulePolicy:
+  retentionPolicy:
+    maxRetentionDays: 10
+    onSourceDiskDelete: KEEP_AUTO_SNAPSHOTS
+  schedule:
+    dailySchedule:
+      daysInCycle: 1
+      duration: PT14400S
+      startTime: 07:00
+  snapshotProperties:
+    guestFlush: false
+    storageLocations:
+    - northamerica-northeast1
+status: READY

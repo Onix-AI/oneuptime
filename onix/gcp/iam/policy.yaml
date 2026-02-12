@@ -1,0 +1,82 @@
+bindings:
+- members:
+  - serviceAccount:vm-auto-restart@onix-ai-oneuptime-production.iam.gserviceaccount.com
+  role: projects/onix-ai-oneuptime-production/roles/vmAutoRestart
+- members:
+  - serviceAccount:191947873405-compute@developer.gserviceaccount.com
+  role: roles/artifactregistry.reader
+- members:
+  - serviceAccount:service-191947873405@gcp-sa-artifactregistry.iam.gserviceaccount.com
+  role: roles/artifactregistry.serviceAgent
+- members:
+  - serviceAccount:191947873405-compute@developer.gserviceaccount.com
+  - serviceAccount:191947873405@cloudbuild.gserviceaccount.com
+  role: roles/artifactregistry.writer
+- members:
+  - serviceAccount:191947873405-compute@developer.gserviceaccount.com
+  - serviceAccount:191947873405@cloudbuild.gserviceaccount.com
+  role: roles/cloudbuild.builds.builder
+- members:
+  - serviceAccount:service-191947873405@gcp-sa-cloudbuild.iam.gserviceaccount.com
+  role: roles/cloudbuild.serviceAgent
+- members:
+  - serviceAccount:service-191947873405@gcf-admin-robot.iam.gserviceaccount.com
+  role: roles/cloudfunctions.serviceAgent
+- members:
+  - serviceAccount:service-191947873405@gcp-sa-cloudscheduler.iam.gserviceaccount.com
+  role: roles/cloudscheduler.serviceAgent
+- members:
+  - deleted:serviceAccount:backup-scheduler@onix-ai-oneuptime-production.iam.gserviceaccount.com?uid=117214299891021227382
+  role: roles/compute.admin
+- members:
+  - serviceAccount:191947873405@cloudservices.gserviceaccount.com
+  role: roles/compute.instanceGroupManagerServiceAgent
+- members:
+  - serviceAccount:service-191947873405@compute-system.iam.gserviceaccount.com
+  role: roles/compute.serviceAgent
+- members:
+  - serviceAccount:service-191947873405@containerregistry.iam.gserviceaccount.com
+  role: roles/containerregistry.ServiceAgent
+- members:
+  - serviceAccount:191947873405@cloudservices.gserviceaccount.com
+  role: roles/editor
+- members:
+  - serviceAccount:191947873405-compute@developer.gserviceaccount.com
+  - serviceAccount:oneuptime-vm@onix-ai-oneuptime-production.iam.gserviceaccount.com
+  role: roles/logging.logWriter
+- members:
+  - serviceAccount:oneuptime-vm@onix-ai-oneuptime-production.iam.gserviceaccount.com
+  role: roles/monitoring.metricWriter
+- members:
+  - serviceAccount:service-191947873405@gcp-sa-osconfig.iam.gserviceaccount.com
+  role: roles/osconfig.serviceAgent
+- members:
+  - user:zachary@onixai.ai
+  role: roles/owner
+- members:
+  - serviceAccount:service-191947873405@gcp-sa-pubsub.iam.gserviceaccount.com
+  role: roles/pubsub.serviceAgent
+- members:
+  - serviceAccount:service-191947873405@serverless-robot-prod.iam.gserviceaccount.com
+  role: roles/run.serviceAgent
+- condition:
+    description: Only allow managing secrets with doppler- prefix
+    expression: resource.name.extract("secrets/{rest}").startsWith("doppler-")
+    title: doppler-secrets-only
+  members:
+  - serviceAccount:doppler-secret-manager@onix-ai-oneuptime-production.iam.gserviceaccount.com
+  role: roles/secretmanager.admin
+- members:
+  - serviceAccount:oneuptime-vm@onix-ai-oneuptime-production.iam.gserviceaccount.com
+  role: roles/secretmanager.secretAccessor
+- members:
+  - serviceAccount:191947873405-compute@developer.gserviceaccount.com
+  role: roles/storage.objectAdmin
+- members:
+  - serviceAccount:191947873405@cloudbuild.gserviceaccount.com
+  role: roles/storage.objectViewer
+- members:
+  - serviceAccount:service-191947873405@gcp-sa-workflows.iam.gserviceaccount.com
+  role: roles/workflows.serviceAgent
+etag: BwZKpgeB1F4=
+version: 3

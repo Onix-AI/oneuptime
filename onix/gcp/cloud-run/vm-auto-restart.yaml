@@ -1,0 +1,66 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  annotations:
+    cloudfunctions.googleapis.com/function-id: vm-auto-restart
+    run.googleapis.com/build-base-image: northamerica-northeast1-docker.pkg.dev/serverless-runtimes/google-22-full/runtimes/python312
+    run.googleapis.com/build-enable-automatic-updates: 'true'
+    run.googleapis.com/build-function-target: auto_restart_vm
+    run.googleapis.com/build-image-uri: northamerica-northeast1-docker.pkg.dev/onix-ai-oneuptime-production/gcf-artifacts/onix--ai--oneuptime--production__northamerica--northeast1__vm--auto--restart:version_1
+    run.googleapis.com/build-name: projects/191947873405/locations/northamerica-northeast1/builds/30248963-376b-40fc-934c-93271c440322
+    run.googleapis.com/build-service-account: projects/onix-ai-oneuptime-production/serviceAccounts/191947873405-compute@developer.gserviceaccount.com
+    run.googleapis.com/build-source-location: gs://gcf-v2-sources-191947873405-northamerica-northeast1/vm-auto-restart/function-source.zip#1770927506435402
+    run.googleapis.com/custom-audiences: '["https://northamerica-northeast1-onix-ai-oneuptime-production.cloudfunctions.net/vm-auto-restart"]'
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+    run.googleapis.com/maxScale: '100'
+    run.googleapis.com/urls: '["https://vm-auto-restart-191947873405.northamerica-northeast1.run.app","https://northamerica-northeast1-onix-ai-oneuptime-production.cloudfunctions.net/vm-auto-restart","https://vm-auto-restart-ainaujgaya-nn.a.run.app"]'
+  labels:
+    cloud.googleapis.com/location: northamerica-northeast1
+    goog-cloudfunctions-runtime: python312
+    goog-drz-cloudfunctions-id: vm-auto-restart
+    goog-drz-cloudfunctions-location: northamerica-northeast1
+    goog-managed-by: cloudfunctions
+  name: vm-auto-restart
+  namespace: '191947873405'
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/maxScale: '100'
+        cloudfunctions.googleapis.com/trigger-type: HTTP_TRIGGER
+        run.googleapis.com/base-images: '{"worker":"northamerica-northeast1-docker.pkg.dev/serverless-runtimes/google-22-full/runtimes/python312"}'
+        run.googleapis.com/client-name: cloudfunctions
+        run.googleapis.com/startup-cpu-boost: 'true'
+      labels:
+        goog-drz-cloudfunctions-id: vm-auto-restart
+        goog-drz-cloudfunctions-location: northamerica-northeast1
+        run.googleapis.com/startupProbeType: Default
+      name: vm-auto-restart-00003-cuj
+    spec:
+      containerConcurrency: 1
+      containers:
+      - env:
+        - name: LOG_EXECUTION_ID
+          value: 'true'
+        image: northamerica-northeast1-docker.pkg.dev/onix-ai-oneuptime-production/gcf-artifacts/onix--ai--oneuptime--production__northamerica--northeast1__vm--auto--restart:version_1
+        name: worker
+        ports:
+        - containerPort: 8080
+          name: http1
+        resources:
+          limits:
+            cpu: '0.0833'
+            memory: 128Mi
+        startupProbe:
+          failureThreshold: 1
+          periodSeconds: 240
+          tcpSocket:
+            port: 8080
+          timeoutSeconds: 240
+      runtimeClassName: run.googleapis.com/linux-base-image-update
+      serviceAccountName: vm-auto-restart@onix-ai-oneuptime-production.iam.gserviceaccount.com
+      timeoutSeconds: 60
+  traffic:
+  - latestRevision: true
+    percent: 100

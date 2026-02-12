@@ -1,0 +1,14 @@
+address: 34.19.198.23
+addressType: EXTERNAL
+creationTimestamp: '2026-02-03T18:19:19.633-08:00'
+description: ''
+id: '6413129317012673096'
+kind: compute#address
+labelFingerprint: 42WmSpB8rSM=
+name: oneuptime-ip
+networkTier: PREMIUM
+region: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/regions/northamerica-northeast1
+selfLink: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/regions/northamerica-northeast1/addresses/oneuptime-ip
+status: IN_USE
+users:
+- https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/zones/northamerica-northeast1-a/instances/oneuptime-production

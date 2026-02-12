@@ -1,0 +1,35 @@
+architecture: X86_64
+creationTimestamp: '2026-02-05T15:14:04.696-08:00'
+enableConfidentialCompute: false
+guestOsFeatures:
+- type: VIRTIO_SCSI_MULTIQUEUE
+- type: SEV_CAPABLE
+- type: SEV_SNP_CAPABLE
+- type: SEV_LIVE_MIGRATABLE
+- type: SEV_LIVE_MIGRATABLE_V2
+- type: IDPF
+- type: TDX_CAPABLE
+- type: UEFI_COMPATIBLE
+- type: GVNIC
+id: '5774500682625751763'
+kind: compute#disk
+labelFingerprint: 42WmSpB8rSM=
+lastAttachTimestamp: '2026-02-05T15:14:55.620-08:00'
+licenseCodes:
+- '591260547102547226'
+licenses:
+- https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/licenses/ubuntu-minimal-2204-lts
+name: oneuptime-production
+physicalBlockSizeBytes: '4096'
+resourcePolicies:
+- https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/regions/northamerica-northeast1/resourcePolicies/daily-last-10-days
+satisfiesPzi: true
+selfLink: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/zones/northamerica-northeast1-a/disks/oneuptime-production
+sizeGb: '80'
+sourceSnapshot: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/global/snapshots/oneuptime-snapshot-20260205-pre-patches
+sourceSnapshotId: '9169038581919425833'
+status: READY
+type: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/zones/northamerica-northeast1-a/diskTypes/pd-ssd
+users:
+- https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/zones/northamerica-northeast1-a/instances/oneuptime-production
+zone: https://www.googleapis.com/compute/v1/projects/onix-ai-oneuptime-production/zones/northamerica-northeast1-a
