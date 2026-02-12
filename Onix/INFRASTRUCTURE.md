@@ -580,7 +580,7 @@ Cloud Scheduler (every 5 min)
 | Trigger          | HTTP (not publicly accessible)                       |
 | Service account  | `vm-auto-restart@onix-ai-oneuptime-production.iam.gserviceaccount.com` |
 | URL              | `https://vm-auto-restart-ainaujgaya-nn.a.run.app`   |
-| Source code      | `onix/gcp/cloud-functions/vm-auto-restart/`          |
+| Source code      | `Onix/gcp/cloud-functions/vm-auto-restart/`          |
 
 **Deploy command:**
 ```bash
@@ -588,7 +588,7 @@ gcloud functions deploy vm-auto-restart \
   --gen2 \
   --region=northamerica-northeast1 \
   --runtime=python312 \
-  --source=onix/gcp/cloud-functions/vm-auto-restart \
+  --source=Onix/gcp/cloud-functions/vm-auto-restart \
   --entry-point=auto_restart_vm \
   --trigger-http \
   --no-allow-unauthenticated \
@@ -708,7 +708,7 @@ services:
     ServerCerts/
       monitor.onixai.ai.crt   # Cloudflare origin certificate
       monitor.onixai.ai.key   # Cloudflare origin private key
-  patches/
+  Onix/patches/
     CustomCodeMonitorCriteria.ts  # Patched: JSON stringify fix for custom code monitors
     StatusPageService.ts          # Patched: SSO redirect fix for custom domains
 ```
@@ -723,11 +723,11 @@ services:
 
   app:
     volumes:
-      - ./patches/StatusPageService.ts:/usr/src/Common/Server/Services/StatusPageService.ts:ro
+      - ./Onix/patches/StatusPageService.ts:/usr/src/Common/Server/Services/StatusPageService.ts:ro
 
   probe-ingest:
     volumes:
-      - ./patches/CustomCodeMonitorCriteria.ts:/usr/src/app/node_modules/Common/Server/Utils/Monitor/Criteria/CustomCodeMonitorCriteria.ts:ro
+      - ./Onix/patches/CustomCodeMonitorCriteria.ts:/usr/src/app/node_modules/Common/Server/Utils/Monitor/Criteria/CustomCodeMonitorCriteria.ts:ro
 
   probe-2:
     deploy:
@@ -736,12 +736,12 @@ services:
 
 ### Applied Patches
 
-See `onix/PATCHES.md` for full details on each patch.
+See `Onix/PATCHES.md` for full details on each patch.
 
 | Patch | File | Purpose |
 |-------|------|---------|
-| Custom Code Monitor JSON Fix | `patches/CustomCodeMonitorCriteria.ts` | Converts object results to JSON string for criteria matching |
-| SSO Custom Domain Redirect | `patches/StatusPageService.ts` | Fixes post-SSO redirect to custom domains using Cloudflare SSL |
+| Custom Code Monitor JSON Fix | `Onix/patches/CustomCodeMonitorCriteria.ts` | Converts object results to JSON string for criteria matching |
+| SSO Custom Domain Redirect | `Onix/patches/StatusPageService.ts` | Fixes post-SSO redirect to custom domains using Cloudflare SSL |
 | Probe-2 Disabled | `docker-compose.override.yml` | Saves ~384 MB; single probe sufficient on same server |
 
 ### Startup Sequence
@@ -1131,7 +1131,7 @@ gcloud compute ssh oneuptime-production \
 #     (See "On-VM Application Setup" section above)
 
 # 19. On the VM: apply patches
-#     (See onix/PATCHES.md for detailed patch application instructions)
+#     (See Onix/PATCHES.md for detailed patch application instructions)
 
 # 20. On the VM: start OneUptime
 #     cd /opt/oneuptime && ./fetch-secrets.sh && npm start
@@ -1145,7 +1145,7 @@ gcloud functions deploy vm-auto-restart \
   --gen2 \
   --region=northamerica-northeast1 \
   --runtime=python312 \
-  --source=onix/gcp/cloud-functions/vm-auto-restart \
+  --source=Onix/gcp/cloud-functions/vm-auto-restart \
   --entry-point=auto_restart_vm \
   --trigger-http \
   --no-allow-unauthenticated \

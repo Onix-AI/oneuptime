@@ -78,7 +78,7 @@ services:
 
   probe-ingest:
     volumes:
-      - ./patches/CustomCodeMonitorCriteria.ts:/usr/src/app/node_modules/Common/Server/Utils/Monitor/Criteria/CustomCodeMonitorCriteria.ts:ro
+      - ./Onix/patches/CustomCodeMonitorCriteria.ts:/usr/src/app/node_modules/Common/Server/Utils/Monitor/Criteria/CustomCodeMonitorCriteria.ts:ro
 ```
 
 **Step 5: Recreate the affected service with new mount**
@@ -157,11 +157,11 @@ services:
 
   app:
     volumes:
-      - ./patches/StatusPageService.ts:/usr/src/Common/Server/Services/StatusPageService.ts:ro
+      - ./Onix/patches/StatusPageService.ts:/usr/src/Common/Server/Services/StatusPageService.ts:ro
 
   probe-ingest:
     volumes:
-      - ./patches/CustomCodeMonitorCriteria.ts:/usr/src/app/node_modules/Common/Server/Utils/Monitor/Criteria/CustomCodeMonitorCriteria.ts:ro
+      - ./Onix/patches/CustomCodeMonitorCriteria.ts:/usr/src/app/node_modules/Common/Server/Utils/Monitor/Criteria/CustomCodeMonitorCriteria.ts:ro
 
   probe-2:
     deploy:
@@ -253,7 +253,7 @@ Add the volume mount under the `app` service:
 ```yaml
   app:
     volumes:
-      - ./patches/StatusPageService.ts:/usr/src/Common/Server/Services/StatusPageService.ts:ro
+      - ./Onix/patches/StatusPageService.ts:/usr/src/Common/Server/Services/StatusPageService.ts:ro
 ```
 
 **Step 5: Recreate the app service with the new mount**
@@ -285,8 +285,8 @@ Consider submitting a PR to the upstream OneUptime repository for a permanent fi
 
 | File | Type | Description |
 |------|------|-------------|
-| `patches/CustomCodeMonitorCriteria.ts` | Added | Patched version extracted from container with JSON stringify fix |
-| `patches/StatusPageService.ts` | Added | Patched version extracted from container with custom domain SSO redirect fix |
+| `Onix/patches/CustomCodeMonitorCriteria.ts` | Added | Patched version extracted from container with JSON stringify fix |
+| `Onix/patches/StatusPageService.ts` | Added | Patched version extracted from container with custom domain SSO redirect fix |
 | `docker-compose.override.yml` | Added | SSL cert mount + patched file mounts |
 | `certs/ServerCerts/monitor.onixai.ai.crt` | Added | CloudFlare Origin certificate |
 | `certs/ServerCerts/monitor.onixai.ai.key` | Added | CloudFlare Origin private key |

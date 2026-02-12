@@ -5,7 +5,7 @@ This directory contains infrastructure documentation, configuration exports, and
 ## Directory Structure
 
 ```
-onix/
+Onix/
 ├── INFRASTRUCTURE.md              Comprehensive infrastructure documentation
 ├── PATCHES.md                     OneUptime code patches applied to production
 │
@@ -39,24 +39,24 @@ Re-export GCP configs to keep them current:
 
 ```bash
 # Compute
-gcloud compute instances describe oneuptime-production --zone=northamerica-northeast1-a --format=yaml > onix/gcp/compute/instance.yaml
-gcloud compute disks describe oneuptime-production --zone=northamerica-northeast1-a --format=yaml > onix/gcp/compute/disk.yaml
-gcloud compute resource-policies describe daily-last-10-days --region=northamerica-northeast1 --format=yaml > onix/gcp/compute/snapshot-schedule.yaml
+gcloud compute instances describe oneuptime-production --zone=northamerica-northeast1-a --format=yaml > Onix/gcp/compute/instance.yaml
+gcloud compute disks describe oneuptime-production --zone=northamerica-northeast1-a --format=yaml > Onix/gcp/compute/disk.yaml
+gcloud compute resource-policies describe daily-last-10-days --region=northamerica-northeast1 --format=yaml > Onix/gcp/compute/snapshot-schedule.yaml
 
 # Networking
-gcloud compute networks describe oneuptime-vpc --format=yaml > onix/gcp/networking/vpc.yaml
-gcloud compute networks subnets describe oneuptime-subnet --region=northamerica-northeast1 --format=yaml > onix/gcp/networking/subnet.yaml
-gcloud compute firewall-rules list --format=yaml > onix/gcp/networking/firewall-rules.yaml
-gcloud compute addresses describe oneuptime-ip --region=northamerica-northeast1 --format=yaml > onix/gcp/networking/static-ip.yaml
+gcloud compute networks describe oneuptime-vpc --format=yaml > Onix/gcp/networking/vpc.yaml
+gcloud compute networks subnets describe oneuptime-subnet --region=northamerica-northeast1 --format=yaml > Onix/gcp/networking/subnet.yaml
+gcloud compute firewall-rules list --format=yaml > Onix/gcp/networking/firewall-rules.yaml
+gcloud compute addresses describe oneuptime-ip --region=northamerica-northeast1 --format=yaml > Onix/gcp/networking/static-ip.yaml
 
 # IAM
-gcloud projects get-iam-policy onix-ai-oneuptime-production --format=yaml > onix/gcp/iam/policy.yaml
-gcloud iam service-accounts list --format=yaml > onix/gcp/iam/service-accounts.yaml
-gcloud iam roles describe vmAutoRestart --project=onix-ai-oneuptime-production --format=yaml > onix/gcp/iam/custom-roles.yaml
+gcloud projects get-iam-policy onix-ai-oneuptime-production --format=yaml > Onix/gcp/iam/policy.yaml
+gcloud iam service-accounts list --format=yaml > Onix/gcp/iam/service-accounts.yaml
+gcloud iam roles describe vmAutoRestart --project=onix-ai-oneuptime-production --format=yaml > Onix/gcp/iam/custom-roles.yaml
 
 # Cloud Run & Scheduler
-gcloud run services describe vm-auto-restart --region=northamerica-northeast1 --format=export > onix/gcp/cloud-run/vm-auto-restart.yaml
-gcloud scheduler jobs describe vm-auto-restart-check --location=northamerica-northeast1 --format=yaml > onix/gcp/cloud-scheduler/vm-auto-restart-check.yaml
+gcloud run services describe vm-auto-restart --region=northamerica-northeast1 --format=export > Onix/gcp/cloud-run/vm-auto-restart.yaml
+gcloud scheduler jobs describe vm-auto-restart-check --location=northamerica-northeast1 --format=yaml > Onix/gcp/cloud-scheduler/vm-auto-restart-check.yaml
 ```
 
 ## See Also
