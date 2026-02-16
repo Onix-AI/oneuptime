@@ -1,0 +1,33 @@
+# OneUptime ID Reference
+# Exported: 2026-02-13
+# These UUIDs map to human-readable names throughout the monitor configs
+#
+# Monitor Statuses:
+#   7f2ba4b8-50a9-4f65-ad5e-0ae5f08dc4e3: Operational
+#   29dfb8f0-9298-4fba-9c7a-9532c27ecd24: Degraded
+#   e1aeeeb0-25d8-4915-837e-21828ece73d1: Offline
+#
+# Incident Severities:
+#   f0eafec9-9669-4095-a33d-7a1e52661f89: Critical
+#   9c2903e7-920d-405e-8f0c-a603ae5cd58d: Major
+#   126b94dd-03a8-4c05-9b6d-d4bbc86e778b: Warning
+#
+# Alert Severities:
+#   8de65b63-aca1-47c4-b768-1225eb41596d: Default
+#
+# Project:
+#   904caeb1-d676-4024-9860-78b50fdd36a5: Onix AI
+#
+# Shared Incident Description Template (used by Custom JS monitors for critical/major criteria):
+#   **Status:** {{result.description}}
+#
+#   **Incident:** {{result.data.incident.name}}
+#   - Impact: {{result.data.incident.impact}}
+#   - Status: {{result.data.incident.status}}
+#   - Link: {{result.data.incident.link}}
+#
+#   **Update:** {{result.data.incident.update}}
+#
+#   **Active Issues:** {{result.data.incidentCount}} incident(s), {{result.data.maintenanceCount}} maintenance(s)
+#
+#   [View Status Page]({{result.url}})

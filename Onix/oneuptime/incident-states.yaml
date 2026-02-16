@@ -1,0 +1,27 @@
+# OneUptime Incident States
+# Exported: 2026-02-13
+# Total: 3 states
+
+- name: Identified
+  description: When an incident is created, it belongs to this state
+  color: "#fd625e"  # red
+  order: 1
+  isCreatedState: true
+  isAcknowledgedState: false
+  isResolvedState: false
+
+- name: Acknowledged
+  description: When an incident is acknowledged, it belongs to this state.
+  color: "#ffbf53"  # amber
+  order: 2
+  isCreatedState: false
+  isAcknowledgedState: true
+  isResolvedState: false
+
+- name: Resolved
+  description: When an incident is resolved, it belongs to this state.
+  color: "#2ab57d"  # green
+  order: 3
+  isCreatedState: false
+  isAcknowledgedState: false
+  isResolvedState: true

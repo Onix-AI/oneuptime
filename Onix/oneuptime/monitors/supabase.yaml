@@ -1,0 +1,138 @@
+_id: df4ef21b-d931-4713-955e-a5c664264e45
+name: Supabase
+description: Monitors Supabase Database, Auth, Realtime, and Storage
+slug: supabase-2378832414
+monitorType: Custom JavaScript Code
+monitoringInterval: "*/5 * * * *"  # every 5 min
+defaultMonitorStatusId: 7f2ba4b8-50a9-4f65-ad5e-0ae5f08dc4e3  # Operational
+criteria:
+  - name: Check for a critical outage
+    description: Checks for a critical-impact incident
+    monitorStatusId: e1aeeeb0-25d8-4915-837e-21828ece73d1  # Offline
+    filterCondition: Any
+    filters:
+      - checkOn: Result Value
+        filterType: Contains
+        value: "[OFFLINE:critical]"
+    changeMonitorStatus: true
+    createIncidents: true
+    createAlerts: false
+    incidents:
+      - title: "{{result.title}}"
+        description: |
+          **Status:** {{result.description}}
+
+          **Incident:** {{result.data.incident.name}}
+          - Impact: {{result.data.incident.impact}}
+          - Status: {{result.data.incident.status}}
+          - Link: {{result.data.incident.link}}
+
+          **Update:** {{result.data.incident.update}}
+
+          **Active Issues:** {{result.data.incidentCount}} incident(s), {{result.data.maintenanceCount}} maintenance(s)
+
+          [View Status Page]({{result.url}})
+        incidentSeverityId: f0eafec9-9669-4095-a33d-7a1e52661f89  # Critical
+        autoResolveIncident: true
+  - name: Check for a major outage
+    description: Checks for a major-impact incident
+    monitorStatusId: e1aeeeb0-25d8-4915-837e-21828ece73d1  # Offline
+    filterCondition: Any
+    filters:
+      - checkOn: Result Value
+        filterType: Contains
+        value: "[OFFLINE:major]"
+    changeMonitorStatus: true
+    createIncidents: true
+    createAlerts: false
+    incidents:
+      - title: "{{result.title}}"
+        description: |
+          **Status:** {{result.description}}
+
+          **Incident:** {{result.data.incident.name}}
+          - Impact: {{result.data.incident.impact}}
+          - Status: {{result.data.incident.status}}
+          - Link: {{result.data.incident.link}}
+
+          **Update:** {{result.data.incident.update}}
+
+          **Active Issues:** {{result.data.incidentCount}} incident(s), {{result.data.maintenanceCount}} maintenance(s)
+
+          [View Status Page]({{result.url}})
+        incidentSeverityId: 9c2903e7-920d-405e-8f0c-a603ae5cd58d  # Major
+        autoResolveIncident: true
+  - name: Check if is degraded
+    description: Checks for minor issues
+    monitorStatusId: 29dfb8f0-9298-4fba-9c7a-9532c27ecd24  # Degraded
+    filterCondition: Any
+    filters:
+      - checkOn: Result Value
+        filterType: Contains
+        value: "[DEGRADED]"
+    changeMonitorStatus: true
+    createIncidents: false
+    createAlerts: false
+  - name: Check if status check failed
+    description: Detects when the status API is unreachable
+    monitorStatusId: 29dfb8f0-9298-4fba-9c7a-9532c27ecd24  # Degraded
+    filterCondition: Any
+    filters:
+      - checkOn: Error
+        filterType: Is Not Empty
+    changeMonitorStatus: true
+    createIncidents: true
+    createAlerts: false
+    incidents:
+      - title: "{{monitorName}} - Status Check Failed"
+        description: Unable to reach the status API. The service may still be operational.
+        incidentSeverityId: 126b94dd-03a8-4c05-9b6d-d4bbc86e778b  # Warning
+        autoResolveIncident: true
+customCode: |
+  const response = await axios.get('https://status.supabase.com/api/v2/summary.json');
+  const api = response.data;
+
+  const incidents = (api.incidents || []).filter(i =>
+    ['investigating', 'identified', 'monitoring'].includes(i.status)
+  );
+  const maintenances = (api.scheduled_maintenances || []).filter(m =>
+    m.status === 'in_progress'
+  );
+
+  const hasCritical = incidents.some(i => i.impact === 'critical');
+  const hasMajor = incidents.some(i => i.impact === 'major');
+  const hasMinor = incidents.some(i => i.impact === 'minor');
+  const first = incidents[0];
+
+  let status, description;
+  if (hasCritical) {
+    status = '[OFFLINE:critical]';
+    description = 'Critical Incident';
+  } else if (hasMajor) {
+    status = '[OFFLINE:major]';
+    description = 'Major Incident';
+  } else if (hasMinor || incidents.length > 0) {
+    status = '[DEGRADED]';
+    description = 'Minor Incident';
+  } else {
+    status = '[OPERATIONAL]';
+    description = 'All Systems Operational';
+  }
+
+  return { data: {
+    status,
+    title: `Supabase - ${description}`,
+    description,
+    url: 'https://status.supabase.com',
+    data: {
+      incidentCount: incidents.length,
+      maintenanceCount: maintenances.length,
+      incident: first ? {
+        name: first.name,
+        impact: first.impact,
+        status: first.status,
+        link: first.shortlink || '',
+        update: first.incident_updates?.[0]?.body?.substring(0, 300) || ''
+      } : null
+    }
+  }};

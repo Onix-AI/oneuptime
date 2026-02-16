@@ -22,7 +22,9 @@ Onix/
 │
 ├── cloudflare/                    Cloudflare DNS records for onixai.ai
 │
-└── doppler/                       Doppler secret management config
+├── doppler/                       Doppler secret management config
+│
+└── oneuptime/                     OneUptime application config (monitors, status pages, teams)
 ```
 
 ## Key Resources

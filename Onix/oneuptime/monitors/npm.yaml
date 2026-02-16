@@ -1,0 +1,141 @@
+_id: 339ccaf9-6350-4601-8041-db897dfdc65a
+name: npm
+description: Monitors npm registry - package management and publishing
+slug: npm-4195974597
+monitorType: Custom JavaScript Code
+monitoringInterval: "*/10 * * * *"  # every 10 min
+defaultMonitorStatusId: 7f2ba4b8-50a9-4f65-ad5e-0ae5f08dc4e3  # Operational
+criteria:
+  - name: Check for critical outage
+    description: This criteria checks if npm has a critical outage
+    monitorStatusId: e1aeeeb0-25d8-4915-837e-21828ece73d1  # Offline
+    filterCondition: All
+    filters:
+      - checkOn: Result
+        filterType: Contains
+        value: "[OFFLINE:critical]"
+    changeMonitorStatus: true
+    createIncidents: true
+    createAlerts: false
+    incidents:
+      - title: "{{monitorName}} - Critical Outage"
+        description: |
+          **Status:** {{result.description}}
+
+          **Incident:** {{result.data.incident.name}}
+          - Impact: {{result.data.incident.impact}}
+          - Status: {{result.data.incident.status}}
+          - Link: {{result.data.incident.link}}
+
+          **Update:** {{result.data.incident.update}}
+
+          **Active Issues:** {{result.data.incidentCount}} incident(s), {{result.data.maintenanceCount}} maintenance(s)
+
+          [View Status Page]({{result.url}})
+        incidentSeverityId: f0eafec9-9669-4095-a33d-7a1e52661f89  # Critical
+        autoResolveIncident: true
+    alerts: []
+  - name: Check for major outage
+    description: This criteria checks if npm has a major outage
+    monitorStatusId: e1aeeeb0-25d8-4915-837e-21828ece73d1  # Offline
+    filterCondition: All
+    filters:
+      - checkOn: Result
+        filterType: Contains
+        value: "[OFFLINE:major]"
+    changeMonitorStatus: true
+    createIncidents: true
+    createAlerts: false
+    incidents:
+      - title: "{{monitorName}} - Major Outage"
+        description: |
+          **Status:** {{result.description}}
+
+          **Incident:** {{result.data.incident.name}}
+          - Impact: {{result.data.incident.impact}}
+          - Status: {{result.data.incident.status}}
+          - Link: {{result.data.incident.link}}
+
+          **Update:** {{result.data.incident.update}}
+
+          **Active Issues:** {{result.data.incidentCount}} incident(s), {{result.data.maintenanceCount}} maintenance(s)
+
+          [View Status Page]({{result.url}})
+        incidentSeverityId: 9c2903e7-920d-405e-8f0c-a603ae5cd58d  # Major
+        autoResolveIncident: true
+    alerts: []
+  - name: Check if degraded
+    description: This criteria checks if npm is degraded
+    monitorStatusId: 29dfb8f0-9298-4fba-9c7a-9532c27ecd24  # Degraded
+    filterCondition: All
+    filters:
+      - checkOn: Result
+        filterType: Contains
+        value: "[DEGRADED]"
+    changeMonitorStatus: true
+    createIncidents: false
+    createAlerts: false
+  - name: Check if status check failed
+    description: This criteria checks if the npm status check script encountered an error
+    monitorStatusId: 29dfb8f0-9298-4fba-9c7a-9532c27ecd24  # Degraded
+    filterCondition: All
+    filters:
+      - checkOn: Error
+        filterType: Is Not Empty
+    changeMonitorStatus: true
+    createIncidents: true
+    createAlerts: false
+    incidents:
+      - title: "{{monitorName}} - Status Check Failed"
+        description: The status check script encountered an error.
+        incidentSeverityId: 126b94dd-03a8-4c05-9b6d-d4bbc86e778b  # Warning
+        autoResolveIncident: true
+    alerts: []
+customCode: |
+  const response = await axios.get('https://status.npmjs.org/api/v2/summary.json');
+  const api = response.data;
+
+  const incidents = (api.incidents || []).filter(i =>
+    ['investigating', 'identified', 'monitoring'].includes(i.status)
+  );
+  const maintenances = (api.scheduled_maintenances || []).filter(m =>
+    m.status === 'in_progress'
+  );
+
+  const hasCritical = incidents.some(i => i.impact === 'critical');
+  const hasMajor = incidents.some(i => i.impact === 'major');
+  const hasMinor = incidents.some(i => i.impact === 'minor');
+  const first = incidents[0];
+
+  let status, description;
+  if (hasCritical) {
+    status = '[OFFLINE:critical]';
+    description = 'Critical Incident';
+  } else if (hasMajor) {
+    status = '[OFFLINE:major]';
+    description = 'Major Incident';
+  } else if (hasMinor || incidents.length > 0) {
+    status = '[DEGRADED]';
+    description = 'Minor Incident';
+  } else {
+    status = '[OPERATIONAL]';
+    description = 'All Systems Operational';
+  }
+
+  return { data: {
+    status,
+    title: `npm - ${description}`,
+    description,
+    url: 'https://status.npmjs.org',
+    data: {
+      incidentCount: incidents.length,
+      maintenanceCount: maintenances.length,
+      incident: first ? {
+        name: first.name,
+        impact: first.impact,
+        status: first.status,
+        link: first.shortlink || '',
+        update: first.incident_updates?.[0]?.body?.substring(0, 300) || ''
+      } : null
+    }
+  }};

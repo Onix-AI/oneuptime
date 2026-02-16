@@ -1,0 +1,46 @@
+_id: 4b65cd4d-d1a6-4848-b99a-7ebd8f28ac70
+name: Website
+description: Marketing site and landing page - first point of contact for new visitors
+slug: onix-website-3475777657
+monitorType: Website
+monitoringInterval: "*/5 * * * *"  # every 5 min
+defaultMonitorStatusId: 7f2ba4b8-50a9-4f65-ad5e-0ae5f08dc4e3  # Operational
+url: https://onixai.ai/
+requestType: GET
+criteria:
+  - name: Check if Onix Website is offline
+    description: This criteria checks if the Onix Website is offline
+    monitorStatusId: e1aeeeb0-25d8-4915-837e-21828ece73d1  # Offline
+    filterCondition: Any
+    filters:
+      - checkOn: Is Online
+        filterType: "False"
+      - checkOn: Response Status Code
+        filterType: Not Equal To
+        value: 200
+    changeMonitorStatus: true
+    createIncidents: true
+    createAlerts: false
+    incidents:
+      - title: Onix Website is offline
+        description: Onix Website is currently offline.
+        incidentSeverityId: f0eafec9-9669-4095-a33d-7a1e52661f89  # Critical
+        autoResolveIncident: true
+    alerts:
+      - title: Onix Website is offline
+        description: Onix Website is currently offline.
+        alertSeverityId: 8de65b63-aca1-47c4-b768-1225eb41596d  # Default
+        autoResolveAlert: true
+  - name: Check if Onix Website is online
+    description: This criteria checks if the Onix Website is online
+    monitorStatusId: 7f2ba4b8-50a9-4f65-ad5e-0ae5f08dc4e3  # Operational
+    filterCondition: All
+    filters:
+      - checkOn: Is Online
+        filterType: "True"
+      - checkOn: Response Status Code
+        filterType: Equal To
+        value: 200
+    changeMonitorStatus: true
+    createIncidents: false
+    createAlerts: false

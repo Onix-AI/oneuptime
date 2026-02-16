@@ -1,0 +1,46 @@
+_id: 0cefa957-6976-4196-98c7-32f91448eefc
+name: Web App
+description: Main application at app.onixai.ai - user authentication, dashboard, and AI assistant interface
+slug: web-app-6345446252
+monitorType: Website
+monitoringInterval: "* * * * *"  # every 1 min
+defaultMonitorStatusId: 7f2ba4b8-50a9-4f65-ad5e-0ae5f08dc4e3  # Operational
+url: https://app.onixai.ai/
+requestType: GET
+criteria:
+  - name: Check if Web App is offline
+    description: This criteria checks if the Web App is offline
+    monitorStatusId: e1aeeeb0-25d8-4915-837e-21828ece73d1  # Offline
+    filterCondition: Any
+    filters:
+      - checkOn: Is Online
+        filterType: "False"
+      - checkOn: Response Status Code
+        filterType: Not Equal To
+        value: 200
+    changeMonitorStatus: true
+    createIncidents: true
+    createAlerts: false
+    incidents:
+      - title: Web App is offline
+        description: Web App is currently offline.
+        incidentSeverityId: f0eafec9-9669-4095-a33d-7a1e52661f89  # Critical
+        autoResolveIncident: true
+    alerts:
+      - title: Web App is offline
+        description: Web App is currently offline.
+        alertSeverityId: 8de65b63-aca1-47c4-b768-1225eb41596d  # Default
+        autoResolveAlert: true
+  - name: Check if Web App is online
+    description: This criteria checks if the Web App is online
+    monitorStatusId: 7f2ba4b8-50a9-4f65-ad5e-0ae5f08dc4e3  # Operational
+    filterCondition: All
+    filters:
+      - checkOn: Is Online
+        filterType: "True"
+      - checkOn: Response Status Code
+        filterType: Equal To
+        value: 200
+    changeMonitorStatus: true
+    createIncidents: false
+    createAlerts: false
