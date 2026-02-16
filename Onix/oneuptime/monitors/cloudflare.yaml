@@ -84,7 +84,7 @@ criteria:
     createIncidents: true
     createAlerts: false
     incidents:
-      - title: "{{monitorName}} - Status Check Failed"
+      - title: "Cloudflare - Status Check Failed"
         description: Unable to reach the status API. The service may still be operational.
         incidentSeverityId: 126b94dd-03a8-4c05-9b6d-d4bbc86e778b  # Warning
         autoResolveIncident: true

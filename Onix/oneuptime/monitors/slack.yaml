@@ -55,8 +55,8 @@ criteria:
     createIncidents: true
     createAlerts: false
     incidents:
-      - title: "{{monitorName}} is offline"
-        description: "{{monitorName}} is currently offline."
+      - title: "{{result.title}}"
+        description: "Slack is currently offline."
         incidentSeverityId: f0eafec9-9669-4095-a33d-7a1e52661f89  # Critical
         autoResolveIncident: true
   - name: Check if status check failed
@@ -70,7 +70,7 @@ criteria:
     createIncidents: true
     createAlerts: false
     incidents:
-      - title: "{{monitorName}} - Status Check Failed"
+      - title: "Slack - Status Check Failed"
         description: Unable to reach the status API. The service may still be operational.
         incidentSeverityId: 126b94dd-03a8-4c05-9b6d-d4bbc86e778b  # Warning
         autoResolveIncident: true

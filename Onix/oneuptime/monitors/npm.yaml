@@ -18,7 +18,7 @@ criteria:
     createIncidents: true
     createAlerts: false
     incidents:
-      - title: "{{monitorName}} - Critical Outage"
+      - title: "{{result.title}}"
         description: |
           **Status:** {{result.description}}
 
@@ -47,7 +47,7 @@ criteria:
     createIncidents: true
     createAlerts: false
     incidents:
-      - title: "{{monitorName}} - Major Outage"
+      - title: "{{result.title}}"
         description: |
           **Status:** {{result.description}}
 
@@ -86,7 +86,7 @@ criteria:
     createIncidents: true
     createAlerts: false
     incidents:
-      - title: "{{monitorName}} - Status Check Failed"
+      - title: "npm - Status Check Failed"
         description: The status check script encountered an error.
         incidentSeverityId: 126b94dd-03a8-4c05-9b6d-d4bbc86e778b  # Warning
         autoResolveIncident: true
