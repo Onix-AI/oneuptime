@@ -36,7 +36,7 @@ db.createUser(
 ## Copy DB from One Server to Another
 
 ```
-mongodump --uri="mongodb://old_username:old_password@old_ip:old_port/oneuptimedb" --archive | mongorestore --uri="mongodb://new_username:new_pass@new_ip:new_port/oneuptimedb" --archive
+mongodump --uri="mongodb://<OLD_USERNAME>:<OLD_PASSWORD>@<OLD_IP>:<OLD_PORT>/oneuptimedb" --archive | mongorestore --uri="mongodb://<NEW_USERNAME>:<NEW_PASSWORD>@<NEW_IP>:<NEW_PORT>/oneuptimedb" --archive
 ```
 
 ## Root Username
@@ -103,8 +103,8 @@ On the destination cluster:
 
 ```
 kubectl exec -it fi-mongodb-0 -- bash
-mongodump --uri="mongodb://oneuptime:password@<EXTERNAL-IP-ADDRESS-FROM-STEP-1>:27017/oneuptimedb" --archive="/bitnami/mongodb/oneuptimedata.archive" --excludeCollection=auditlogs --excludeCollection=monitorlogs
-mongorestore --uri="mongodb://oneuptime:password@localhost:27017/oneuptimedb" --archive="/bitnami/mongodb/oneuptimedata.archive"
+mongodump --uri="mongodb://<USERNAME>:<PASSWORD>@<EXTERNAL-IP-ADDRESS-FROM-STEP-1>:27017/oneuptimedb" --archive="/bitnami/mongodb/oneuptimedata.archive" --excludeCollection=auditlogs --excludeCollection=monitorlogs
+mongorestore --uri="mongodb://<USERNAME>:<PASSWORD>@localhost:27017/oneuptimedb" --archive="/bitnami/mongodb/oneuptimedata.archive"
 ```
 
 **Step 3:** Block the exposed Mongodb from the internet
@@ -132,7 +132,7 @@ Syntax:
 
 Example:
 
-`sudo kubectl exec fi-mongodb-0 -- mongodump --uri="mongodb://oneuptime:password@localhost:27017/oneuptimedb" --archive="/bitnami/mongodb/oneuptimedata.archive"`
+`sudo kubectl exec fi-mongodb-0 -- mongodump --uri="mongodb://<USERNAME>:<PASSWORD>@localhost:27017/oneuptimedb" --archive="/bitnami/mongodb/oneuptimedata.archive"`
 
 **Step 2**: Copy file from conatiner to local machine.
 
@@ -167,7 +167,7 @@ Syntax:
 
 Example:
 
-`sudo kubectl exec fi-mongodb-0 -- mongorestore --uri="mongodb://oneuptime:password@localhost:27017/oneuptimedb" --archive="/bitnami/mongodb/oneuptimedata.archive"`
+`sudo kubectl exec fi-mongodb-0 -- mongorestore --uri="mongodb://<USERNAME>:<PASSWORD>@localhost:27017/oneuptimedb" --archive="/bitnami/mongodb/oneuptimedata.archive"`
 
 ## Misc commands
 
@@ -202,7 +202,7 @@ exit                                            # This is important.
 ```
 kubectl exec -it fi-mongodb-0 mongo
 use oneuptimedb
-db.auth('oneuptime','password')
+db.auth('<USERNAME>','<PASSWORD>')
 db.users.find({email: 'admin@oneuptime.com'}) # Master admin user. Should be already signed up.
 db.users.update({email: 'admin@oneuptime.com'}, {$set:{ role: 'master-admin'}}) # Update the user
 ```
