@@ -677,10 +677,12 @@ export class Service extends DatabaseService<StatusPage> {
         .addRoute("/status-page/" + statusPageId.toString())
         .toString();
     } else {
-      // Prepend https:// to match the format used by getStatusPageURL().
-      // Without this, the bare domain string (e.g. "internal-status.onixai.ai")
-      // produces a malformed URL when passed to URL.fromString() downstream,
-      // breaking the post-SSO redirect to custom domains.
+      /*
+       * Prepend https:// to match the format used by getStatusPageURL().
+       * Without this, the bare domain string (e.g. "internal-status.onixai.ai")
+       * produces a malformed URL when passed to URL.fromString() downstream,
+       * breaking the post-SSO redirect to custom domains.
+       */
       statusPageURL = domains[0]?.fullDomain
         ? `https://${domains[0].fullDomain}`
         : "";

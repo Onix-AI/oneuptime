@@ -72,9 +72,11 @@ export default class CustomCodeMonitoringCriteria {
         return emptyNotEmptyResult;
       }
 
-      // Convert object results to JSON string for comparison
-      // This allows Contains/NotContains filters to work with JSON objects
-      // returned from custom code monitors (e.g., { status: "[OFFLINE:critical]", ... })
+      /*
+       * Convert object results to JSON string for comparison.
+       * This allows Contains/NotContains filters to work with JSON objects
+       * returned from custom code monitors (e.g., { status: "[OFFLINE:critical]", ... })
+       */
       if (
         syntheticMonitorResponse.result &&
         typeof syntheticMonitorResponse.result === "object"
