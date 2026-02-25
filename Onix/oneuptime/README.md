@@ -6,7 +6,7 @@ Human-readable reference of the OneUptime application-level configuration. This 
 
 | File / Directory | Count | Description |
 |------------------|-------|-------------|
-| `monitors/` | 28 | One file per monitor — full config including criteria, filters, incident templates, and custom code |
+| `monitors/` | 31 | One file per monitor — full config including criteria, filters, incident templates, and custom code |
 | `monitors/_reference.yaml` | — | UUID-to-name lookup table for statuses, severities, and project |
 | `monitor-statuses.yaml` | 3 | Status definitions (Operational, Degraded, Offline) |
 | `status-pages.yaml` | 2 | Internal (SSO-protected) and Public status pages |
