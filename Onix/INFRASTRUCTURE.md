@@ -510,7 +510,7 @@ Doppler is configured with a GCP Secret Manager integration that auto-syncs all 
 
 The integration uses the `doppler-secret-manager` service account with a conditional IAM binding that restricts it to only manage secrets with the `doppler-` prefix.
 
-### GCP Secret Manager Secrets (25 total)
+### GCP Secret Manager Secrets (27 total)
 
 All secrets are prefixed with `doppler-` in GCP Secret Manager. The names below show the logical name (without the prefix):
 
@@ -535,7 +535,9 @@ All secrets are prefixed with `doppler-` in GCP Secret Manager. The names below 
 | `ONEUPTIME_HTTP_PORT`              | Internal HTTP port the application listens on        |
 | `ONEUPTIME_SECRET`                 | Internal API secret for service-to-service auth      |
 | `PROVISION_SSL`                    | Whether to provision SSL via Let's Encrypt           |
+| `PUSH_NOTIFICATION_RELAY_URL`      | URL for push notification relay service              |
 | `REDIS_PASSWORD`                   | Password for the Redis cache                         |
+| `REGISTER_PROBE_KEY`               | Shared secret for probe registration with probe-ingest |
 | `SLACK_APP_CLIENT_ID`              | Slack app OAuth client ID                            |
 | `SLACK_APP_CLIENT_SECRET`          | Slack app OAuth client secret                        |
 | `SLACK_APP_SIGNING_SECRET`         | Slack app request signing secret                     |
@@ -699,19 +701,21 @@ services:
 ### Directory Structure
 
 ```
-/opt/oneuptime/
-  config.env               # Generated at startup by fetch-secrets.sh (not committed)
-  fetch-secrets.sh         # Reads GCP Secret Manager, writes config.env
-  docker-compose.yml       # Upstream OneUptime compose file
-  docker-compose.override.yml  # Onix customizations (SSL certs, patches, disabled services)
+/opt/oneuptime/                          # Cloned from github.com/Onix-AI/oneuptime (onix branch)
+  config.env                             # Generated at startup by fetch-secrets.sh (not committed)
+  fetch-secrets.sh                       # Reads GCP Secret Manager, writes config.env
+  docker-compose.yml                     # OneUptime compose file (from onix branch)
+  docker-compose.override.yml            # Onix customizations (SSL certs, patches, disabled services)
+  Onix/patches/
+    CustomCodeMonitorCriteria.ts         # Patched: JSON stringify fix for custom code monitors
+    StatusPageService.ts                 # Patched: SSO redirect fix for custom domains
   certs/
     ServerCerts/
-      monitor.onixai.ai.crt   # Cloudflare origin certificate
-      monitor.onixai.ai.key   # Cloudflare origin private key
-  Onix/patches/
-    CustomCodeMonitorCriteria.ts  # Patched: JSON stringify fix for custom code monitors
-    StatusPageService.ts          # Patched: SSO redirect fix for custom domains
+      monitor.onixai.ai.crt             # Cloudflare origin certificate
+      monitor.onixai.ai.key             # Cloudflare origin private key
 ```
+
+The repo is cloned via SSH using a read-only deploy key (`~/.ssh/deploy_key`). The git remote is `git@github.com:Onix-AI/oneuptime.git`.
 
 ### docker-compose.override.yml
 
@@ -751,6 +755,10 @@ See `Onix/PATCHES.md` for full details on each patch.
 3. `fetch-secrets.sh` reads all `doppler-*` secrets from GCP Secret Manager, strips prefix, writes to `config.env`
 4. `npm start` runs `docker compose up -d` which reads `docker-compose.yml` + `docker-compose.override.yml`
 5. Docker containers start (PostgreSQL, Redis, ClickHouse, app, ingress, probe-ingest, etc.)
+
+### Updating
+
+To update the deployment, see [UPGRADES.md](UPGRADES.md).
 
 ---
 
@@ -1042,7 +1050,7 @@ gcloud compute firewall-rules create deny-all-ingress \
 # 9. Set up Doppler
 #    - Create project "oneuptime" in Doppler dashboard
 #    - Create "production" config
-#    - Add all 25 secrets (see Secret Management section)
+#    - Add all 27 secrets (see Secret Management section)
 #    - Create a key for the doppler-secret-manager SA:
 gcloud iam service-accounts keys create doppler-sa-key.json \
   --iam-account=doppler-secret-manager@onix-ai-oneuptime-production.iam.gserviceaccount.com
@@ -1114,26 +1122,35 @@ gcloud compute disks add-resource-policies oneuptime-production \
 # 14. SSH into the VM
 gcloud compute ssh oneuptime-production \
   --zone=northamerica-northeast1-a \
+  --project=onix-ai-oneuptime-production \
   --tunnel-through-iap
 
-# 15. On the VM: install Docker, Docker Compose, Node.js, and OneUptime
+# 15. On the VM: install Docker, Docker Compose, Node.js
 #     (Follow OneUptime self-hosted installation guide)
-#     Application is installed to /opt/oneuptime/
 
-# 16. On the VM: create fetch-secrets.sh
+# 16. On the VM: set up deploy key for the fork
+ssh-keygen -t ed25519 -C "oneuptime-production-deploy-key" -f ~/.ssh/deploy_key -N ""
+cat ~/.ssh/deploy_key.pub
+#     Copy the public key → add to github.com/Onix-AI/oneuptime Settings → Deploy keys (read-only)
+
+# 17. On the VM: clone from our fork
+cd /opt
+GIT_SSH_COMMAND="ssh -i ~/.ssh/deploy_key" git clone git@github.com:Onix-AI/oneuptime.git
+cd oneuptime
+git config core.sshCommand "ssh -i ~/.ssh/deploy_key"
+git checkout onix
+
+# 18. On the VM: create fetch-secrets.sh
 #     This script reads from GCP Secret Manager and writes config.env
 
-# 17. On the VM: deploy Cloudflare origin certificates
+# 19. On the VM: deploy Cloudflare origin certificates
 #     mkdir -p /opt/oneuptime/certs/ServerCerts/
 #     Copy monitor.onixai.ai.crt and monitor.onixai.ai.key into that directory
 
-# 18. On the VM: create docker-compose.override.yml with SSL mounts and patches
-#     (See "On-VM Application Setup" section above)
-
-# 19. On the VM: apply patches
+# 20. On the VM: apply patches
 #     (See Onix/PATCHES.md for detailed patch application instructions)
 
-# 20. On the VM: start OneUptime
+# 21. On the VM: start OneUptime
 #     cd /opt/oneuptime && ./fetch-secrets.sh && npm start
 ```
 
