@@ -8,7 +8,9 @@ This document tracks all modifications made to the upstream OneUptime repository
 
 **Date Applied:** 2026-02-04
 
-**Patched File:** `patches/CustomCodeMonitorCriteria.ts` (mounted into container)
+**Patched File:** `Onix/patches/CustomCodeMonitorCriteria.ts` (mounted into container)
+
+**Last Re-extracted:** 2026-02-27 (from `oneuptime/probe-ingest:release` image, version 10.0.14)
 
 ### Problem
 Custom JavaScript Code monitors that return JSON objects (e.g., `return { data: { status: "ok" } }`) silently fail criteria matching. The "Contains" filter and other string-based criteria checks don't work because the result is an object, not a string.
@@ -43,15 +45,17 @@ cd /opt/oneuptime
 npm run start
 ```
 
-**Step 2: Create patches directory and extract the file**
+**Step 2: Extract the file from the container (without override mounts)**
 ```bash
-mkdir -p /opt/oneuptime/patches
-docker cp oneuptime-probe-ingest-1:/usr/src/app/node_modules/Common/Server/Utils/Monitor/Criteria/CustomCodeMonitorCriteria.ts /opt/oneuptime/patches/
+docker compose -f docker-compose.yml up -d probe-ingest
+sleep 15
+docker cp oneuptime-probe-ingest-1:/usr/src/app/node_modules/Common/Server/Utils/Monitor/Criteria/CustomCodeMonitorCriteria.ts /opt/oneuptime/Onix/patches/CustomCodeMonitorCriteria.ts
+docker compose -f docker-compose.yml stop probe-ingest
 ```
 
 **Step 3: Apply the patch**
 
-Edit `/opt/oneuptime/patches/CustomCodeMonitorCriteria.ts` and add the following code block inside the `CheckOn.ResultValue` section, AFTER the `emptyNotEmptyResult` check (around line 73):
+Edit `/opt/oneuptime/Onix/patches/CustomCodeMonitorCriteria.ts` and add the following code block inside the `CheckOn.ResultValue` section, AFTER the `emptyNotEmptyResult` check (around line 73):
 
 ```typescript
       // Convert object results to JSON string for comparison
@@ -63,6 +67,8 @@ Edit `/opt/oneuptime/patches/CustomCodeMonitorCriteria.ts` and add the following
       ) {
         syntheticMonitorResponse.result = JSON.stringify(
           syntheticMonitorResponse.result,
+          null,
+          2,
         );
       }
 ```
@@ -177,7 +183,9 @@ This file is automatically merged with `docker-compose.yml` when running `docker
 
 **Date Applied:** 2026-02-05
 
-**Patched File:** `patches/StatusPageService.ts` (mounted into container)
+**Patched File:** `Onix/patches/StatusPageService.ts` (mounted into container)
+
+**Last Re-extracted:** 2026-02-27 (from `oneuptime/app:release` image, version 10.0.14)
 
 ### Problem
 After completing Google SAML authentication for a private status page with a custom domain (e.g. `internal-status.onixai.ai`), the user is redirected to the main app URL (`monitor.onixai.ai/status-page/{id}`) instead of the custom domain. Visiting the custom domain afterwards shows the user as unauthenticated.
@@ -219,14 +227,17 @@ cd /opt/oneuptime
 npm run start
 ```
 
-**Step 2: Extract the file from the container**
+**Step 2: Extract the file from the container (without override mounts)**
 ```bash
-docker cp oneuptime-app-1:/usr/src/Common/Server/Services/StatusPageService.ts /opt/oneuptime/patches/StatusPageService.ts
+docker compose -f docker-compose.yml up -d app
+sleep 15
+docker cp oneuptime-app-1:/usr/src/Common/Server/Services/StatusPageService.ts /opt/oneuptime/Onix/patches/StatusPageService.ts
+docker compose -f docker-compose.yml stop app
 ```
 
 **Step 3: Apply the patch**
 
-Edit `/opt/oneuptime/patches/StatusPageService.ts` and make three changes:
+Edit `/opt/oneuptime/Onix/patches/StatusPageService.ts` and make three changes:
 
 **Change 1 & 2:** In both `getStatusPageURL()` (~line 620) and `getStatusPageFirstURL()` (~line 655), change the query filter:
 ```typescript
