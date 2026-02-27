@@ -255,7 +255,7 @@ Default routes are auto-created with the VPC:
 #!/bin/bash
 set -e
 cd /opt/oneuptime
-./fetch-secrets.sh
+./Onix/fetch-secrets.sh
 npm start
 ```
 
@@ -751,7 +751,7 @@ See `Onix/PATCHES.md` for full details on each patch.
 ### Startup Sequence
 
 1. VM boots (or restarts after preemption)
-2. Startup script runs: `cd /opt/oneuptime && ./fetch-secrets.sh && npm start`
+2. Startup script runs: `cd /opt/oneuptime && ./Onix/fetch-secrets.sh && npm start`
 3. `fetch-secrets.sh` reads all `doppler-*` secrets from GCP Secret Manager, strips prefix, writes to `config.env`
 4. `npm start` runs `docker compose up -d` which reads `docker-compose.yml` + `docker-compose.override.yml`
 5. Docker containers start (PostgreSQL, Redis, ClickHouse, app, ingress, probe-ingest, etc.)
@@ -1068,7 +1068,7 @@ cat > /tmp/startup-script.sh << 'SCRIPT'
 #!/bin/bash
 set -e
 cd /opt/oneuptime
-./fetch-secrets.sh
+./Onix/fetch-secrets.sh
 npm start
 SCRIPT
 
@@ -1151,7 +1151,7 @@ git checkout onix
 #     (See Onix/PATCHES.md for detailed patch application instructions)
 
 # 21. On the VM: start OneUptime
-#     cd /opt/oneuptime && ./fetch-secrets.sh && npm start
+#     cd /opt/oneuptime && ./Onix/fetch-secrets.sh && npm start
 ```
 
 ### Phase 7: VM Auto-Restart

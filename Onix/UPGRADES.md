@@ -52,7 +52,7 @@ Then on the VM:
 ```bash
 cd /opt/oneuptime
 git pull origin onix
-./fetch-secrets.sh
+./Onix/fetch-secrets.sh
 export $(grep -v '^#' config.env | xargs)
 docker compose pull
 docker compose up --remove-orphans -d
