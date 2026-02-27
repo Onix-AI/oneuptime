@@ -1,0 +1,498 @@
+<head>
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet">
+
+   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+   <!-- Load additional language support -->
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/csharp.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/ruby.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/rust.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/powershell.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+   <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+
+   <link rel="preload" href="https://cdn.tailwindcss.com" as="script">
+   <script src="https://cdn.tailwindcss.com"></script>
+
+   <script>
+      function applyStyles() {
+         applyStylesTo("h1", "font-bold text-2xl mb-6 text-slate-900 tracking-tight")
+         applyStylesTo("h2", "mb-5 scroll-mt-24 mt-16 font-semibold text-xl text-slate-900 tracking-tight")
+         applyStylesTo("h3", "mb-4 scroll-mt-24 mt-10 font-semibold text-base text-slate-800")
+         applyStylesTo("p", "mb-5 text-slate-600 leading-7")
+         applyStylesTo("link", "text-indigo-600 hover:text-indigo-700 font-medium transition-colors")
+         applyStylesTo("model-inline-code", "rounded-md py-0.5 px-1.5 text-sm font-medium text-slate-700 bg-slate-100 border border-slate-200")
+         applyStylesTo("inline-code", "rounded-md py-0.5 px-1.5 text-sm font-medium text-slate-700 bg-slate-100 border border-slate-200")
+      }
+
+      function applyStylesTo(tagOrClassName, classList) {
+         let elements = document.getElementsByClassName(tagOrClassName);
+         if(elements.length === 0){
+            elements = document.getElementsByTagName(tagOrClassName);
+         }
+         for (var i = 0, all = elements.length; i < all; i++) {
+            classList.split(" ").map((classItem)=> {
+               elements[i].classList.add(classItem);
+            })
+         }
+      }
+   </script>
+
+   <style>
+      * {
+         font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      }
+
+      html {
+         scroll-behavior: smooth;
+         -webkit-font-smoothing: antialiased;
+         -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* Better prose styling */
+      .prose p {
+         color: #475569;
+         line-height: 1.75;
+      }
+
+      .prose .lead {
+         font-size: 1.125rem;
+         color: #64748b;
+         line-height: 1.75;
+      }
+
+      .prose hr {
+         border-color: #e2e8f0;
+         margin-top: 2.5rem;
+         margin-bottom: 2.5rem;
+      }
+
+      .prose ul {
+         list-style: none;
+         padding: 0;
+      }
+
+      /* Syntax highlighting - comprehensive token styles */
+      .hljs {
+         background: transparent !important;
+      }
+
+      /* Keywords: import, from, def, class, if, else, for, while, return, etc. */
+      .hljs-keyword,
+      .hljs-built_in,
+      .hljs-type,
+      .hljs-literal,
+      .hljs-symbol {
+         color: #c792ea !important;
+      }
+
+      /* Strings */
+      .hljs-string,
+      .hljs-doctag,
+      .hljs-regexp {
+         color: #c3e88d !important;
+      }
+
+      /* Numbers */
+      .hljs-number {
+         color: #f78c6c !important;
+      }
+
+      /* Comments */
+      .hljs-comment {
+         color: #676e95 !important;
+         font-style: italic;
+      }
+
+      /* Function/method names */
+      .hljs-title,
+      .hljs-title.function_,
+      .hljs-title.class_ {
+         color: #82aaff !important;
+      }
+
+      /* Variables and parameters */
+      .hljs-variable,
+      .hljs-params,
+      .hljs-attr {
+         color: #f07178 !important;
+      }
+
+      /* Properties and attributes */
+      .hljs-property,
+      .hljs-attribute {
+         color: #ffcb6b !important;
+      }
+
+      /* Punctuation */
+      .hljs-punctuation {
+         color: #89ddff !important;
+      }
+
+      /* Operators */
+      .hljs-operator {
+         color: #89ddff !important;
+      }
+
+      /* Meta/preprocessor */
+      .hljs-meta {
+         color: #ffcb6b !important;
+      }
+
+      /* Section headers */
+      .hljs-section {
+         color: #82aaff !important;
+      }
+
+      /* Names (function calls, etc) */
+      .hljs-name {
+         color: #f07178 !important;
+      }
+
+      /* Selector tags in CSS */
+      .hljs-selector-tag,
+      .hljs-selector-class,
+      .hljs-selector-id {
+         color: #c792ea !important;
+      }
+
+      /* Template variables */
+      .hljs-template-variable {
+         color: #f07178 !important;
+      }
+
+      /* Deletion/addition in diffs */
+      .hljs-deletion {
+         color: #f07178 !important;
+      }
+
+      .hljs-addition {
+         color: #c3e88d !important;
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+         width: 6px;
+         height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+         background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+         background: #e2e8f0;
+         border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+         background: #cbd5e1;
+      }
+
+      /* Code block copy button */
+      .code-block-wrapper {
+         position: relative;
+      }
+
+      /* Response block copy button */
+      .copy-btn-response {
+         display: flex;
+         align-items: center;
+         gap: 6px;
+         padding: 6px 12px;
+         font-size: 12px;
+         font-weight: 500;
+         color: #94a3b8;
+         background: rgba(30, 41, 59, 0.6);
+         border: 1px solid #334155;
+         border-radius: 6px;
+         cursor: pointer;
+         transition: all 0.15s ease;
+      }
+      .copy-btn-response:hover {
+         color: #f1f5f9;
+         background: #334155;
+         border-color: #475569;
+      }
+      .copy-btn-response.copied {
+         color: #22c55e;
+         border-color: #22c55e;
+         background: rgba(34, 197, 94, 0.1);
+      }
+
+      /* Code tabs styling */
+      .code-tabs-container {
+         --tab-hover-bg: rgba(30, 41, 59, 0.5);
+      }
+
+      .code-tab {
+         position: relative;
+         border-bottom: 2px solid transparent;
+      }
+
+      .code-tab[aria-selected="true"] {
+         border-bottom-color: #6366f1;
+      }
+
+      .code-panel {
+         position: relative;
+      }
+
+      .copy-btn-tabs {
+         position: absolute;
+         top: 12px;
+         right: 12px;
+         display: flex;
+         align-items: center;
+         gap: 6px;
+         padding: 6px 12px;
+         font-size: 12px;
+         font-weight: 500;
+         color: #94a3b8;
+         background: rgba(30, 41, 59, 0.9);
+         border: 1px solid #334155;
+         border-radius: 6px;
+         cursor: pointer;
+         opacity: 0;
+         transition: all 0.15s ease;
+         z-index: 10;
+         backdrop-filter: blur(4px);
+      }
+
+      .code-panel:hover .copy-btn-tabs {
+         opacity: 1;
+      }
+
+      .copy-btn-tabs:hover {
+         color: #f1f5f9;
+         background: #334155;
+         border-color: #475569;
+      }
+
+      .copy-btn-tabs.copied {
+         color: #22c55e;
+         border-color: #22c55e;
+         background: rgba(34, 197, 94, 0.1);
+      }
+
+      /* Code content min-height for consistent sizing */
+      .code-content {
+         min-height: 200px;
+      }
+
+      /* Fix code tabs width - prevent content from expanding container */
+      .code-tabs-container {
+         width: 100%;
+         max-width: 100%;
+         overflow: hidden;
+      }
+
+      .code-tabs-container pre {
+         width: 0;
+         min-width: 100%;
+         overflow-x: auto;
+      }
+
+      .code-panel {
+         width: 100%;
+         max-width: 100%;
+         overflow: hidden;
+      }
+
+      .code-content {
+         width: 100%;
+         max-width: 100%;
+         overflow: hidden;
+      }
+
+      .code-content pre code {
+         display: block;
+         white-space: pre;
+         word-wrap: normal;
+      }
+
+      /* Hide scrollbar for tabs but keep functionality */
+      .scrollbar-hide {
+         -ms-overflow-style: none;
+         scrollbar-width: none;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+         display: none;
+      }
+
+      /* Tab indicator animation */
+      .tab-indicator {
+         transition: all 0.2s ease;
+      }
+
+      /* Code panel base styles */
+      .code-panel pre {
+         margin: 0;
+         background: transparent;
+      }
+
+      .code-panel code {
+         font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+         font-size: 13px;
+         line-height: 1.6;
+         color: #e2e8f0;
+      }
+
+      /* Better focus states */
+      a:focus-visible, button:focus-visible {
+         outline: 2px solid #6366f1;
+         outline-offset: 2px;
+         border-radius: 4px;
+      }
+
+      /* Smooth transitions */
+      a, button {
+         transition: all 0.15s ease;
+      }
+
+      /* Property list styling */
+      .property-item {
+         padding: 1rem 0;
+         border-bottom: 1px solid #f1f5f9;
+      }
+      .property-item:last-child {
+         border-bottom: none;
+      }
+
+      /* Endpoint card styling */
+      .endpoint-card {
+         background: linear-gradient(to right, #fafafa, white);
+         border-radius: 0.75rem;
+         padding: 1.5rem;
+         border: 1px solid #e2e8f0;
+         margin-bottom: 1.5rem;
+      }
+
+      /* Calendar picker */
+      input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+      input[type="date"]::-webkit-calendar-picker-indicator {
+         background: transparent;
+         bottom: 0;
+         color: transparent;
+         cursor: pointer;
+         height: auto;
+         left: 0;
+         position: absolute;
+         right: 0;
+         top: 0;
+         width: auto;
+      }
+   </style>
+
+   <% if(typeof enableGoogleTagManager !== 'undefined' ? enableGoogleTagManager : false){ %> 
+
+   <!-- Google Tag Manager -->
+   <script>(function (w, d, s, l, i) {
+         w[l] = w[l] || []; w[l].push({
+            'gtm.start':
+               new Date().getTime(), event: 'gtm.js'
+         }); var f = d.getElementsByTagName(s)[0],
+            j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+               'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-PKQD5WH');</script>
+   <!-- End Google Tag Manager -->
+   <% } %>
+
+
+   <style>
+      .async-hide {
+         opacity: 0 !important
+      }
+   </style>
+
+   <meta charset="utf-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+   <link rel="shortcut icon" href="/img/favicons/favicon.ico">
+   <link rel="apple-touch-icon" sizes="180x180" href="/img/favicons/apple-touch-icon.png">
+   <link rel="icon" type="image/png" sizes="32x32" href="/img/favicons/favicon-32x32.png">
+   <link rel="icon" type="image/png" sizes="16x16" href="/img/favicons/favicon-16x16.png">
+   <link rel="mask-icon" href="/img/favicons/safari-pinned-tab.svg" color="#32335b">
+   <meta name="msapplication-TileColor" content="#32335b">
+   <link rel="apple-touch-icon-precomposed" href="/img/ou-wb.svg">
+   <link rel="icon" href="/img/ou-wb.svg">
+   <link rel="image_src" type="image/png" href="/img/hou-wb.svg">
+   <link rel="manifest" href="/manifest.json">
+   <meta property="og:title" content="OneUptime - One Complete Observability platform.">
+   <meta property="og:url" content="https://oneuptime.com">
+   <meta property="og:type" content="website" />
+   <meta property="og:description"
+      content="OneUptime monitors websites, API's, and servers and alerts your team if something goes wrong. It also keeps your customers updated about any downtime. ">
+   <meta property="og:image" content="https://oneuptime.com/img/hou-wb.svg">
+
+   <meta name="twitter:card" content="summary">
+   <meta name="theme-color" content="#6366f1">
+   <meta name="twitter:image" content="/img/ou-wb.svg">
+   <meta name="twitter:site" content="@oneuptimeinc">
+   <meta name="twitter:title" content="OneUptime - One Complete Observability platform.">
+   <meta name="twitter:description"
+      content="OneUptime monitors websites, API's, and servers and alerts your team if something goes wrong. It also keeps your customers updated about any downtime.">
+
+
+   <script type="application/ld+json">
+     {
+     "@context": "http://schema.org",
+     "@type": "Corporation",
+     "name": "OneUptime",
+     "url": "https://www.oneuptime.com",
+     "logo": "https://oneuptime.com/img/ou-bb.svg",
+     "sameAs": [
+         "https://www.facebook.com/oneuptimeinc",
+         "https://twitter.com/OneUptimeInc",
+         "https://www.linkedin.com/company/oneuptime"
+     ],
+     "description": "OneUptime monitors websites, API's, and servers and alerts your team if something goes wrong. It also keeps your customers updated about any downtime."
+ }
+ </script>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width">
+   <title>OneUptime API Reference - <%= pageTitle -%>
+   </title>
+   <meta name="description" content="<%= pageDescription -%>">
+   <meta name="next-head-count" content="4">
+   <script>
+      let darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+      updateMode()
+      darkModeMediaQuery.addEventListener('change', updateModeWithoutTransitions)
+      window.addEventListener('storage', updateModeWithoutTransitions)
+
+      function updateMode() {
+         let isSystemDarkMode = darkModeMediaQuery.matches
+         let isDarkMode = window.localStorage.isDarkMode === 'true' || (!('isDarkMode' in window.localStorage) && isSystemDarkMode)
+
+         if (isDarkMode) {
+            document.documentElement.classList.add('dark')
+         } else {
+            document.documentElement.classList.remove('dark')
+         }
+
+         if (isDarkMode === isSystemDarkMode) {
+            delete window.localStorage.isDarkMode
+         }
+      }
+
+      function disableTransitionsTemporarily() {
+         document.documentElement.classList.add('[&_*]:!transition-none')
+         window.setTimeout(() => {
+            document.documentElement.classList.remove('[&_*]:!transition-none')
+         }, 0)
+      }
+
+      function updateModeWithoutTransitions() {
+         disableTransitionsTemporarily()
+         updateMode()
+      }
+   </script>
+
+</head>

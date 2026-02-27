@@ -3,14 +3,14 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   Modal,
-  ActivityIndicator,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme";
+import GradientButton from "./GradientButton";
 
 interface AddNoteModalProps {
   visible: boolean;
@@ -49,37 +49,86 @@ export default function AddNoteModal({
       onRequestClose={handleClose}
     >
       <KeyboardAvoidingView
-        style={styles.overlay}
+        style={{
+          flex: 1,
+          justifyContent: "flex-end",
+          backgroundColor: "rgba(0,0,0,0.5)",
+        }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View
-          style={[
-            styles.container,
-            {
-              backgroundColor: theme.colors.backgroundSecondary,
-              borderColor: theme.colors.borderDefault,
-            },
-          ]}
+          style={{
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            padding: 20,
+            paddingBottom: 36,
+            backgroundColor: theme.colors.backgroundElevated,
+            borderWidth: 1,
+            borderBottomWidth: 0,
+            borderColor: theme.colors.borderGlass,
+          }}
         >
-          <Text
-            style={[
-              theme.typography.titleMedium,
-              { color: theme.colors.textPrimary, marginBottom: 16 },
-            ]}
+          <View
+            style={{ alignItems: "center", paddingTop: 4, paddingBottom: 20 }}
           >
-            Add Note
-          </Text>
+            <View
+              style={{
+                width: 36,
+                height: 4,
+                borderRadius: 9999,
+                backgroundColor: theme.colors.borderDefault,
+              }}
+            />
+          </View>
+
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 20,
+            }}
+          >
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 8,
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: 12,
+                backgroundColor: theme.colors.iconBackground,
+              }}
+            >
+              <Ionicons
+                name="chatbubble-outline"
+                size={16}
+                color={theme.colors.actionPrimary}
+              />
+            </View>
+            <Text
+              style={{
+                fontSize: 18,
+                fontWeight: "bold",
+                color: theme.colors.textPrimary,
+                letterSpacing: -0.3,
+              }}
+            >
+              Add Note
+            </Text>
+          </View>
 
           <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: theme.colors.backgroundTertiary,
-                color: theme.colors.textPrimary,
-                borderColor: theme.colors.borderSubtle,
-              },
-            ]}
-            placeholder="Add a note..."
+            style={{
+              minHeight: 120,
+              borderRadius: 12,
+              padding: 16,
+              fontSize: 15,
+              backgroundColor: theme.colors.backgroundSecondary,
+              borderWidth: 1,
+              borderColor: theme.colors.borderDefault,
+              color: theme.colors.textPrimary,
+            }}
+            placeholder="Write a note..."
             placeholderTextColor={theme.colors.textTertiary}
             value={noteText}
             onChangeText={setNoteText}
@@ -88,105 +137,51 @@ export default function AddNoteModal({
             editable={!isSubmitting}
           />
 
-          <View style={styles.buttonRow}>
-            <TouchableOpacity
-              style={[
-                styles.button,
-                {
-                  backgroundColor: theme.colors.backgroundTertiary,
-                  borderColor: theme.colors.borderSubtle,
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 12,
+              marginTop: 20,
+              alignItems: "center",
+            }}
+          >
+            <Pressable
+              style={({ pressed }: { pressed: boolean }) => {
+                return {
+                  flex: 1,
+                  height: 50,
+                  borderRadius: 12,
+                  alignItems: "center" as const,
+                  justifyContent: "center" as const,
                   borderWidth: 1,
-                },
-              ]}
+                  borderColor: theme.colors.borderDefault,
+                  opacity: pressed ? 0.7 : 1,
+                };
+              }}
               onPress={handleClose}
               disabled={isSubmitting}
             >
               <Text
-                style={[
-                  styles.buttonText,
-                  { color: theme.colors.textSecondary },
-                ]}
+                style={{
+                  fontSize: 15,
+                  fontWeight: "600",
+                  color: theme.colors.textSecondary,
+                }}
               >
                 Cancel
               </Text>
-            </TouchableOpacity>
+            </Pressable>
 
-            <TouchableOpacity
-              style={[
-                styles.button,
-                {
-                  backgroundColor:
-                    noteText.trim() && !isSubmitting
-                      ? theme.colors.actionPrimary
-                      : theme.colors.backgroundTertiary,
-                },
-              ]}
+            <GradientButton
+              label="Submit"
               onPress={handleSubmit}
+              loading={isSubmitting}
               disabled={!noteText.trim() || isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator
-                  size="small"
-                  color={theme.colors.textInverse}
-                />
-              ) : (
-                <Text
-                  style={[
-                    styles.buttonText,
-                    {
-                      color: noteText.trim()
-                        ? theme.colors.textInverse
-                        : theme.colors.textTertiary,
-                    },
-                  ]}
-                >
-                  Submit
-                </Text>
-              )}
-            </TouchableOpacity>
+              style={{ flex: 1 }}
+            />
           </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
   );
 }
-
-const styles: ReturnType<typeof StyleSheet.create> = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    justifyContent: "flex-end",
-  },
-  container: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderWidth: 1,
-    borderBottomWidth: 0,
-    padding: 20,
-    paddingBottom: 36,
-  },
-  input: {
-    minHeight: 120,
-    borderRadius: 10,
-    borderWidth: 1,
-    padding: 12,
-    fontSize: 15,
-  },
-  buttonRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 16,
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 48,
-  },
-  buttonText: {
-    fontSize: 15,
-    fontWeight: "700",
-  },
-});

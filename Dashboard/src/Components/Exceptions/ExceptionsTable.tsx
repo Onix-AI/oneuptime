@@ -361,6 +361,27 @@ const TelemetryExceptionTable: FunctionComponent<ComponentProps> = (
           },
           {
             field: {
+              firstSeenInRelease: true,
+            },
+            title: "Introduced In Release",
+            type: FieldType.Text,
+          },
+          {
+            field: {
+              lastSeenInRelease: true,
+            },
+            title: "Last Seen In Release",
+            type: FieldType.Text,
+          },
+          {
+            field: {
+              environment: true,
+            },
+            title: "Environment",
+            type: FieldType.Text,
+          },
+          {
+            field: {
               lastSeenAt: true,
             },
             title: "Last Seen At",
@@ -406,6 +427,9 @@ const TelemetryExceptionTable: FunctionComponent<ComponentProps> = (
           isResolved: true,
           isArchived: true,
           exceptionType: true,
+          firstSeenInRelease: true,
+          lastSeenInRelease: true,
+          environment: true,
         }}
         columns={[
           {
@@ -447,6 +471,13 @@ const TelemetryExceptionTable: FunctionComponent<ComponentProps> = (
                 />
               );
             },
+          },
+          {
+            field: {
+              environment: true,
+            },
+            title: "Environment",
+            type: FieldType.Text,
           },
           {
             field: {

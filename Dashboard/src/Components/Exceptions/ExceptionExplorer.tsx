@@ -1,11 +1,19 @@
 import React, { FunctionComponent, ReactElement, useEffect } from "react";
 import TelemetryException from "Common/Models/DatabaseModels/TelemetryException";
 import ExceptionDetail from "./ExceptionDetail";
+import StackFrameViewer from "./StackFrameViewer";
+import BreadcrumbTimeline, { BreadcrumbEvent } from "./BreadcrumbTimeline";
+import ExceptionInstance from "Common/Models/AnalyticsModels/ExceptionInstance";
+import Span, { SpanEvent } from "Common/Models/AnalyticsModels/Span";
 import ObjectID from "Common/Types/ObjectID";
 import PageLoader from "Common/UI/Components/Loader/PageLoader";
 import ErrorMessage from "Common/UI/Components/ErrorMessage/ErrorMessage";
 import { PromiseVoidFunction } from "Common/Types/FunctionTypes";
 import ModelAPI from "Common/UI/Utils/ModelAPI/ModelAPI";
+import AnalyticsModelAPI, {
+  ListResult,
+} from "Common/UI/Utils/AnalyticsModelAPI/AnalyticsModelAPI";
+import SortOrder from "Common/Types/BaseDatabase/SortOrder";
 import API from "Common/UI/Utils/API/API";
 import ModelDelete from "Common/UI/Components/ModelDelete/ModelDelete";
 import Navigation from "Common/UI/Utils/Navigation";
@@ -61,6 +69,12 @@ const ExceptionExplorer: FunctionComponent<ComponentProps> = (
   >(undefined);
   const [isAIAgentTaskLoading, setIsAIAgentTaskLoading] =
     React.useState<boolean>(false);
+  const [latestInstance, setLatestInstance] = React.useState<
+    ExceptionInstance | undefined
+  >(undefined);
+  const [breadcrumbEvents, setBreadcrumbEvents] = React.useState<
+    BreadcrumbEvent[]
+  >([]);
 
   type RefeshExceptionItemFunction = () => Promise<void>;
 
@@ -80,6 +94,9 @@ const ExceptionExplorer: FunctionComponent<ComponentProps> = (
           occuranceCount: true,
           isArchived: true,
           isResolved: true,
+          firstSeenInRelease: true,
+          lastSeenInRelease: true,
+          environment: true,
           markedAsArchivedAt: true,
           markedAsArchivedByUser: {
             _id: true,
@@ -104,6 +121,88 @@ const ExceptionExplorer: FunctionComponent<ComponentProps> = (
     setTelemetryException(updatedTelemetryException);
     setIsArchived(updatedTelemetryException.isArchived || false);
     setIsResolved(updatedTelemetryException.isResolved || false);
+
+    // Fetch the latest exception instance for parsed frames and additional data
+    if (updatedTelemetryException.fingerprint) {
+      try {
+        const instanceResult: ListResult<ExceptionInstance> =
+          await AnalyticsModelAPI.getList<ExceptionInstance>({
+            modelType: ExceptionInstance,
+            query: {
+              fingerprint: updatedTelemetryException.fingerprint,
+            },
+            limit: 1,
+            skip: 0,
+            select: {
+              parsedFrames: true,
+              release: true,
+              environment: true,
+              traceId: true,
+              spanId: true,
+              time: true,
+            },
+            sort: {
+              time: SortOrder.Descending,
+            },
+          });
+
+        if (instanceResult.data.length > 0) {
+          setLatestInstance(instanceResult.data[0]!);
+
+          // Fetch span events for breadcrumb timeline
+          const instance: ExceptionInstance = instanceResult.data[0]!;
+          if (instance.traceId) {
+            try {
+              const spanResult: ListResult<Span> =
+                await AnalyticsModelAPI.getList<Span>({
+                  modelType: Span,
+                  query: {
+                    traceId: instance.traceId,
+                  },
+                  limit: 50,
+                  skip: 0,
+                  select: {
+                    events: true,
+                    name: true,
+                    startTime: true,
+                  },
+                  sort: {
+                    startTime: SortOrder.Descending,
+                  },
+                });
+
+              // Extract span events as breadcrumbs
+              const events: BreadcrumbEvent[] = [];
+              for (const span of spanResult.data) {
+                if (span.events && Array.isArray(span.events)) {
+                  for (const event of span.events) {
+                    const spanEvent: SpanEvent = event as SpanEvent;
+                    events.push({
+                      name: spanEvent.name || "",
+                      time:
+                        spanEvent.time instanceof Date
+                          ? spanEvent.time
+                          : new Date(
+                              spanEvent.time || new Date().toISOString(),
+                            ),
+                      timeUnixNano: spanEvent.timeUnixNano || 0,
+                      attributes: (spanEvent.attributes as JSONObject) || {},
+                    });
+                  }
+                }
+              }
+
+              setBreadcrumbEvents(events);
+            } catch {
+              // Silently fail breadcrumb fetch
+              setBreadcrumbEvents([]);
+            }
+          }
+        }
+      } catch {
+        // Silently fail instance fetch - it's supplementary data
+      }
+    }
   };
 
   type FetchAIAgentTaskFunction = () => Promise<void>;
@@ -429,6 +528,28 @@ const ExceptionExplorer: FunctionComponent<ComponentProps> = (
       {/** Exception Details */}
 
       <ExceptionDetail {...telemetryException} />
+
+      {/** Parsed Stack Frame Viewer */}
+      {telemetryException.stackTrace && (
+        <StackFrameViewer
+          stackTrace={telemetryException.stackTrace}
+          {...(latestInstance?.parsedFrames
+            ? { parsedFrames: latestInstance.parsedFrames }
+            : {})}
+        />
+      )}
+
+      {/** Breadcrumb Timeline */}
+      {breadcrumbEvents.length > 0 && (
+        <BreadcrumbTimeline
+          events={breadcrumbEvents}
+          {...(latestInstance?.time
+            ? { exceptionTime: new Date(latestInstance.time) }
+            : telemetryException.lastSeenAt
+              ? { exceptionTime: new Date(telemetryException.lastSeenAt) }
+              : {})}
+        />
+      )}
 
       {/** Assign / Unassign Button */}
 

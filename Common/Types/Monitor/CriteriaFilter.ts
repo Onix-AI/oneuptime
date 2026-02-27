@@ -60,6 +60,27 @@ export enum CheckOn {
   SnmpOidExists = "SNMP OID Exists",
   SnmpResponseTime = "SNMP Response Time (in ms)",
   SnmpIsOnline = "SNMP Device Is Online",
+
+  // DNS monitors.
+  DnsResponseTime = "DNS Response Time (in ms)",
+  DnsIsOnline = "DNS Is Online",
+  DnsRecordValue = "DNS Record Value",
+  DnssecIsValid = "DNSSEC Is Valid",
+  DnsRecordExists = "DNS Record Exists",
+
+  // Domain monitors.
+  DomainExpiresDaysIn = "Domain Expires In Days",
+  DomainRegistrar = "Domain Registrar",
+  DomainNameServer = "Domain Name Server",
+  DomainStatusCode = "Domain Status Code",
+  DomainIsExpired = "Domain Is Expired",
+
+  // External Status Page monitors.
+  ExternalStatusPageIsOnline = "External Status Page Is Online",
+  ExternalStatusPageOverallStatus = "External Status Page Overall Status",
+  ExternalStatusPageComponentStatus = "External Status Page Component Status",
+  ExternalStatusPageActiveIncidents = "External Status Page Active Incidents",
+  ExternalStatusPageResponseTime = "External Status Page Response Time (in ms)",
 }
 
 export interface ServerMonitorOptions {
@@ -141,7 +162,13 @@ export class CriteriaFilterUtil {
   }): boolean {
     const { checkOn } = data;
 
-    if (checkOn === CheckOn.IsOnline || checkOn === CheckOn.SnmpIsOnline) {
+    if (
+      checkOn === CheckOn.IsOnline ||
+      checkOn === CheckOn.SnmpIsOnline ||
+      checkOn === CheckOn.DnsIsOnline ||
+      checkOn === CheckOn.DomainIsExpired ||
+      checkOn === CheckOn.ExternalStatusPageIsOnline
+    ) {
       return false;
     }
 
@@ -149,7 +176,11 @@ export class CriteriaFilterUtil {
       return false;
     }
 
-    if (checkOn === CheckOn.SnmpOidExists) {
+    if (
+      checkOn === CheckOn.SnmpOidExists ||
+      checkOn === CheckOn.DnssecIsValid ||
+      checkOn === CheckOn.DnsRecordExists
+    ) {
       return false;
     }
 
@@ -204,7 +235,11 @@ export class CriteriaFilterUtil {
       checkOn === CheckOn.MemoryUsagePercent ||
       checkOn === CheckOn.IsOnline ||
       checkOn === CheckOn.SnmpResponseTime ||
-      checkOn === CheckOn.SnmpIsOnline
+      checkOn === CheckOn.SnmpIsOnline ||
+      checkOn === CheckOn.DnsResponseTime ||
+      checkOn === CheckOn.DnsIsOnline ||
+      checkOn === CheckOn.ExternalStatusPageResponseTime ||
+      checkOn === CheckOn.ExternalStatusPageIsOnline
     );
   }
 }

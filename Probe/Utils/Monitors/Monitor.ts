@@ -13,6 +13,15 @@ import WebsiteMonitor, {
 import SnmpMonitor from "./MonitorTypes/SnmpMonitor";
 import SnmpMonitorResponse from "Common/Types/Monitor/SnmpMonitor/SnmpMonitorResponse";
 import MonitorStepSnmpMonitor from "Common/Types/Monitor/MonitorStepSnmpMonitor";
+import DnsMonitorUtil from "./MonitorTypes/DnsMonitor";
+import DnsMonitorResponse from "Common/Types/Monitor/DnsMonitor/DnsMonitorResponse";
+import MonitorStepDnsMonitor from "Common/Types/Monitor/MonitorStepDnsMonitor";
+import DomainMonitorUtil from "./MonitorTypes/DomainMonitor";
+import DomainMonitorResponse from "Common/Types/Monitor/DomainMonitor/DomainMonitorResponse";
+import MonitorStepDomainMonitor from "Common/Types/Monitor/MonitorStepDomainMonitor";
+import ExternalStatusPageMonitorUtil from "./MonitorTypes/ExternalStatusPageMonitor";
+import ExternalStatusPageMonitorResponse from "Common/Types/Monitor/ExternalStatusPageMonitor/ExternalStatusPageMonitorResponse";
+import MonitorStepExternalStatusPageMonitor from "Common/Types/Monitor/MonitorStepExternalStatusPageMonitor";
 import HTTPMethod from "Common/Types/API/HTTPMethod";
 import URL from "Common/Types/API/URL";
 import OneUptimeDate from "Common/Types/Date";
@@ -508,6 +517,104 @@ export default class MonitorUtil {
       result.responseTimeInMs = response.responseTimeInMs;
       result.failureCause = response.failureCause;
       result.snmpResponse = response;
+    }
+
+    if (monitorType === MonitorType.DNS) {
+      if (!monitorStep.data?.dnsMonitor) {
+        result.failureCause = "DNS configuration not specified";
+        return result;
+      }
+
+      const dnsConfig: MonitorStepDnsMonitor = monitorStep.data.dnsMonitor;
+
+      if (!dnsConfig.queryName) {
+        result.failureCause = "DNS query name (domain) not specified";
+        return result;
+      }
+
+      const response: DnsMonitorResponse | null = await DnsMonitorUtil.query(
+        dnsConfig,
+        {
+          retry: PROBE_MONITOR_RETRY_LIMIT,
+          monitorId: monitorId,
+          timeout: dnsConfig.timeout || 5000,
+        },
+      );
+
+      if (!response) {
+        return null;
+      }
+
+      result.isOnline = response.isOnline;
+      result.isTimeout = response.isTimeout;
+      result.responseTimeInMs = response.responseTimeInMs;
+      result.failureCause = response.failureCause;
+      result.dnsResponse = response;
+    }
+
+    if (monitorType === MonitorType.Domain) {
+      if (!monitorStep.data?.domainMonitor) {
+        result.failureCause = "Domain configuration not specified";
+        return result;
+      }
+
+      const domainConfig: MonitorStepDomainMonitor =
+        monitorStep.data.domainMonitor;
+
+      if (!domainConfig.domainName) {
+        result.failureCause = "Domain name not specified";
+        return result;
+      }
+
+      const response: DomainMonitorResponse | null =
+        await DomainMonitorUtil.query(domainConfig, {
+          retry: PROBE_MONITOR_RETRY_LIMIT,
+          monitorId: monitorId,
+          timeout: domainConfig.timeout || 10000,
+        });
+
+      if (!response) {
+        return null;
+      }
+
+      result.isOnline = response.isOnline;
+      result.isTimeout = response.isTimeout;
+      result.responseTimeInMs = response.responseTimeInMs;
+      result.failureCause = response.failureCause;
+      result.domainResponse = response;
+    }
+
+    if (monitorType === MonitorType.ExternalStatusPage) {
+      if (!monitorStep.data?.externalStatusPageMonitor) {
+        result.failureCause =
+          "External status page configuration not specified";
+        return result;
+      }
+
+      const externalStatusPageConfig: MonitorStepExternalStatusPageMonitor =
+        monitorStep.data.externalStatusPageMonitor;
+
+      if (!externalStatusPageConfig.statusPageUrl) {
+        result.failureCause = "Status page URL not specified";
+        return result;
+      }
+
+      const response: ExternalStatusPageMonitorResponse | null =
+        await ExternalStatusPageMonitorUtil.fetch(externalStatusPageConfig, {
+          retry: PROBE_MONITOR_RETRY_LIMIT,
+          monitorId: monitorId,
+          timeout: externalStatusPageConfig.timeout || 10000,
+        });
+
+      if (!response) {
+        return null;
+      }
+
+      result.isOnline = response.isOnline;
+      result.isTimeout = response.isTimeout;
+      result.responseTimeInMs = response.responseTimeInMs;
+      result.failureCause = response.failureCause;
+      result.externalStatusPageResponse = response;
     }
 
     // update the monitoredAt time to the current time.

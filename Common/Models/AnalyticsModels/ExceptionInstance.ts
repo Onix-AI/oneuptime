@@ -311,6 +311,77 @@ export default class ExceptionInstance extends AnalyticsBaseModel {
       },
     });
 
+    const releaseColumn: AnalyticsTableColumn = new AnalyticsTableColumn({
+      key: "release",
+      title: "Release",
+      description:
+        "Service version / release from service.version resource attribute",
+      required: false,
+      type: TableColumnType.Text,
+      accessControl: {
+        read: [
+          Permission.ProjectOwner,
+          Permission.ProjectAdmin,
+          Permission.ProjectMember,
+          Permission.ReadTelemetryException,
+        ],
+        create: [
+          Permission.ProjectOwner,
+          Permission.ProjectAdmin,
+          Permission.ProjectMember,
+          Permission.CreateTelemetryException,
+        ],
+        update: [],
+      },
+    });
+
+    const environmentColumn: AnalyticsTableColumn = new AnalyticsTableColumn({
+      key: "environment",
+      title: "Environment",
+      description:
+        "Deployment environment from deployment.environment resource attribute",
+      required: false,
+      type: TableColumnType.Text,
+      accessControl: {
+        read: [
+          Permission.ProjectOwner,
+          Permission.ProjectAdmin,
+          Permission.ProjectMember,
+          Permission.ReadTelemetryException,
+        ],
+        create: [
+          Permission.ProjectOwner,
+          Permission.ProjectAdmin,
+          Permission.ProjectMember,
+          Permission.CreateTelemetryException,
+        ],
+        update: [],
+      },
+    });
+
+    const parsedFramesColumn: AnalyticsTableColumn = new AnalyticsTableColumn({
+      key: "parsedFrames",
+      title: "Parsed Stack Frames",
+      description: "Stack trace parsed into structured frames (JSON array)",
+      required: false,
+      type: TableColumnType.Text,
+      accessControl: {
+        read: [
+          Permission.ProjectOwner,
+          Permission.ProjectAdmin,
+          Permission.ProjectMember,
+          Permission.ReadTelemetryException,
+        ],
+        create: [
+          Permission.ProjectOwner,
+          Permission.ProjectAdmin,
+          Permission.ProjectMember,
+          Permission.CreateTelemetryException,
+        ],
+        update: [],
+      },
+    });
+
     const attributesColumn: AnalyticsTableColumn = new AnalyticsTableColumn({
       key: "attributes",
       title: "Attributes",
@@ -384,6 +455,9 @@ export default class ExceptionInstance extends AnalyticsBaseModel {
         spanIdColumn,
         fingerprintColumn,
         spanNameColumn,
+        releaseColumn,
+        environmentColumn,
+        parsedFramesColumn,
         attributesColumn,
       ],
       projections: [],
@@ -503,5 +577,29 @@ export default class ExceptionInstance extends AnalyticsBaseModel {
 
   public set spanName(v: string | undefined) {
     this.setColumnValue("spanName", v);
+  }
+
+  public get release(): string | undefined {
+    return this.getColumnValue("release") as string | undefined;
+  }
+
+  public set release(v: string | undefined) {
+    this.setColumnValue("release", v);
+  }
+
+  public get environment(): string | undefined {
+    return this.getColumnValue("environment") as string | undefined;
+  }
+
+  public set environment(v: string | undefined) {
+    this.setColumnValue("environment", v);
+  }
+
+  public get parsedFrames(): string | undefined {
+    return this.getColumnValue("parsedFrames") as string | undefined;
+  }
+
+  public set parsedFrames(v: string | undefined) {
+    this.setColumnValue("parsedFrames", v);
   }
 }

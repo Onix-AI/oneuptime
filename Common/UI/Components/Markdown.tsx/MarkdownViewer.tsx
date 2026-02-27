@@ -1,15 +1,72 @@
 import React, {
   FunctionComponent,
   ReactElement,
+  useCallback,
   useEffect,
   useRef,
+  useState,
 } from "react";
 // https://github.com/remarkjs/react-markdown
 import ReactMarkdown from "react-markdown";
 // https://github.com/remarkjs/remark-gfm
 import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/prism-light";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import javascript from "react-syntax-highlighter/dist/esm/languages/prism/javascript";
+import typescript from "react-syntax-highlighter/dist/esm/languages/prism/typescript";
+import jsx from "react-syntax-highlighter/dist/esm/languages/prism/jsx";
+import tsx from "react-syntax-highlighter/dist/esm/languages/prism/tsx";
+import python from "react-syntax-highlighter/dist/esm/languages/prism/python";
+import bash from "react-syntax-highlighter/dist/esm/languages/prism/bash";
+import json from "react-syntax-highlighter/dist/esm/languages/prism/json";
+import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml";
+import sql from "react-syntax-highlighter/dist/esm/languages/prism/sql";
+import go from "react-syntax-highlighter/dist/esm/languages/prism/go";
+import java from "react-syntax-highlighter/dist/esm/languages/prism/java";
+import css from "react-syntax-highlighter/dist/esm/languages/prism/css";
+import markup from "react-syntax-highlighter/dist/esm/languages/prism/markup";
+import markdown from "react-syntax-highlighter/dist/esm/languages/prism/markdown";
+import docker from "react-syntax-highlighter/dist/esm/languages/prism/docker";
+import rust from "react-syntax-highlighter/dist/esm/languages/prism/rust";
+import c from "react-syntax-highlighter/dist/esm/languages/prism/c";
+import cpp from "react-syntax-highlighter/dist/esm/languages/prism/cpp";
+import csharp from "react-syntax-highlighter/dist/esm/languages/prism/csharp";
+import ruby from "react-syntax-highlighter/dist/esm/languages/prism/ruby";
+import php from "react-syntax-highlighter/dist/esm/languages/prism/php";
+import graphql from "react-syntax-highlighter/dist/esm/languages/prism/graphql";
+import http from "react-syntax-highlighter/dist/esm/languages/prism/http";
+
+SyntaxHighlighter.registerLanguage("javascript", javascript);
+SyntaxHighlighter.registerLanguage("js", javascript);
+SyntaxHighlighter.registerLanguage("typescript", typescript);
+SyntaxHighlighter.registerLanguage("ts", typescript);
+SyntaxHighlighter.registerLanguage("jsx", jsx);
+SyntaxHighlighter.registerLanguage("tsx", tsx);
+SyntaxHighlighter.registerLanguage("python", python);
+SyntaxHighlighter.registerLanguage("bash", bash);
+SyntaxHighlighter.registerLanguage("shell", bash);
+SyntaxHighlighter.registerLanguage("json", json);
+SyntaxHighlighter.registerLanguage("yaml", yaml);
+SyntaxHighlighter.registerLanguage("yml", yaml);
+SyntaxHighlighter.registerLanguage("sql", sql);
+SyntaxHighlighter.registerLanguage("go", go);
+SyntaxHighlighter.registerLanguage("java", java);
+SyntaxHighlighter.registerLanguage("css", css);
+SyntaxHighlighter.registerLanguage("markup", markup);
+SyntaxHighlighter.registerLanguage("html", markup);
+SyntaxHighlighter.registerLanguage("xml", markup);
+SyntaxHighlighter.registerLanguage("markdown", markdown);
+SyntaxHighlighter.registerLanguage("md", markdown);
+SyntaxHighlighter.registerLanguage("docker", docker);
+SyntaxHighlighter.registerLanguage("dockerfile", docker);
+SyntaxHighlighter.registerLanguage("rust", rust);
+SyntaxHighlighter.registerLanguage("c", c);
+SyntaxHighlighter.registerLanguage("cpp", cpp);
+SyntaxHighlighter.registerLanguage("csharp", csharp);
+SyntaxHighlighter.registerLanguage("ruby", ruby);
+SyntaxHighlighter.registerLanguage("php", php);
+SyntaxHighlighter.registerLanguage("graphql", graphql);
+SyntaxHighlighter.registerLanguage("http", http);
 import mermaid from "mermaid";
 
 // Initialize mermaid
@@ -69,6 +126,138 @@ const MermaidDiagram: FunctionComponent<{ chart: string }> = ({
 export interface ComponentProps {
   text: string;
 }
+
+// Language display names
+const langDisplayNames: Record<string, string> = {
+  js: "JavaScript",
+  javascript: "JavaScript",
+  ts: "TypeScript",
+  typescript: "TypeScript",
+  jsx: "JSX",
+  tsx: "TSX",
+  py: "Python",
+  python: "Python",
+  rb: "Ruby",
+  ruby: "Ruby",
+  go: "Go",
+  java: "Java",
+  css: "CSS",
+  html: "HTML",
+  xml: "XML",
+  json: "JSON",
+  yaml: "YAML",
+  yml: "YAML",
+  sql: "SQL",
+  bash: "Bash",
+  shell: "Shell",
+  sh: "Shell",
+  dockerfile: "Dockerfile",
+  docker: "Dockerfile",
+  rust: "Rust",
+  cpp: "C++",
+  c: "C",
+  csharp: "C#",
+  php: "PHP",
+  graphql: "GraphQL",
+  http: "HTTP",
+  markdown: "Markdown",
+  md: "Markdown",
+};
+
+// Code block with copy button and language label
+const CodeBlock: FunctionComponent<{
+  language: string;
+  content: string;
+  rest: any;
+}> = ({
+  language,
+  content,
+  rest,
+}: {
+  language: string;
+  content: string;
+  rest: any;
+}): ReactElement => {
+  const [copied, setCopied] = useState<boolean>(false);
+
+  const handleCopy: () => void = useCallback((): void => {
+    navigator.clipboard
+      .writeText(content)
+      .then((): void => {
+        setCopied(true);
+        setTimeout((): void => {
+          setCopied(false);
+        }, 2000);
+      })
+      .catch((): void => {
+        // Fallback: do nothing
+      });
+  }, [content]);
+
+  const displayLang: string =
+    langDisplayNames[language] ||
+    (language ? language.charAt(0).toUpperCase() + language.slice(1) : "");
+
+  return (
+    <div className="relative rounded-lg mt-4 mb-4 overflow-hidden border border-gray-700">
+      {/* Header bar */}
+      <div className="flex items-center justify-between px-3 py-1.5 bg-gray-800/60 border-b border-gray-700/60">
+        <span className="text-[11px] font-medium uppercase tracking-wider text-gray-400 select-none">
+          {displayLang}
+        </span>
+        <button
+          onClick={handleCopy}
+          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium transition-all duration-150 border-none cursor-pointer ${
+            copied
+              ? "text-green-400"
+              : "text-gray-400 hover:text-gray-200 hover:bg-white/10"
+          }`}
+          aria-label="Copy code"
+          type="button"
+        >
+          {copied ? (
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          ) : (
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" />
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+            </svg>
+          )}
+          {copied ? "Copied!" : "Copy"}
+        </button>
+      </div>
+      {/* Code content */}
+      <SyntaxHighlighter
+        {...rest}
+        PreTag="div"
+        // eslint-disable-next-line react/no-children-prop
+        children={content}
+        language={language}
+        style={vscDarkPlus}
+        className="!rounded-none !mt-0 !mb-0 !bg-gray-900 !p-4 text-sm !border-0"
+        codeTagProps={{ className: "font-mono" }}
+      />
+    </div>
+  );
+};
 
 const MarkdownViewer: FunctionComponent<ComponentProps> = (
   props: ComponentProps,
@@ -269,16 +458,7 @@ const MarkdownViewer: FunctionComponent<ComponentProps> = (
                 : "text-sm px-2 py-1 bg-gray-200 rounded text-gray-900 font-mono";
 
             return match ? (
-              <SyntaxHighlighter
-                {...rest}
-                PreTag="div"
-                // eslint-disable-next-line react/no-children-prop
-                children={content}
-                language={match[1]}
-                style={a11yDark}
-                className="rounded-lg mt-4 mb-4 !bg-gray-900 !p-2 text-sm"
-                codeTagProps={{ className: "font-mono" }}
-              />
+              <CodeBlock language={match[1]!} content={content} rest={rest} />
             ) : (
               <code className={codeClassName} {...rest}>
                 {children}

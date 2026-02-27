@@ -17,6 +17,9 @@ export interface ComponentProps {
   occuranceCount?: number | undefined;
   attributes?: JSONObject | undefined;
   telemetryService?: Service | undefined;
+  firstSeenInRelease?: string | undefined;
+  lastSeenInRelease?: string | undefined;
+  environment?: string | undefined;
 }
 
 const ExceptionDetail: FunctionComponent<ComponentProps> = (
@@ -38,6 +41,35 @@ const ExceptionDetail: FunctionComponent<ComponentProps> = (
       key: "exceptionType",
       title: "Exception Type",
       description: "The type of the exception.",
+      fieldType: FieldType.Text,
+    });
+  }
+
+  if (props.firstSeenInRelease) {
+    fields.push({
+      key: "firstSeenInRelease",
+      title: "Introduced In Release",
+      description:
+        "The release version where this exception was first observed.",
+      fieldType: FieldType.Text,
+    });
+  }
+
+  if (props.lastSeenInRelease) {
+    fields.push({
+      key: "lastSeenInRelease",
+      title: "Last Seen In Release",
+      description:
+        "The most recent release version where this exception was observed.",
+      fieldType: FieldType.Text,
+    });
+  }
+
+  if (props.environment) {
+    fields.push({
+      key: "environment",
+      title: "Environment",
+      description: "The deployment environment where this exception occurred.",
       fieldType: FieldType.Text,
     });
   }

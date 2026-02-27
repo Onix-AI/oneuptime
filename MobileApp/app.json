@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "OneUptime",
-    "slug": "oneuptime",
+    "name": "OneUptime On-Call",
+    "slug": "oneuptime-on-call",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
     "scheme": "oneuptime",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -16,30 +16,71 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.oneuptime.oncall",
+      "icon": "./assets/icon.png",
+      "splash": {
+        "image": "./assets/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#0D1117"
+      },
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"],
-        "NSFaceIDUsageDescription": "Authenticate to access OneUptime On-Call"
+        "UIBackgroundModes": [
+          "remote-notification"
+        ],
+        "NSFaceIDUsageDescription": "Authenticate to access OneUptime On-Call",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0D1117"
+        "backgroundColor": "#000000"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.oneuptime.oncall"
+      "package": "com.oneuptime.oncall",
+      "versionCode": 2,
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ]
     },
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0D1117",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "ios": {
+            "backgroundColor": "#0D1117",
+            "image": "./assets/splash-icon.png",
+            "imageWidth": 200
+          },
+          "android": {
+            "backgroundColor": "#0D1117",
+            "image": "./assets/splash-icon.png",
+            "imageWidth": 200
+          }
+        }
+      ],
       [
         "expo-notifications",
         {
           "color": "#58A6FF"
         }
       ],
-      "expo-local-authentication"
+      "expo-local-authentication",
+      "expo-font",
+      "expo-web-browser"
     ],
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d9f87edc-1c3e-466f-b032-1ced7621aa8a"
+      }
+    },
+    "owner": "oneuptime"
   }
 }

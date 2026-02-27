@@ -1,23 +1,18 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Switch,
-  StyleSheet,
-} from "react-native";
-import { useTheme, ThemeMode } from "../theme";
+import { View, Text, ScrollView, Switch, Pressable } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useTheme } from "../theme";
 import { useAuth } from "../hooks/useAuth";
-import { useProject } from "../hooks/useProject";
 import { useBiometric } from "../hooks/useBiometric";
 import { useHaptics } from "../hooks/useHaptics";
 import { getServerUrl } from "../storage/serverUrl";
+import Logo from "../components/Logo";
 import type { SettingsStackParamList } from "../navigation/types";
 
-type SettingsNavProp = NativeStackNavigationProp<
+type SettingsNavigationProp = NativeStackNavigationProp<
   SettingsStackParamList,
   "SettingsList"
 >;
@@ -27,64 +22,126 @@ const APP_VERSION: string = "1.0.0";
 interface SettingsRowProps {
   label: string;
   value?: string;
+  valueBelowLabel?: string;
   onPress?: () => void;
   rightElement?: React.ReactNode;
-  textColor?: string;
   destructive?: boolean;
+  isLast?: boolean;
+  iconName?: keyof typeof Ionicons.glyphMap;
 }
 
 function SettingsRow({
   label,
   value,
+  valueBelowLabel,
   onPress,
   rightElement,
-  textColor,
   destructive,
+  isLast,
+  iconName,
 }: SettingsRowProps): React.JSX.Element {
   const { theme } = useTheme();
 
   const content: React.JSX.Element = (
     <View
-      style={[
-        styles.row,
-        {
-          backgroundColor: theme.colors.backgroundSecondary,
-          borderColor: theme.colors.borderSubtle,
-        },
-      ]}
+      style={{
+        paddingHorizontal: 16,
+        minHeight: 52,
+        justifyContent: "center",
+        ...(!isLast
+          ? {
+              borderBottomWidth: 1,
+              borderBottomColor: theme.colors.borderSubtle,
+            }
+          : {}),
+      }}
     >
-      <Text
-        style={[
-          styles.rowLabel,
-          {
-            color: destructive
-              ? theme.colors.actionDestructive
-              : textColor || theme.colors.textPrimary,
-          },
-        ]}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
       >
-        {label}
-      </Text>
-      {rightElement ??
-        (value ? (
+        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+          {iconName ? (
+            <View
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 8,
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: 12,
+                backgroundColor: destructive
+                  ? theme.colors.statusErrorBg
+                  : theme.colors.iconBackground,
+              }}
+            >
+              <Ionicons
+                name={iconName}
+                size={15}
+                color={
+                  destructive
+                    ? theme.colors.actionDestructive
+                    : theme.colors.actionPrimary
+                }
+              />
+            </View>
+          ) : null}
           <Text
-            style={[styles.rowValue, { color: theme.colors.textSecondary }]}
+            style={{
+              fontSize: 15,
+              fontWeight: "500",
+              paddingVertical: 12,
+              color: destructive
+                ? theme.colors.actionDestructive
+                : theme.colors.textPrimary,
+            }}
           >
-            {value}
+            {label}
           </Text>
-        ) : onPress ? (
-          <Text style={[styles.chevron, { color: theme.colors.textTertiary }]}>
-            ›
-          </Text>
-        ) : null)}
+        </View>
+        {rightElement ??
+          (value ? (
+            <Text style={{ fontSize: 14, color: theme.colors.textTertiary }}>
+              {value}
+            </Text>
+          ) : onPress ? (
+            <Ionicons
+              name="chevron-forward"
+              size={18}
+              color={theme.colors.textTertiary}
+            />
+          ) : null)}
+      </View>
+      {valueBelowLabel ? (
+        <Text
+          style={{
+            fontSize: 13,
+            color: theme.colors.textTertiary,
+            paddingBottom: 12,
+            marginTop: -4,
+          }}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {valueBelowLabel}
+        </Text>
+      ) : null}
     </View>
   );
 
   if (onPress) {
     return (
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }: { pressed: boolean }) => {
+          return { opacity: pressed ? 0.7 : 1 };
+        }}
+      >
         {content}
-      </TouchableOpacity>
+      </Pressable>
     );
   }
 
@@ -92,28 +149,17 @@ function SettingsRow({
 }
 
 export default function SettingsScreen(): React.JSX.Element {
-  const { theme, themeMode, setThemeMode } = useTheme();
+  const { theme } = useTheme();
   const { logout } = useAuth();
-  const { selectedProject, clearProject } = useProject();
+  const navigation: SettingsNavigationProp =
+    useNavigation<SettingsNavigationProp>();
   const biometric: ReturnType<typeof useBiometric> = useBiometric();
   const { selectionFeedback } = useHaptics();
-  const navigation: SettingsNavProp = useNavigation<SettingsNavProp>();
   const [serverUrl, setServerUrlState] = useState("");
 
   useEffect(() => {
     getServerUrl().then(setServerUrlState);
   }, []);
-
-  const handleChangeProject: () => Promise<void> = async (): Promise<void> => {
-    await clearProject();
-  };
-
-  const handleThemeChange: (mode: ThemeMode) => void = (
-    mode: ThemeMode,
-  ): void => {
-    selectionFeedback();
-    setThemeMode(mode);
-  };
 
   const handleBiometricToggle: (value: boolean) => Promise<void> = async (
     value: boolean,
@@ -126,246 +172,548 @@ export default function SettingsScreen(): React.JSX.Element {
 
   return (
     <ScrollView
-      style={[{ backgroundColor: theme.colors.backgroundPrimary }]}
-      contentContainerStyle={styles.content}
+      contentInsetAdjustmentBehavior="automatic"
+      style={{ backgroundColor: theme.colors.backgroundPrimary }}
+      contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
     >
-      {/* Appearance */}
-      <View style={styles.section}>
-        <Text
-          style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}
-        >
-          Appearance
-        </Text>
-        <View
-          style={[
-            styles.themeSelector,
-            {
-              backgroundColor: theme.colors.backgroundSecondary,
-              borderColor: theme.colors.borderSubtle,
-            },
+      {/* Header */}
+      <View
+        style={{
+          borderRadius: 24,
+          overflow: "hidden",
+          padding: 20,
+          marginBottom: 24,
+          backgroundColor: theme.colors.backgroundElevated,
+          borderWidth: 1,
+          borderColor: theme.colors.borderGlass,
+          shadowColor: "#000",
+          shadowOpacity: 0.28,
+          shadowOffset: { width: 0, height: 10 },
+          shadowRadius: 18,
+          elevation: 7,
+        }}
+      >
+        <LinearGradient
+          colors={[
+            theme.colors.accentGradientStart + "24",
+            theme.colors.accentGradientEnd + "08",
           ]}
-        >
-          {(["dark", "light", "system"] as ThemeMode[]).map(
-            (mode: ThemeMode) => {
-              const isActive: boolean = themeMode === mode;
-              return (
-                <TouchableOpacity
-                  key={mode}
-                  style={[
-                    styles.themeOption,
-                    isActive && {
-                      backgroundColor: theme.colors.actionPrimary,
-                    },
-                  ]}
-                  onPress={() => {
-                    return handleThemeChange(mode);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={[
-                      styles.themeOptionIcon,
-                      {
-                        color: isActive
-                          ? "#FFFFFF"
-                          : theme.colors.textSecondary,
-                      },
-                    ]}
-                  >
-                    {mode === "dark" ? "◗" : mode === "light" ? "○" : "◑"}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.themeOptionLabel,
-                      {
-                        color: isActive ? "#FFFFFF" : theme.colors.textPrimary,
-                      },
-                    ]}
-                  >
-                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
-                  </Text>
-                </TouchableOpacity>
-              );
-            },
-          )}
-        </View>
-      </View>
-
-      {/* Notifications */}
-      <View style={styles.section}>
-        <Text
-          style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}
-        >
-          Notifications
-        </Text>
-        <SettingsRow
-          label="Notification Preferences"
-          onPress={() => {
-            return navigation.navigate("NotificationPreferences");
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            position: "absolute",
+            top: -60,
+            left: -10,
+            right: -10,
+            height: 190,
           }}
         />
+
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: 16,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "#000000",
+              borderWidth: 1,
+              borderColor: "#1F1F1F",
+            }}
+          >
+            <Logo size={52} />
+          </View>
+
+          <View style={{ marginLeft: 12, flex: 1 }}>
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "bold",
+                color: theme.colors.textPrimary,
+                letterSpacing: -0.3,
+              }}
+            >
+              Preferences
+            </Text>
+            <Text
+              style={{
+                fontSize: 12,
+                marginTop: 2,
+                color: theme.colors.textSecondary,
+                letterSpacing: 0.2,
+              }}
+            >
+              Personalize your OneUptime experience
+            </Text>
+          </View>
+        </View>
+
+        <View
+          style={{
+            marginTop: 16,
+            borderRadius: 10,
+            backgroundColor: theme.colors.backgroundTertiary,
+            borderWidth: 1,
+            borderColor: theme.colors.borderSubtle,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: "600",
+                textTransform: "uppercase",
+                color: theme.colors.textTertiary,
+                letterSpacing: 1,
+              }}
+            >
+              Connected to
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: theme.colors.statusSuccess,
+                  marginRight: 5,
+                }}
+              />
+              <Text
+                style={{
+                  fontSize: 11,
+                  fontWeight: "600",
+                  color: theme.colors.statusSuccess,
+                }}
+              >
+                Online
+              </Text>
+            </View>
+          </View>
+          <Text
+            style={{
+              fontSize: 13,
+              fontWeight: "500",
+              color: theme.colors.textSecondary,
+              marginTop: 6,
+            }}
+            numberOfLines={1}
+            ellipsizeMode="middle"
+          >
+            {serverUrl || "oneuptime.com"}
+          </Text>
+        </View>
       </View>
 
       {/* Security */}
       {biometric.isAvailable ? (
-        <View style={styles.section}>
+        <View style={{ marginBottom: 24 }}>
           <Text
-            style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}
+            style={{
+              fontSize: 12,
+              fontWeight: "600",
+              textTransform: "uppercase",
+              marginBottom: 8,
+              marginLeft: 4,
+              color: theme.colors.textTertiary,
+              letterSpacing: 0.8,
+            }}
           >
             Security
           </Text>
-          <SettingsRow
-            label={biometric.biometricType}
-            rightElement={
-              <Switch
-                value={biometric.isEnabled}
-                onValueChange={handleBiometricToggle}
-                trackColor={{
-                  false: theme.colors.backgroundTertiary,
-                  true: theme.colors.actionPrimary,
-                }}
-                thumbColor="#FFFFFF"
-              />
-            }
-          />
-          <Text
-            style={[styles.sectionHint, { color: theme.colors.textTertiary }]}
+          <View
+            style={{
+              borderRadius: 16,
+              overflow: "hidden",
+              backgroundColor: theme.colors.backgroundElevated,
+              borderWidth: 1,
+              borderColor: theme.colors.borderGlass,
+            }}
           >
-            Require {biometric.biometricType.toLowerCase()} to unlock the app
-          </Text>
-        </View>
-      ) : null}
-
-      {/* Project */}
-      {selectedProject ? (
-        <View style={styles.section}>
+            <SettingsRow
+              label="Biometrics Login"
+              iconName="finger-print-outline"
+              isLast
+              rightElement={
+                <Switch
+                  value={biometric.isEnabled}
+                  onValueChange={handleBiometricToggle}
+                  trackColor={{
+                    false: theme.colors.backgroundTertiary,
+                    true: theme.colors.actionPrimary,
+                  }}
+                  thumbColor="#FFFFFF"
+                />
+              }
+            />
+          </View>
           <Text
-            style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}
+            style={{
+              fontSize: 12,
+              marginTop: 6,
+              marginLeft: 4,
+              lineHeight: 16,
+              color: theme.colors.textTertiary,
+            }}
           >
-            Project
+            Require biometrics to unlock the app
           </Text>
-          <SettingsRow
-            label={selectedProject.name}
-            onPress={handleChangeProject}
-          />
         </View>
       ) : null}
 
       {/* Server */}
-      <View style={styles.section}>
+      <View style={{ marginBottom: 24 }}>
         <Text
-          style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}
+          style={{
+            fontSize: 12,
+            fontWeight: "600",
+            textTransform: "uppercase",
+            marginBottom: 8,
+            marginLeft: 4,
+            color: theme.colors.textTertiary,
+            letterSpacing: 0.8,
+          }}
         >
           Server
         </Text>
-        <SettingsRow label="Server URL" value={serverUrl || "oneuptime.com"} />
+        <View
+          style={{
+            borderRadius: 16,
+            overflow: "hidden",
+            backgroundColor: theme.colors.backgroundElevated,
+            borderWidth: 1,
+            borderColor: theme.colors.borderGlass,
+            padding: 16,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 12,
+            }}
+          >
+            <View
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 8,
+                alignItems: "center",
+                justifyContent: "center",
+                marginRight: 10,
+                backgroundColor: theme.colors.iconBackground,
+              }}
+            >
+              <Ionicons
+                name="globe-outline"
+                size={15}
+                color={theme.colors.actionPrimary}
+              />
+            </View>
+            <Text
+              style={{
+                fontSize: 15,
+                fontWeight: "500",
+                color: theme.colors.textPrimary,
+                flex: 1,
+              }}
+            >
+              Server URL
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingHorizontal: 8,
+                paddingVertical: 3,
+                borderRadius: 9999,
+                backgroundColor: theme.colors.statusSuccessBg,
+              }}
+            >
+              <View
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: theme.colors.statusSuccess,
+                  marginRight: 5,
+                }}
+              />
+              <Text
+                style={{
+                  fontSize: 10,
+                  fontWeight: "600",
+                  color: theme.colors.statusSuccess,
+                  letterSpacing: 0.2,
+                }}
+              >
+                Connected
+              </Text>
+            </View>
+          </View>
+
+          <View
+            style={{
+              borderRadius: 10,
+              backgroundColor: theme.colors.backgroundTertiary,
+              borderWidth: 1,
+              borderColor: theme.colors.borderSubtle,
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: "500",
+                color: theme.colors.textSecondary,
+                fontFamily: undefined,
+              }}
+              numberOfLines={1}
+              ellipsizeMode="middle"
+            >
+              {serverUrl || "oneuptime.com"}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Projects */}
+      <View style={{ marginBottom: 24 }}>
+        <Text
+          style={{
+            fontSize: 12,
+            fontWeight: "600",
+            textTransform: "uppercase",
+            marginBottom: 8,
+            marginLeft: 4,
+            color: theme.colors.textTertiary,
+            letterSpacing: 0.8,
+          }}
+        >
+          Projects
+        </Text>
+        <View
+          style={{
+            borderRadius: 16,
+            overflow: "hidden",
+            backgroundColor: theme.colors.backgroundElevated,
+            borderWidth: 1,
+            borderColor: theme.colors.borderGlass,
+          }}
+        >
+          <SettingsRow
+            label="Manage Projects"
+            iconName="business-outline"
+            onPress={() => {
+              navigation.navigate("ProjectsList");
+            }}
+            isLast
+          />
+        </View>
+        <Text
+          style={{
+            fontSize: 12,
+            marginTop: 6,
+            marginLeft: 4,
+            lineHeight: 16,
+            color: theme.colors.textTertiary,
+          }}
+        >
+          View projects and authenticate with SSO providers
+        </Text>
       </View>
 
       {/* Account */}
-      <View style={styles.section}>
+      <View style={{ marginBottom: 24 }}>
         <Text
-          style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}
+          style={{
+            fontSize: 12,
+            fontWeight: "600",
+            textTransform: "uppercase",
+            marginBottom: 8,
+            marginLeft: 4,
+            color: theme.colors.textTertiary,
+            letterSpacing: 0.8,
+          }}
         >
           Account
         </Text>
-        <SettingsRow label="Log Out" onPress={logout} destructive />
+        <View
+          style={{
+            borderRadius: 16,
+            overflow: "hidden",
+            backgroundColor: theme.colors.backgroundElevated,
+            borderWidth: 1,
+            borderColor: theme.colors.borderGlass,
+          }}
+        >
+          <SettingsRow
+            label="Log Out"
+            iconName="log-out-outline"
+            onPress={logout}
+            destructive
+            isLast
+          />
+        </View>
       </View>
 
       {/* About */}
-      <View style={styles.section}>
+      <View style={{ marginBottom: 24 }}>
         <Text
-          style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}
+          style={{
+            fontSize: 12,
+            fontWeight: "600",
+            textTransform: "uppercase",
+            marginBottom: 8,
+            marginLeft: 4,
+            color: theme.colors.textTertiary,
+            letterSpacing: 0.8,
+          }}
         >
           About
         </Text>
-        <SettingsRow label="Version" value={APP_VERSION} />
-        <View style={{ height: 1 }} />
-        <SettingsRow label="Build" value="1" />
+        <View
+          style={{
+            borderRadius: 16,
+            overflow: "hidden",
+            backgroundColor: theme.colors.backgroundElevated,
+            borderWidth: 1,
+            borderColor: theme.colors.borderGlass,
+          }}
+        >
+          <SettingsRow
+            label="Version"
+            iconName="information-circle-outline"
+            value={APP_VERSION}
+            isLast
+          />
+        </View>
       </View>
 
-      {/* Footer branding */}
-      <View style={styles.footer}>
-        <Text style={[styles.footerText, { color: theme.colors.textTertiary }]}>
-          OneUptime On-Call
-        </Text>
+      {/* Footer */}
+      <View style={{ paddingTop: 8, paddingBottom: 8 }}>
+        <View
+          style={{
+            borderRadius: 16,
+            overflow: "hidden",
+            paddingHorizontal: 16,
+            paddingVertical: 16,
+            backgroundColor: theme.colors.backgroundElevated,
+            borderWidth: 1,
+            borderColor: theme.colors.borderGlass,
+          }}
+        >
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 3,
+              backgroundColor: theme.colors.actionPrimary,
+              opacity: 0.45,
+            }}
+          />
+
+          <View
+            style={{ alignItems: "center", marginTop: 4, marginBottom: 10 }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+            >
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 9999,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: theme.colors.iconBackground,
+                }}
+              >
+                <Ionicons
+                  name="heart-outline"
+                  size={16}
+                  color={theme.colors.actionPrimary}
+                />
+              </View>
+              <View
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: 9999,
+                  backgroundColor: theme.colors.iconBackground,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 10,
+                    fontWeight: "600",
+                    color: theme.colors.textSecondary,
+                    letterSpacing: 0.4,
+                  }}
+                >
+                  OPEN SOURCE
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: "600",
+              color: theme.colors.textPrimary,
+              textAlign: "center",
+            }}
+          >
+            Thank you for supporting open source software.
+          </Text>
+          <Text
+            style={{
+              fontSize: 12,
+              marginTop: 8,
+              lineHeight: 20,
+              color: theme.colors.textSecondary,
+              textAlign: "center",
+            }}
+          >
+            Built and maintained by contributors around the world.
+          </Text>
+
+          <View style={{ alignItems: "center", marginTop: 12 }}>
+            <View
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 9999,
+                backgroundColor: theme.colors.backgroundTertiary,
+                borderWidth: 1,
+                borderColor: theme.colors.borderSubtle,
+              }}
+            >
+              <Text style={{ fontSize: 11, color: theme.colors.textTertiary }}>
+                Licensed under Apache 2.0
+              </Text>
+            </View>
+          </View>
+        </View>
       </View>
     </ScrollView>
   );
 }
-
-const styles: ReturnType<typeof StyleSheet.create> = StyleSheet.create({
-  content: {
-    padding: 20,
-    paddingBottom: 60,
-  },
-  section: {
-    marginBottom: 28,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-    marginBottom: 10,
-    marginLeft: 4,
-  },
-  sectionHint: {
-    fontSize: 12,
-    marginTop: 8,
-    marginLeft: 4,
-    lineHeight: 16,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    minHeight: 52,
-  },
-  rowLabel: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  rowValue: {
-    fontSize: 15,
-  },
-  chevron: {
-    fontSize: 24,
-    fontWeight: "300",
-  },
-  // Theme selector
-  themeSelector: {
-    flexDirection: "row",
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 4,
-    gap: 4,
-  },
-  themeOption: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 10,
-    borderRadius: 8,
-    gap: 6,
-  },
-  themeOptionIcon: {
-    fontSize: 16,
-  },
-  themeOptionLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  // Footer
-  footer: {
-    alignItems: "center",
-    paddingTop: 12,
-  },
-  footerText: {
-    fontSize: 12,
-    fontWeight: "500",
-  },
-});

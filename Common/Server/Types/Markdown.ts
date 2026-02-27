@@ -103,6 +103,15 @@ export default class Markdown {
     return htmlBody;
   }
 
+  private static escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   private static getEmailRenderer(): Renderer {
     if (this.emailRenderer !== null) {
       return this.emailRenderer;
@@ -140,7 +149,8 @@ export default class Markdown {
       if (language === "mermaid") {
         return `<div class="mermaid">${code}</div>`;
       }
-      return `<pre><code class="language-${language}">${code}</code></pre>`;
+      const escaped: string = Markdown.escapeHtml(code);
+      return `<pre><code class="language-${language}">${escaped}</code></pre>`;
     };
 
     renderer.heading = function (text, level) {
@@ -160,7 +170,8 @@ export default class Markdown {
 
     // Inline code
     renderer.codespan = function (code) {
-      return `<code class="rounded-md bg-slate-100 px-1.5 py-0.5 text-sm text-slate-700 font-mono">${code}</code>`;
+      const escaped: string = Markdown.escapeHtml(code);
+      return `<code class="rounded-md bg-slate-100 px-1.5 py-0.5 text-sm text-slate-700 font-mono">${escaped}</code>`;
     };
 
     this.docsRenderer = renderer;
@@ -186,7 +197,8 @@ export default class Markdown {
     };
 
     renderer.code = function (code, language) {
-      return `<pre class="language-${language} rounded-md"><code class="language-${language} rounded-md">${code}</code></pre>`;
+      const escaped: string = Markdown.escapeHtml(code);
+      return `<pre class="language-${language} rounded-md"><code class="language-${language} rounded-md">${escaped}</code></pre>`;
     };
 
     renderer.heading = function (text, level) {
@@ -237,7 +249,8 @@ export default class Markdown {
 
     // Inline code
     renderer.codespan = function (code) {
-      return `<code class="rounded-md bg-gray-100 px-1.5 py-0.5 text-sm text-pink-600">${code}</code>`;
+      const escaped: string = Markdown.escapeHtml(code);
+      return `<code class="rounded-md bg-gray-100 px-1.5 py-0.5 text-sm text-pink-600">${escaped}</code>`;
     };
 
     // Horizontal rule

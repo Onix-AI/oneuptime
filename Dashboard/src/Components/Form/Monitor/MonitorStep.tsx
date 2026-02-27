@@ -75,6 +75,18 @@ import SnmpMonitorStepForm from "./SnmpMonitor/SnmpMonitorStepForm";
 import MonitorStepSnmpMonitor, {
   MonitorStepSnmpMonitorUtil,
 } from "Common/Types/Monitor/MonitorStepSnmpMonitor";
+import DnsMonitorStepForm from "./DnsMonitor/DnsMonitorStepForm";
+import MonitorStepDnsMonitor, {
+  MonitorStepDnsMonitorUtil,
+} from "Common/Types/Monitor/MonitorStepDnsMonitor";
+import DomainMonitorStepForm from "./DomainMonitor/DomainMonitorStepForm";
+import MonitorStepDomainMonitor, {
+  MonitorStepDomainMonitorUtil,
+} from "Common/Types/Monitor/MonitorStepDomainMonitor";
+import ExternalStatusPageMonitorStepForm from "./ExternalStatusPageMonitor/ExternalStatusPageMonitorStepForm";
+import MonitorStepExternalStatusPageMonitor, {
+  MonitorStepExternalStatusPageMonitorUtil,
+} from "Common/Types/Monitor/MonitorStepExternalStatusPageMonitor";
 
 export interface ComponentProps {
   monitorStatusDropdownOptions: Array<DropdownOption>;
@@ -784,6 +796,60 @@ return {
             }
             onChange={(value: MonitorStepSnmpMonitor) => {
               monitorStep.setSnmpMonitor(value);
+              props.onChange?.(MonitorStep.clone(monitorStep));
+            }}
+          />
+        </Card>
+      )}
+
+      {props.monitorType === MonitorType.DNS && (
+        <Card
+          title="DNS Monitor Configuration"
+          description="Configure the DNS monitoring settings"
+        >
+          <DnsMonitorStepForm
+            monitorStepDnsMonitor={
+              monitorStep.data?.dnsMonitor ||
+              MonitorStepDnsMonitorUtil.getDefault()
+            }
+            onChange={(value: MonitorStepDnsMonitor) => {
+              monitorStep.setDnsMonitor(value);
+              props.onChange?.(MonitorStep.clone(monitorStep));
+            }}
+          />
+        </Card>
+      )}
+
+      {props.monitorType === MonitorType.Domain && (
+        <Card
+          title="Domain Monitor Configuration"
+          description="Configure the domain registration monitoring settings"
+        >
+          <DomainMonitorStepForm
+            monitorStepDomainMonitor={
+              monitorStep.data?.domainMonitor ||
+              MonitorStepDomainMonitorUtil.getDefault()
+            }
+            onChange={(value: MonitorStepDomainMonitor) => {
+              monitorStep.setDomainMonitor(value);
+              props.onChange?.(MonitorStep.clone(monitorStep));
+            }}
+          />
+        </Card>
+      )}
+
+      {props.monitorType === MonitorType.ExternalStatusPage && (
+        <Card
+          title="External Status Page Configuration"
+          description="Configure which external status page to monitor (e.g. AWS, GCP, GitHub)"
+        >
+          <ExternalStatusPageMonitorStepForm
+            monitorStepExternalStatusPageMonitor={
+              monitorStep.data?.externalStatusPageMonitor ||
+              MonitorStepExternalStatusPageMonitorUtil.getDefault()
+            }
+            onChange={(value: MonitorStepExternalStatusPageMonitor) => {
+              monitorStep.setExternalStatusPageMonitor(value);
               props.onChange?.(MonitorStep.clone(monitorStep));
             }}
           />

@@ -35,6 +35,9 @@
     "oneuptimeSecret": {
       "type": ["string", "null"]
     },
+    "registerProbeKey": {
+      "type": ["string", "null"]
+    },
     "encryptionSecret": {
       "type": ["string", "null"]
     },
@@ -722,6 +725,24 @@
           "type": ["string", "null"]
         },
         "subject": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "expo": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "pushNotification": {
+      "type": "object",
+      "properties": {
+        "relayUrl": {
           "type": ["string", "null"]
         }
       },
@@ -1570,45 +1591,6 @@
         },
         "workflowTimeoutInMs": {
           "type": "integer"
-        },
-        "ports": {
-          "type": "object",
-          "properties": {
-            "http": {
-              "type": "integer"
-            }
-          },
-          "additionalProperties": false
-        },
-        "resources": {
-          "type": ["object", "null"]
-        },
-        "nodeSelector": {
-          "type": "object"
-        },
-        "podSecurityContext": {
-          "type": "object"
-        },
-        "containerSecurityContext": {
-          "type": "object"
-        }
-      },
-      "additionalProperties": false
-    },
-    "apiReference": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "replicaCount": {
-          "type": "integer"
-        },
-        "disableTelemetryCollection": {
-          "type": "boolean"
-        },
-        "disableAutoscaler": {
-          "type": "boolean"
         },
         "ports": {
           "type": "object",

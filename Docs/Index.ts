@@ -1,4 +1,5 @@
-import DocsRoutes from "./Routes";
+import DocsRoutes from "./Services/Docs/Routes";
+import APIReferenceRoutes from "./Services/APIReference/Routes";
 import { PromiseVoidFunction } from "Common/Types/FunctionTypes";
 import InfrastructureStatus from "Common/Server/Infrastructure/Status";
 import logger from "Common/Server/Utils/Logger";
@@ -35,6 +36,7 @@ const init: PromiseVoidFunction = async (): Promise<void> => {
     });
 
     await DocsRoutes.init();
+    await APIReferenceRoutes.init();
 
     // Add default routes to the app
     await App.addDefaultRoutes();

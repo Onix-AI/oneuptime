@@ -3,15 +3,11 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ViewStyle,
-  TextStyle,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
 import { AuthStackParamList } from "../../navigation/types";
@@ -19,6 +15,8 @@ import { useTheme } from "../../theme";
 import { useAuth } from "../../hooks/useAuth";
 import { setServerUrl } from "../../storage/serverUrl";
 import { validateServerUrl } from "../../api/auth";
+import Logo from "../../components/Logo";
+import GradientButton from "../../components/GradientButton";
 
 type ServerUrlNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -33,6 +31,7 @@ export default function ServerUrlScreen(): React.JSX.Element {
   const [url, setUrl] = useState("https://oneuptime.com");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [urlFocused, setUrlFocused] = useState(false);
 
   const handleConnect: () => Promise<void> = async (): Promise<void> => {
     if (!url.trim()) {
@@ -66,171 +65,165 @@ export default function ServerUrlScreen(): React.JSX.Element {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.flex, { backgroundColor: theme.colors.backgroundPrimary }]}
+      style={{ flex: 1, backgroundColor: theme.colors.backgroundPrimary }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.container}>
-          <View style={styles.header}>
+        <View
+          style={{ flex: 1, justifyContent: "center", paddingHorizontal: 28 }}
+        >
+          <View style={{ alignItems: "center", marginBottom: 56 }}>
+            <View
+              style={{
+                borderWidth: 2,
+                borderColor: theme.colors.borderDefault,
+                borderRadius: 20,
+                marginBottom: 20,
+                overflow: "hidden",
+              }}
+            >
+              <Logo size={90} />
+            </View>
+
             <Text
-              style={[
-                theme.typography.titleLarge,
-                { color: theme.colors.textPrimary },
-              ]}
+              style={{
+                fontSize: 30,
+                fontWeight: "bold",
+                color: theme.colors.textPrimary,
+                letterSpacing: -1,
+              }}
             >
               OneUptime
             </Text>
             <Text
-              style={[
-                theme.typography.bodyMedium,
-                {
-                  color: theme.colors.textSecondary,
-                  marginTop: theme.spacing.sm,
-                  textAlign: "center",
-                },
-              ]}
+              style={{
+                fontSize: 15,
+                marginTop: 8,
+                textAlign: "center",
+                lineHeight: 22,
+                color: theme.colors.textSecondary,
+              }}
             >
               Connect to your OneUptime instance
             </Text>
           </View>
 
-          <View style={styles.form}>
+          <View>
             <Text
-              style={[
-                theme.typography.bodySmall,
-                {
-                  color: theme.colors.textSecondary,
-                  marginBottom: theme.spacing.xs,
-                },
-              ]}
+              style={{
+                fontSize: 13,
+                fontWeight: "600",
+                marginBottom: 8,
+                color: theme.colors.textSecondary,
+              }}
             >
               Server URL
             </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: theme.colors.backgroundSecondary,
-                  borderColor: error
-                    ? theme.colors.statusError
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                height: 48,
+                borderRadius: 12,
+                paddingHorizontal: 14,
+                backgroundColor: theme.colors.backgroundSecondary,
+                borderWidth: 1.5,
+                borderColor: error
+                  ? theme.colors.statusError
+                  : urlFocused
+                    ? theme.colors.actionPrimary
                     : theme.colors.borderDefault,
-                  color: theme.colors.textPrimary,
-                },
-              ]}
-              value={url}
-              onChangeText={(text: string) => {
-                setUrl(text);
-                setError(null);
               }}
-              placeholder="https://oneuptime.com"
-              placeholderTextColor={theme.colors.textTertiary}
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="url"
-              returnKeyType="go"
-              onSubmitEditing={handleConnect}
-            />
+            >
+              <Ionicons
+                name="globe-outline"
+                size={18}
+                color={
+                  urlFocused
+                    ? theme.colors.actionPrimary
+                    : theme.colors.textTertiary
+                }
+                style={{ marginRight: 10 }}
+              />
+              <TextInput
+                style={{
+                  flex: 1,
+                  fontSize: 15,
+                  color: theme.colors.textPrimary,
+                }}
+                value={url}
+                onChangeText={(text: string) => {
+                  setUrl(text);
+                  setError(null);
+                }}
+                onFocus={() => {
+                  return setUrlFocused(true);
+                }}
+                onBlur={() => {
+                  return setUrlFocused(false);
+                }}
+                placeholder="https://oneuptime.com"
+                placeholderTextColor={theme.colors.textTertiary}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                returnKeyType="go"
+                onSubmitEditing={handleConnect}
+              />
+            </View>
 
             {error ? (
-              <Text
-                style={[
-                  theme.typography.bodySmall,
-                  {
-                    color: theme.colors.statusError,
-                    marginTop: theme.spacing.sm,
-                  },
-                ]}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: 12,
+                }}
               >
-                {error}
-              </Text>
+                <Ionicons
+                  name="alert-circle"
+                  size={14}
+                  color={theme.colors.statusError}
+                  style={{ marginRight: 6 }}
+                />
+                <Text
+                  style={{
+                    fontSize: 13,
+                    flex: 1,
+                    color: theme.colors.statusError,
+                  }}
+                >
+                  {error}
+                </Text>
+              </View>
             ) : null}
 
-            <TouchableOpacity
-              style={[
-                styles.button,
-                {
-                  backgroundColor: theme.colors.actionPrimary,
-                  opacity: isLoading ? 0.7 : 1,
-                },
-              ]}
-              onPress={handleConnect}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color={theme.colors.textInverse} />
-              ) : (
-                <Text
-                  style={[
-                    theme.typography.bodyMedium,
-                    { color: theme.colors.textInverse, fontWeight: "600" },
-                  ]}
-                >
-                  Connect
-                </Text>
-              )}
-            </TouchableOpacity>
-
-            <Text
-              style={[
-                theme.typography.caption,
-                {
-                  color: theme.colors.textTertiary,
-                  textAlign: "center",
-                  marginTop: theme.spacing.lg,
-                },
-              ]}
-            >
-              Self-hosting? Enter your OneUptime server URL above.
-            </Text>
+            <View style={{ marginTop: 24 }}>
+              <GradientButton
+                label="Connect"
+                onPress={handleConnect}
+                loading={isLoading}
+                disabled={isLoading}
+              />
+            </View>
           </View>
+
+          <Text
+            style={{
+              fontSize: 12,
+              textAlign: "center",
+              marginTop: 24,
+              lineHeight: 20,
+              color: theme.colors.textTertiary,
+            }}
+          >
+            Self-hosting? Enter your OneUptime server URL above.
+          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
-const styles: {
-  flex: ViewStyle;
-  scrollContent: ViewStyle;
-  container: ViewStyle;
-  header: ViewStyle;
-  form: ViewStyle;
-  input: TextStyle;
-  button: ViewStyle;
-} = StyleSheet.create({
-  flex: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 24,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 48,
-  },
-  form: {
-    width: "100%",
-  },
-  input: {
-    height: 56,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
-  },
-  button: {
-    height: 56,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 16,
-  },
-});

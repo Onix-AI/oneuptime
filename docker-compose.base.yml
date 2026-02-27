@@ -43,7 +43,6 @@ x-common-variables: &common-variables
     SERVER_WORKER_HOSTNAME: worker
     SERVER_HOME_HOSTNAME: home
     SERVER_WORKFLOW_HOSTNAME: workflow
-    SERVER_API_REFERENCE_HOSTNAME: api-reference
     SERVER_DOCS_HOSTNAME: docs
     SERVER_SERVER_MONITOR_INGEST_HOSTNAME: server-monitor-ingest
     SERVER_MCP_HOSTNAME: mcp
@@ -62,7 +61,6 @@ x-common-variables: &common-variables
     ISOLATED_VM_PORT: ${ISOLATED_VM_PORT}
     WORKER_PORT: ${WORKER_PORT}
     WORKFLOW_PORT: ${WORKFLOW_PORT}
-    API_REFERENCE_PORT: ${API_REFERENCE_PORT}
     DOCS_PORT: ${DOCS_PORT}
     SERVER_MONITOR_INGEST_PORT: ${SERVER_MONITOR_INGEST_PORT}
     MCP_PORT: ${MCP_PORT}
@@ -81,6 +79,9 @@ x-common-runtime-variables: &common-runtime-variables
     ONEUPTIME_SECRET: ${ONEUPTIME_SECRET}
 
     VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+
+    EXPO_ACCESS_TOKEN: ${EXPO_ACCESS_TOKEN}
+    PUSH_NOTIFICATION_RELAY_URL: ${PUSH_NOTIFICATION_RELAY_URL}
 
     DATABASE_PORT: ${DATABASE_PORT}
     DATABASE_USERNAME: ${DATABASE_USERNAME}
@@ -167,8 +168,14 @@ services:
         networks:
           - oneuptime
         command: redis-server --requirepass "${REDIS_PASSWORD}" --save "" --appendonly no
-        environment: 
+        environment:
             REDIS_PASSWORD: ${REDIS_PASSWORD}
+        healthcheck:
+            test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
         logging:
             driver: "local"
             options:
@@ -186,6 +193,12 @@ services:
           - oneuptime
         volumes:
             - clickhouse:/var/lib/clickhouse/
+        healthcheck:
+            test: ["CMD-SHELL", "clickhouse-client --query 'SELECT 1'"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 15s
         logging:
             driver: "local"
             options:
@@ -194,14 +207,20 @@ services:
     postgres:
         image: postgres:15
         restart: always
-        environment: 
+        environment:
             POSTGRES_USER: ${DATABASE_USERNAME}
             POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
             POSTGRES_DB: ${DATABASE_NAME}
         networks:
           - oneuptime
-        volumes: 
+        volumes:
             - postgres:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 15s
         logging:
             driver: "local"
             options:
@@ -350,18 +369,6 @@ services:
             options:
                 max-size: "1000m"
 
-    api-reference:
-        networks:
-          - oneuptime
-        restart: always
-        environment: 
-            <<: *common-runtime-variables
-            PORT: ${API_REFERENCE_PORT}
-        logging:
-            driver: "local"
-            options:
-                max-size: "1000m"
-
     workflow:
         networks:
           - oneuptime
@@ -374,21 +381,25 @@ services:
             options:
                 max-size: "1000m"
 
-    probe-1:   
+    probe-1:
         restart: always
         network_mode: host
         environment:
-            <<: *common-runtime-variables
+            ONEUPTIME_URL: ${GLOBAL_PROBE_1_ONEUPTIME_URL}
+            REGISTER_PROBE_KEY: ${REGISTER_PROBE_KEY}
             PROBE_NAME: ${GLOBAL_PROBE_1_NAME}
             PROBE_DESCRIPTION: ${GLOBAL_PROBE_1_DESCRIPTION}
             PROBE_MONITORING_WORKERS: ${GLOBAL_PROBE_1_MONITORING_WORKERS}
             PROBE_KEY: ${GLOBAL_PROBE_1_KEY}
             PROBE_SYNTHETIC_MONITOR_SCRIPT_TIMEOUT_IN_MS: ${GLOBAL_PROBE_1_SYNTHETIC_MONITOR_SCRIPT_TIMEOUT_IN_MS}
             PROBE_CUSTOM_CODE_MONITOR_SCRIPT_TIMEOUT_IN_MS: ${GLOBAL_PROBE_1_CUSTOM_CODE_MONITOR_SCRIPT_TIMEOUT_IN_MS}
-            ONEUPTIME_URL: ${GLOBAL_PROBE_1_ONEUPTIME_URL}
             PROBE_MONITOR_FETCH_LIMIT: ${GLOBAL_PROBE_1_MONITOR_FETCH_LIMIT}
-            DISABLE_TELEMETRY: ${DISABLE_TELEMETRY_FOR_PROBE}
             PORT: ${GLOBAL_PROBE_1_PORT}
+            NODE_ENV: ${ENVIRONMENT}
+            LOG_LEVEL: ${LOG_LEVEL}
+            DISABLE_TELEMETRY: ${DISABLE_TELEMETRY_FOR_PROBE}
+            OPENTELEMETRY_EXPORTER_OTLP_ENDPOINT: ${OPENTELEMETRY_EXPORTER_OTLP_ENDPOINT}
+            OPENTELEMETRY_EXPORTER_OTLP_HEADERS: ${OPENTELEMETRY_EXPORTER_OTLP_HEADERS}
         logging:
             driver: "local"
             options:
@@ -398,17 +409,21 @@ services:
         restart: always
         network_mode: host
         environment:
-            <<: *common-runtime-variables
+            ONEUPTIME_URL: ${GLOBAL_PROBE_2_ONEUPTIME_URL}
+            REGISTER_PROBE_KEY: ${REGISTER_PROBE_KEY}
             PROBE_NAME: ${GLOBAL_PROBE_2_NAME}
             PROBE_DESCRIPTION: ${GLOBAL_PROBE_2_DESCRIPTION}
             PROBE_MONITORING_WORKERS: ${GLOBAL_PROBE_2_MONITORING_WORKERS}
             PROBE_KEY: ${GLOBAL_PROBE_2_KEY}
-            ONEUPTIME_URL: ${GLOBAL_PROBE_2_ONEUPTIME_URL}
             PROBE_SYNTHETIC_MONITOR_SCRIPT_TIMEOUT_IN_MS: ${GLOBAL_PROBE_2_SYNTHETIC_MONITOR_SCRIPT_TIMEOUT_IN_MS}
             PROBE_CUSTOM_CODE_MONITOR_SCRIPT_TIMEOUT_IN_MS: ${GLOBAL_PROBE_2_CUSTOM_CODE_MONITOR_SCRIPT_TIMEOUT_IN_MS}
             PROBE_MONITOR_FETCH_LIMIT: ${GLOBAL_PROBE_2_MONITOR_FETCH_LIMIT}
-            DISABLE_TELEMETRY: ${DISABLE_TELEMETRY_FOR_PROBE}
             PORT: ${GLOBAL_PROBE_2_PORT}
+            NODE_ENV: ${ENVIRONMENT}
+            LOG_LEVEL: ${LOG_LEVEL}
+            DISABLE_TELEMETRY: ${DISABLE_TELEMETRY_FOR_PROBE}
+            OPENTELEMETRY_EXPORTER_OTLP_ENDPOINT: ${OPENTELEMETRY_EXPORTER_OTLP_ENDPOINT}
+            OPENTELEMETRY_EXPORTER_OTLP_HEADERS: ${OPENTELEMETRY_EXPORTER_OTLP_HEADERS}
         logging:
             driver: "local"
             options:
@@ -486,6 +501,7 @@ services:
             PORT: ${PROBE_INGEST_PORT}
             DISABLE_TELEMETRY: ${DISABLE_TELEMETRY_FOR_PROBE_INGEST}
             PROBE_INGEST_CONCURRENCY: ${PROBE_INGEST_CONCURRENCY}
+            REGISTER_PROBE_KEY: ${REGISTER_PROBE_KEY}
         logging:
             driver: "local"
             options:

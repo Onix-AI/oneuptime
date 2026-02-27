@@ -2,6 +2,7 @@ import type { NotificationResponse } from "expo-notifications";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let navigationRef: any = null;
+let pendingNotificationData: NotificationData | null = null;
 
 export function setNavigationRef(ref: unknown): void {
   navigationRef = ref;
@@ -14,39 +15,61 @@ interface NotificationData {
   [key: string]: any;
 }
 
-function navigateToEntity(data: NotificationData): void {
-  if (!navigationRef?.isReady() || !data.entityType || !data.entityId) {
-    return;
-  }
+function executeNavigation(data: NotificationData): void {
+  const projectId: string = data.projectId ?? "";
 
   switch (data.entityType) {
     case "incident":
       navigationRef.navigate("Incidents", {
         screen: "IncidentDetail",
-        params: { incidentId: data.entityId },
+        params: { incidentId: data.entityId, projectId },
       });
       break;
     case "alert":
       navigationRef.navigate("Alerts", {
         screen: "AlertDetail",
-        params: { alertId: data.entityId },
+        params: { alertId: data.entityId, projectId },
       });
       break;
     case "incident-episode":
-      navigationRef.navigate("IncidentEpisodes", {
+      navigationRef.navigate("Incidents", {
         screen: "IncidentEpisodeDetail",
-        params: { episodeId: data.entityId },
+        params: { episodeId: data.entityId, projectId },
       });
       break;
     case "alert-episode":
-      navigationRef.navigate("AlertEpisodes", {
+      navigationRef.navigate("Alerts", {
         screen: "AlertEpisodeDetail",
-        params: { episodeId: data.entityId },
+        params: { episodeId: data.entityId, projectId },
       });
       break;
     default:
       break;
   }
+}
+
+function navigateToEntity(data: NotificationData): void {
+  if (!data.entityType || !data.entityId) {
+    return;
+  }
+
+  if (!navigationRef?.isReady()) {
+    // Navigator not ready yet (cold-start) — store for later
+    pendingNotificationData = data;
+    return;
+  }
+
+  executeNavigation(data);
+}
+
+export function processPendingNotification(): void {
+  if (!pendingNotificationData || !navigationRef?.isReady()) {
+    return;
+  }
+
+  const data: NotificationData = pendingNotificationData;
+  pendingNotificationData = null;
+  executeNavigation(data);
 }
 
 export function handleNotificationResponse(

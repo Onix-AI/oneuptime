@@ -6,6 +6,7 @@ import type {
   AlertState,
   StateTimelineItem,
   NoteItem,
+  FeedItem,
 } from "./types";
 
 export async function fetchAlertEpisodes(
@@ -29,6 +30,7 @@ export async function fetchAlertEpisodes(
         episodeNumber: true,
         episodeNumberWithPrefix: true,
         description: true,
+        rootCause: true,
         createdAt: true,
         alertCount: true,
         currentAlertState: { _id: true, name: true, color: true },
@@ -38,6 +40,42 @@ export async function fetchAlertEpisodes(
     },
     {
       headers: { tenantid: projectId },
+    },
+  );
+  return response.data;
+}
+
+export async function fetchAllAlertEpisodes(
+  options: { skip?: number; limit?: number; unresolvedOnly?: boolean } = {},
+): Promise<ListResponse<AlertEpisodeItem>> {
+  const { skip = 0, limit = 100, unresolvedOnly = false } = options;
+
+  const query: Record<string, unknown> = {};
+  if (unresolvedOnly) {
+    query.currentAlertState = { isResolvedState: false };
+  }
+
+  const response: AxiosResponse = await apiClient.post(
+    `/api/alert-episode/get-list?skip=${skip}&limit=${limit}`,
+    {
+      query,
+      select: {
+        _id: true,
+        title: true,
+        episodeNumber: true,
+        episodeNumberWithPrefix: true,
+        description: true,
+        rootCause: true,
+        createdAt: true,
+        alertCount: true,
+        currentAlertState: { _id: true, name: true, color: true },
+        alertSeverity: { _id: true, name: true, color: true },
+        projectId: true,
+      },
+      sort: { createdAt: "DESC" },
+    },
+    {
+      headers: { "is-multi-tenant-query": "true" },
     },
   );
   return response.data;
@@ -57,6 +95,7 @@ export async function fetchAlertEpisodeById(
         episodeNumber: true,
         episodeNumberWithPrefix: true,
         description: true,
+        rootCause: true,
         createdAt: true,
         alertCount: true,
         currentAlertState: { _id: true, name: true, color: true },
@@ -110,6 +149,31 @@ export async function fetchAlertEpisodeStateTimeline(
         alertState: { _id: true, name: true, color: true },
       },
       sort: { createdAt: "DESC" },
+    },
+    {
+      headers: { tenantid: projectId },
+    },
+  );
+  return response.data.data;
+}
+
+export async function fetchAlertEpisodeFeed(
+  projectId: string,
+  episodeId: string,
+): Promise<FeedItem[]> {
+  const response: AxiosResponse = await apiClient.post(
+    "/api/alert-episode-feed/get-list?skip=0&limit=50",
+    {
+      query: { alertEpisodeId: episodeId },
+      select: {
+        _id: true,
+        feedInfoInMarkdown: true,
+        moreInformationInMarkdown: true,
+        displayColor: true,
+        postedAt: true,
+        createdAt: true,
+      },
+      sort: { postedAt: "DESC" },
     },
     {
       headers: { tenantid: projectId },

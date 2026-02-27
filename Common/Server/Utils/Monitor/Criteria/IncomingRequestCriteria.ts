@@ -159,11 +159,7 @@ export default class IncomingRequestCriteria {
       }
     }
 
-    if (
-      input.criteriaFilter.checkOn === CheckOn.RequestBody &&
-      !(input.dataToProcess as IncomingMonitorRequest)
-        .onlyCheckForIncomingRequestReceivedAt
-    ) {
+    if (input.criteriaFilter.checkOn === CheckOn.RequestBody) {
       let responseBody: string | JSONObject | undefined = (
         input.dataToProcess as IncomingMonitorRequest
       ).requestBody;
@@ -200,11 +196,7 @@ export default class IncomingRequestCriteria {
       }
     }
 
-    if (
-      input.criteriaFilter.checkOn === CheckOn.RequestHeader &&
-      !(input.dataToProcess as IncomingMonitorRequest)
-        .onlyCheckForIncomingRequestReceivedAt
-    ) {
+    if (input.criteriaFilter.checkOn === CheckOn.RequestHeader) {
       const headerKeys: Array<string> = Object.keys(
         (input.dataToProcess as IncomingMonitorRequest).requestHeaders || {},
       ).map((key: string) => {
@@ -227,11 +219,7 @@ export default class IncomingRequestCriteria {
       }
     }
 
-    if (
-      input.criteriaFilter.checkOn === CheckOn.RequestHeaderValue &&
-      !(input.dataToProcess as IncomingMonitorRequest)
-        .onlyCheckForIncomingRequestReceivedAt
-    ) {
+    if (input.criteriaFilter.checkOn === CheckOn.RequestHeaderValue) {
       const headerValues: Array<string> = Object.values(
         (input.dataToProcess as IncomingMonitorRequest).requestHeaders || {},
       ).map((key: string) => {

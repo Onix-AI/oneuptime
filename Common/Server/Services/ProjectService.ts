@@ -124,6 +124,7 @@ export class ProjectService extends DatabaseService<Model> {
       select: {
         name: true,
         email: true,
+        isMasterAdmin: true,
         companyPhoneNumber: true,
         companyName: true,
         utmCampaign: true,
@@ -140,6 +141,15 @@ export class ProjectService extends DatabaseService<Model> {
 
     if (!user) {
       throw new BadDataException("User not found.");
+    }
+
+    // Check if project creation is restricted to admins only
+    const shouldDisableProjectCreation: boolean =
+      await DatabaseConfig.shouldDisableUserProjectCreation();
+    if (shouldDisableProjectCreation && !user.isMasterAdmin) {
+      throw new NotAuthorizedException(
+        "Project creation is restricted to admin users only on this OneUptime Server. Please contact your server admin.",
+      );
     }
 
     if (IsBillingEnabled) {
@@ -1313,6 +1323,8 @@ export class ProjectService extends DatabaseService<Model> {
         paymentProviderSubscriptionId: true,
         paymentProviderMeteredSubscriptionId: true,
         name: true,
+        createdAt: true,
+        planName: true,
         createdByUser: {
           name: true,
           email: true,
@@ -1341,6 +1353,8 @@ export class ProjectService extends DatabaseService<Model> {
         let slackMessage: string = `*Project Deleted:*
 *Project Name:* ${project.name?.toString() || "N/A"}
 *Project ID:* ${project._id?.toString() || "N/A"}
+*Project Created Date:* ${project.createdAt ? new Date(project.createdAt).toUTCString() : "N/A"}
+*Project Plan Name:* ${project.planName?.toString() || "N/A"}
 `;
 
         if (subscriptionStatus) {

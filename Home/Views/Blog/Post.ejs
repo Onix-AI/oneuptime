@@ -59,15 +59,52 @@
 }
     </script>
 
-        <!-- Syntax highlighting with highlight.js - using One Dark theme for colorful code -->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+        <!-- Breadcrumb schema -->
+        <script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://oneuptime.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://oneuptime.com/blog" },
+        { "@type": "ListItem", "position": 3, "name": "<%= blogPost.title %>" }
+    ]
+}
+        </script>
+
+        <!-- Syntax highlighting with highlight.js - using VS Code dark theme -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/dockerfile.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
-        <script>hljs.highlightAll();</script>
+        <script>
+            // Lazy-load only the language packs actually used on this page
+            (function(){
+                var langMap = {
+                    'dockerfile':'dockerfile','yaml':'yaml','yml':'yaml','bash':'bash','shell':'bash','sh':'bash',
+                    'typescript':'typescript','ts':'typescript','go':'go','python':'python','py':'python',
+                    'json':'json','ruby':'ruby','rb':'ruby','java':'java','css':'css','sql':'sql',
+                    'rust':'rust','graphql':'graphql','javascript':'javascript','js':'javascript',
+                    'xml':'xml','html':'xml','markup':'xml','cpp':'cpp','csharp':'csharp','php':'php'
+                };
+                var needed = {};
+                document.querySelectorAll('pre code[class*="language-"]').forEach(function(el){
+                    var m = el.className.match(/language-(\w+)/);
+                    if(m && langMap[m[1]]){ needed[langMap[m[1]]] = true; }
+                });
+                var langs = Object.keys(needed);
+                var loaded = 0;
+                if(langs.length === 0){ hljs.highlightAll(); return; }
+                langs.forEach(function(lang){
+                    var s = document.createElement('script');
+                    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/' + lang + '.min.js';
+                    s.async = false;
+                    s.onload = s.onerror = function(){
+                        loaded++;
+                        if(loaded >= langs.length){ hljs.highlightAll(); }
+                    };
+                    document.head.appendChild(s);
+                });
+            })();
+        </script>
 
         <style>
             body {
@@ -96,7 +133,7 @@
                 gap: 0.75rem;
             }
 
-            .floating-share a {
+            .floating-share a, .floating-share button {
                 width: 2.75rem;
                 height: 2.75rem;
                 border-radius: 9999px;
@@ -107,9 +144,11 @@
                 background: rgba(255, 255, 255, 0.9);
                 box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
                 transition: all 0.2s ease;
+                cursor: pointer;
+                color: inherit;
             }
 
-            .floating-share a:hover {
+            .floating-share a:hover, .floating-share button:hover {
                 border-color: #3b82f6;
                 color: #3b82f6;
                 transform: translateY(-2px);
@@ -117,6 +156,7 @@
 
             /* Code blocks styling */
             .blog-body pre {
+                position: relative;
                 font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Consolas', 'Courier New', monospace !important;
                 font-size: 14px !important;
                 line-height: 1.6 !important;
@@ -142,7 +182,87 @@
                 line-height: 1.6 !important;
                 font-weight: 400 !important;
                 padding: 1.25rem !important;
+                padding-top: 2.5rem !important;
                 border-radius: 0.75rem !important;
+            }
+
+            /* Language label */
+            .code-block-header {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.4rem 0.75rem;
+                background: rgba(255, 255, 255, 0.06);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 0.75rem 0.75rem 0 0;
+                z-index: 2;
+            }
+
+            .code-lang-label {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                font-size: 11px;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: rgba(255, 255, 255, 0.5);
+                user-select: none;
+            }
+
+            /* Copy button */
+            .code-copy-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                padding: 0.2rem 0.5rem;
+                border: none;
+                border-radius: 0.375rem;
+                background: transparent;
+                color: rgba(255, 255, 255, 0.5);
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                font-size: 11px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.15s ease;
+            }
+
+            .code-copy-btn:hover {
+                background: rgba(255, 255, 255, 0.1);
+                color: rgba(255, 255, 255, 0.85);
+            }
+
+            .code-copy-btn.copied {
+                color: #4ade80;
+            }
+
+            .code-copy-btn svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            /* Custom scrollbar for code blocks */
+            .blog-body pre::-webkit-scrollbar,
+            .blog-body pre code::-webkit-scrollbar {
+                height: 6px;
+            }
+
+            .blog-body pre::-webkit-scrollbar-track,
+            .blog-body pre code::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .blog-body pre::-webkit-scrollbar-thumb,
+            .blog-body pre code::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.15);
+                border-radius: 3px;
+            }
+
+            .blog-body pre::-webkit-scrollbar-thumb:hover,
+            .blog-body pre code::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 255, 255, 0.3);
             }
 
             /* Inline code chips */
@@ -174,6 +294,12 @@
             .blog-body img {
                 border-radius: 1rem;
                 box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+                cursor: zoom-in;
+                transition: transform 0.2s;
+            }
+
+            .blog-body img:hover {
+                transform: scale(1.01);
             }
 
             .blog-body h2,
@@ -364,6 +490,206 @@
             html {
                 scroll-behavior: smooth;
             }
+
+            /* Heading anchor links */
+            .blog-body h2,
+            .blog-body h3,
+            .blog-body h4 {
+                position: relative;
+            }
+
+            .heading-anchor {
+                position: absolute;
+                left: -1.5rem;
+                top: 50%;
+                transform: translateY(-50%);
+                opacity: 0;
+                color: #94a3b8;
+                text-decoration: none;
+                font-size: 0.9em;
+                font-weight: 400;
+                transition: opacity 0.2s, color 0.2s;
+                line-height: 1;
+            }
+
+            .blog-body h2:hover .heading-anchor,
+            .blog-body h3:hover .heading-anchor,
+            .blog-body h4:hover .heading-anchor,
+            .heading-anchor:focus {
+                opacity: 1;
+            }
+
+            .heading-anchor:hover {
+                color: #3b82f6;
+            }
+
+            /* Collapsible code blocks */
+            .collapsible-code.collapsed {
+                max-height: 400px;
+                overflow: hidden;
+            }
+
+            .collapsible-code.collapsed::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 80px;
+                background: linear-gradient(to bottom, rgba(30, 30, 30, 0), rgba(30, 30, 30, 0.95));
+                border-radius: 0 0 0.75rem 0.75rem;
+                pointer-events: none;
+                z-index: 3;
+            }
+
+            .code-expand-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                margin-top: -0.5rem;
+                margin-bottom: 1.5rem;
+                padding: 0.35rem 1rem;
+                border: 1px solid rgba(148, 163, 184, 0.3);
+                border-radius: 9999px;
+                background: rgba(248, 250, 252, 1);
+                color: rgba(100, 116, 139, 1);
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.15s;
+            }
+
+            .code-expand-btn:hover {
+                background: rgba(241, 245, 249, 1);
+                border-color: rgba(148, 163, 184, 0.5);
+                color: #334155;
+            }
+
+            /* Image lightbox */
+            .blog-lightbox-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 100;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(0, 0, 0, 0.85);
+                backdrop-filter: blur(8px);
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.25s, visibility 0.25s;
+                cursor: zoom-out;
+            }
+
+            .blog-lightbox-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .blog-lightbox-overlay img {
+                max-width: 90vw;
+                max-height: 90vh;
+                border-radius: 0.75rem;
+                box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+                transform: scale(0.95);
+                transition: transform 0.25s;
+            }
+
+            .blog-lightbox-overlay.active img {
+                transform: scale(1);
+            }
+
+            .blog-lightbox-close {
+                position: absolute;
+                top: 1.5rem;
+                right: 1.5rem;
+                width: 2.5rem;
+                height: 2.5rem;
+                border-radius: 9999px;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .blog-lightbox-close:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+            /* Time remaining badge */
+            .time-remaining {
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                z-index: 50;
+                padding: 0.4rem 0.75rem;
+                border-radius: 9999px;
+                background: rgba(255, 255, 255, 0.95);
+                border: 1px solid rgba(148, 163, 184, 0.3);
+                box-shadow: 0 10px 40px rgba(15, 23, 42, 0.1);
+                font-size: 12px;
+                font-weight: 500;
+                color: #64748b;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(10px);
+                transition: all 0.3s ease;
+                backdrop-filter: blur(8px);
+            }
+
+            .time-remaining.visible {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+
+            /* Print styles */
+            @media print {
+                .reading-progress,
+                .back-to-top,
+                .floating-share,
+                .floating-toc,
+                .time-remaining,
+                .code-block-header,
+                .code-expand-btn,
+                .blog-lightbox-overlay,
+                nav,
+                footer,
+                .blog-cta-section {
+                    display: none !important;
+                }
+
+                .blog-body pre {
+                    border: 1px solid #ccc !important;
+                    box-shadow: none !important;
+                    max-height: none !important;
+                    overflow: visible !important;
+                    white-space: pre-wrap !important;
+                    word-wrap: break-word !important;
+                }
+
+                .collapsible-code.collapsed {
+                    max-height: none !important;
+                    overflow: visible !important;
+                }
+
+                .collapsible-code.collapsed::after {
+                    display: none !important;
+                }
+
+                .blog-body {
+                    font-size: 12pt;
+                }
+
+                body {
+                    background: #fff !important;
+                }
+            }
         </style>
 
 </head>
@@ -379,6 +705,20 @@
     </button>
 
     <%- include('../nav') -%>
+
+        <!-- Image lightbox overlay -->
+        <div class="blog-lightbox-overlay" id="lightbox-overlay">
+            <button class="blog-lightbox-close" aria-label="Close lightbox">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <img id="lightbox-img" src="" alt="" />
+        </div>
+
+        <!-- Time remaining badge -->
+        <div class="time-remaining" id="time-remaining">
+            <svg class="inline w-3 h-3 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span id="time-remaining-text"></span>
+        </div>
 
         <div class="relative isolate overflow-hidden bg-white">
 
@@ -444,6 +784,10 @@
                                             <path d="M7.2 6.2L12 12.8l4.8-6.6M12 13.4V17.8" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path>
                                         </svg>
                                     </a>
+                                    <button title="Copy link" class="copy-link-btn" data-url="<%- blogPost.blogUrl -%>">
+                                        <svg class="w-4 h-4 copy-link-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                                        <svg class="w-4 h-4 copy-link-check hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                    </button>
                                 </div>
                                 <div class="blog-body prose prose-gray max-w-none prose-headings:scroll-mt-28 prose-headings:font-display prose-headings:font-semibold lg:prose-headings:scroll-mt-[8.5rem] prose-a:font-semibold prose-a:text-gray-600 hover:prose-a:text-gray-500 prose-img:rounded-xl prose-pre:rounded-xl prose-code:text-gray-600">
                                     <%- blogPost.htmlBody -%>
@@ -466,6 +810,10 @@
                                             <path d="M7.2 6.2L12 12.8l4.8-6.6M12 13.4V17.8" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path>
                                         </svg>
                                     </a>
+                                    <button title="Copy link" class="copy-link-btn group inline-flex items-center justify-center h-9 w-9 rounded-lg border border-gray-200 hover:border-gray-400 hover:bg-gray-100 transition" data-url="<%- blogPost.blogUrl -%>">
+                                        <svg class="w-4 h-4 text-gray-500 group-hover:text-gray-600 copy-link-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                                        <svg class="w-4 h-4 text-green-500 copy-link-check hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                    </button>
                                 </div>
                             </div>
 
@@ -514,6 +862,74 @@
             <%- include('../footer') -%>
             <script>
                 (function(){
+                    // Language name mapping for display
+                    var langNames = {
+                        'js': 'JavaScript', 'javascript': 'JavaScript', 'ts': 'TypeScript', 'typescript': 'TypeScript',
+                        'py': 'Python', 'python': 'Python', 'rb': 'Ruby', 'ruby': 'Ruby',
+                        'go': 'Go', 'java': 'Java', 'css': 'CSS', 'html': 'HTML', 'xml': 'XML',
+                        'json': 'JSON', 'yaml': 'YAML', 'yml': 'YAML', 'sql': 'SQL',
+                        'bash': 'Bash', 'shell': 'Shell', 'sh': 'Shell', 'zsh': 'Shell',
+                        'dockerfile': 'Dockerfile', 'docker': 'Dockerfile',
+                        'rust': 'Rust', 'cpp': 'C++', 'c': 'C', 'csharp': 'C#',
+                        'php': 'PHP', 'graphql': 'GraphQL', 'http': 'HTTP',
+                        'markdown': 'Markdown', 'md': 'Markdown', 'plaintext': 'Text'
+                    };
+
+                    // Add copy button and language label to code blocks
+                    try {
+                        var codeBlocks = document.querySelectorAll('.blog-body pre');
+                        codeBlocks.forEach(function(pre) {
+                            var codeEl = pre.querySelector('code');
+                            if(!codeEl) return;
+
+                            // Detect language from class
+                            var lang = '';
+                            var classes = (codeEl.className || '').split(/\s+/);
+                            for(var i = 0; i < classes.length; i++){
+                                var m = classes[i].match(/^(?:language-|hljs-)(.+)$/);
+                                if(m && m[1] !== 'hljs'){ lang = m[1]; break; }
+                            }
+                            if(!lang && codeEl.dataset && codeEl.dataset.highlightedLanguage){
+                                lang = codeEl.dataset.highlightedLanguage;
+                            }
+
+                            var displayLang = langNames[lang] || (lang ? lang.charAt(0).toUpperCase() + lang.slice(1) : '');
+
+                            // Create header bar
+                            var header = document.createElement('div');
+                            header.className = 'code-block-header';
+
+                            // Language label
+                            var labelEl = document.createElement('span');
+                            labelEl.className = 'code-lang-label';
+                            labelEl.textContent = displayLang;
+                            header.appendChild(labelEl);
+
+                            // Copy button
+                            var copyBtn = document.createElement('button');
+                            copyBtn.className = 'code-copy-btn';
+                            copyBtn.setAttribute('aria-label', 'Copy code');
+                            var copyIcon = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+                            var checkIcon = '<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+                            copyBtn.innerHTML = copyIcon + '<span>Copy</span>';
+                            copyBtn.addEventListener('click', function(){
+                                var text = codeEl.textContent || '';
+                                navigator.clipboard.writeText(text).then(function(){
+                                    copyBtn.classList.add('copied');
+                                    copyBtn.innerHTML = checkIcon + '<span>Copied!</span>';
+                                    setTimeout(function(){
+                                        copyBtn.classList.remove('copied');
+                                        copyBtn.innerHTML = copyIcon + '<span>Copy</span>';
+                                    }, 2000);
+                                });
+                            });
+                            header.appendChild(copyBtn);
+
+                            pre.style.position = 'relative';
+                            pre.insertBefore(header, pre.firstChild);
+                        });
+                    } catch(e) {}
+
                     // Reading time
                     try {
                         const container = document.querySelector('.blog-body');
@@ -718,8 +1134,139 @@
                             document.head.appendChild(script);
                         }
                     } catch(e) {}
+
+                    // Anchor links on headings
+                    try {
+                        var headingsForAnchors = document.querySelectorAll('.blog-body h1, .blog-body h2, .blog-body h3, .blog-body h4');
+                        headingsForAnchors.forEach(function(h) {
+                            if(!h.id){
+                                h.id = h.textContent.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+                            }
+                            h.style.position = 'relative';
+                            var anchor = document.createElement('a');
+                            anchor.href = '#' + h.id;
+                            anchor.className = 'heading-anchor';
+                            anchor.setAttribute('aria-label', 'Link to ' + h.textContent);
+                            anchor.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>';
+                            h.appendChild(anchor);
+                        });
+                    } catch(e) {}
+
+                    // Image lightbox
+                    try {
+                        var overlay = document.getElementById('lightbox-overlay');
+                        var lightboxImg = document.getElementById('lightbox-img');
+                        if(overlay && lightboxImg) {
+                            var blogImages = document.querySelectorAll('.blog-body img');
+                            blogImages.forEach(function(img) {
+                                img.addEventListener('click', function() {
+                                    lightboxImg.src = img.src;
+                                    lightboxImg.alt = img.alt || '';
+                                    overlay.classList.add('active');
+                                    document.body.style.overflow = 'hidden';
+                                });
+                            });
+                            var closeLightbox = function() {
+                                overlay.classList.remove('active');
+                                document.body.style.overflow = '';
+                                lightboxImg.src = '';
+                            };
+                            overlay.addEventListener('click', function(e) {
+                                if(e.target === overlay || e.target.closest('.blog-lightbox-close')) {
+                                    closeLightbox();
+                                }
+                            });
+                            document.addEventListener('keydown', function(e) {
+                                if(e.key === 'Escape' && overlay.classList.contains('active')) {
+                                    closeLightbox();
+                                }
+                            });
+                        }
+                    } catch(e) {}
+
+                    // Collapsible long code blocks (>100 lines)
+                    try {
+                        var allPres = document.querySelectorAll('.blog-body pre');
+                        allPres.forEach(function(pre) {
+                            var codeEl = pre.querySelector('code');
+                            if(!codeEl) return;
+                            var lineCount = (codeEl.textContent || '').split('\n').length;
+                            if(lineCount > 100) {
+                                pre.classList.add('collapsible-code');
+                                pre.classList.add('collapsed');
+                                var expandBtn = document.createElement('button');
+                                expandBtn.className = 'code-expand-btn';
+                                expandBtn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg> Show all ' + lineCount + ' lines';
+                                expandBtn.addEventListener('click', function() {
+                                    if(pre.classList.contains('collapsed')) {
+                                        pre.classList.remove('collapsed');
+                                        expandBtn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg> Show less';
+                                    } else {
+                                        pre.classList.add('collapsed');
+                                        expandBtn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg> Show all ' + lineCount + ' lines';
+                                        pre.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                    }
+                                });
+                                pre.parentNode.insertBefore(expandBtn, pre.nextSibling);
+                            }
+                        });
+                    } catch(e) {}
+
+                    // Time remaining indicator
+                    try {
+                        var blogBody = document.querySelector('.blog-body');
+                        var timeRemainingEl = document.getElementById('time-remaining');
+                        var timeRemainingText = document.getElementById('time-remaining-text');
+                        if(blogBody && timeRemainingEl && timeRemainingText) {
+                            var totalWords = (blogBody.textContent || '').trim().split(/\s+/).filter(Boolean).length;
+                            var wpm = 200;
+                            var updateTimeRemaining = function() {
+                                var rect = blogBody.getBoundingClientRect();
+                                var scrollTop = window.scrollY || window.pageYOffset;
+                                var bodyTop = scrollTop + rect.top;
+                                var bodyHeight = blogBody.offsetHeight;
+                                var progress = Math.min(1, Math.max(0, (scrollTop - bodyTop + window.innerHeight * 0.5) / bodyHeight));
+                                var wordsRemaining = Math.max(0, Math.round(totalWords * (1 - progress)));
+                                var minsRemaining = Math.max(0, Math.ceil(wordsRemaining / wpm));
+
+                                if(progress > 0.02 && progress < 0.95) {
+                                    timeRemainingEl.classList.add('visible');
+                                    if(minsRemaining <= 1) {
+                                        timeRemainingText.textContent = 'Less than 1 min left';
+                                    } else {
+                                        timeRemainingText.textContent = minsRemaining + ' min remaining';
+                                    }
+                                } else {
+                                    timeRemainingEl.classList.remove('visible');
+                                }
+                            };
+                            window.addEventListener('scroll', updateTimeRemaining, { passive: true });
+                            updateTimeRemaining();
+                        }
+                    } catch(e) {}
+
+                    // Copy link buttons
+                    try {
+                        var copyLinkBtns = document.querySelectorAll('.copy-link-btn');
+                        copyLinkBtns.forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                var url = btn.dataset.url || window.location.href;
+                                navigator.clipboard.writeText(url).then(function() {
+                                    var icon = btn.querySelector('.copy-link-icon');
+                                    var check = btn.querySelector('.copy-link-check');
+                                    if(icon) icon.classList.add('hidden');
+                                    if(check) check.classList.remove('hidden');
+                                    setTimeout(function() {
+                                        if(icon) icon.classList.remove('hidden');
+                                        if(check) check.classList.add('hidden');
+                                    }, 2000);
+                                });
+                            });
+                        });
+                    } catch(e) {}
                 })();
             </script>
+  <%- include("../Partials/cta-tracking") -%>
 </body>
 
 </html>

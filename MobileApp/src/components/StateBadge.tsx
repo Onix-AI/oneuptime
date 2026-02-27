@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import { useTheme } from "../theme";
 
 export type StateType =
@@ -33,38 +33,34 @@ export default function StateBadge({
 
   return (
     <View
-      style={[
-        styles.badge,
-        {
-          backgroundColor: theme.colors.backgroundTertiary,
-        },
-      ]}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        alignSelf: "flex-start",
+        backgroundColor: theme.colors.backgroundTertiary,
+      }}
     >
-      <View style={[styles.dot, { backgroundColor: color }]} />
-      <Text style={[styles.text, { color: theme.colors.textPrimary }]}>
+      <View
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: 9999,
+          marginRight: 6,
+          backgroundColor: color,
+        }}
+      />
+      <Text
+        style={{
+          fontSize: 12,
+          fontWeight: "600",
+          color: theme.colors.textPrimary,
+        }}
+      >
         {displayLabel.charAt(0).toUpperCase() + displayLabel.slice(1)}
       </Text>
     </View>
   );
 }
-
-const styles: ReturnType<typeof StyleSheet.create> = StyleSheet.create({
-  badge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    alignSelf: "flex-start",
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  text: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-});

@@ -26,6 +26,15 @@ enum MonitorType {
 
   // Network device monitoring
   SNMP = "SNMP",
+
+  // DNS monitoring
+  DNS = "DNS",
+
+  // Domain registration monitoring
+  Domain = "Domain",
+
+  // External status page monitoring
+  ExternalStatusPage = "External Status Page",
 }
 
 export default MonitorType;
@@ -37,7 +46,59 @@ export interface MonitorTypeProps {
   icon: IconProp;
 }
 
+export interface MonitorTypeCategory {
+  label: string;
+  monitorTypes: Array<MonitorType>;
+}
+
 export class MonitorTypeHelper {
+  public static getMonitorTypeCategories(): Array<MonitorTypeCategory> {
+    return [
+      {
+        label: "Basic Monitoring",
+        monitorTypes: [
+          MonitorType.Website,
+          MonitorType.API,
+          MonitorType.Ping,
+          MonitorType.IP,
+          MonitorType.Port,
+          MonitorType.DNS,
+          MonitorType.SSLCertificate,
+          MonitorType.Domain,
+          MonitorType.ExternalStatusPage,
+        ],
+      },
+      {
+        label: "Synthetic Monitoring",
+        monitorTypes: [
+          MonitorType.SyntheticMonitor,
+          MonitorType.CustomJavaScriptCode,
+        ],
+      },
+      {
+        label: "Inbound Monitoring",
+        monitorTypes: [MonitorType.IncomingRequest, MonitorType.IncomingEmail],
+      },
+      {
+        label: "Infrastructure",
+        monitorTypes: [MonitorType.Server, MonitorType.SNMP],
+      },
+      {
+        label: "Telemetry",
+        monitorTypes: [
+          MonitorType.Logs,
+          MonitorType.Metrics,
+          MonitorType.Traces,
+          MonitorType.Exceptions,
+        ],
+      },
+      {
+        label: "Other",
+        monitorTypes: [MonitorType.Manual],
+      },
+    ];
+  }
+
   public static isTelemetryMonitor(monitorType: MonitorType): boolean {
     return (
       monitorType === MonitorType.Logs ||
@@ -179,6 +240,27 @@ export class MonitorTypeHelper {
           "This monitor type lets you monitor network devices like switches, routers, and firewalls via SNMP.",
         icon: IconProp.Signal,
       },
+      {
+        monitorType: MonitorType.DNS,
+        title: "DNS",
+        description:
+          "This monitor type lets you monitor DNS resolution for your domains, verify record values, and check DNSSEC validity.",
+        icon: IconProp.GlobeAlt,
+      },
+      {
+        monitorType: MonitorType.Domain,
+        title: "Domain",
+        description:
+          "This monitor type lets you monitor domain registration health — expiry dates, registrar info, nameserver delegation, and WHOIS status.",
+        icon: IconProp.Globe,
+      },
+      {
+        monitorType: MonitorType.ExternalStatusPage,
+        title: "External Status Page",
+        description:
+          "This monitor type lets you monitor third-party status pages (e.g. AWS, GCP, Azure, GitHub, Cloudflare) and alert when their services degrade.",
+        icon: IconProp.ExternalLink,
+      },
     ];
 
     return monitorTypeProps;
@@ -224,7 +306,10 @@ export class MonitorTypeHelper {
       monitorType === MonitorType.SSLCertificate ||
       monitorType === MonitorType.SyntheticMonitor ||
       monitorType === MonitorType.CustomJavaScriptCode ||
-      monitorType === MonitorType.SNMP;
+      monitorType === MonitorType.SNMP ||
+      monitorType === MonitorType.DNS ||
+      monitorType === MonitorType.Domain ||
+      monitorType === MonitorType.ExternalStatusPage;
     return isProbeableMonitor;
   }
 
@@ -246,6 +331,9 @@ export class MonitorTypeHelper {
       MonitorType.Traces,
       MonitorType.Exceptions,
       MonitorType.SNMP,
+      MonitorType.DNS,
+      MonitorType.Domain,
+      MonitorType.ExternalStatusPage,
     ];
   }
 
@@ -278,7 +366,10 @@ export class MonitorTypeHelper {
       monitorType === MonitorType.SSLCertificate ||
       monitorType === MonitorType.SyntheticMonitor ||
       monitorType === MonitorType.CustomJavaScriptCode ||
-      monitorType === MonitorType.SNMP
+      monitorType === MonitorType.SNMP ||
+      monitorType === MonitorType.DNS ||
+      monitorType === MonitorType.Domain ||
+      monitorType === MonitorType.ExternalStatusPage
     ) {
       return true;
     }

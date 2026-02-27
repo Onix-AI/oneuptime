@@ -1,8 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, Pressable } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../theme";
 import { rgbToHex } from "../utils/color";
 import { formatRelativeTime } from "../utils/date";
+import ProjectBadge from "./ProjectBadge";
 import type {
   IncidentEpisodeItem,
   AlertEpisodeItem,
@@ -14,17 +16,21 @@ type EpisodeCardProps =
       episode: IncidentEpisodeItem;
       type: "incident";
       onPress: () => void;
+      projectName?: string;
+      muted?: boolean;
     }
   | {
       episode: AlertEpisodeItem;
       type: "alert";
       onPress: () => void;
+      projectName?: string;
+      muted?: boolean;
     };
 
 export default function EpisodeCard(
   props: EpisodeCardProps,
 ): React.JSX.Element {
-  const { episode, type, onPress } = props;
+  const { episode, type, onPress, projectName, muted } = props;
   const { theme } = useTheme();
 
   const state: NamedEntityWithColor =
@@ -55,121 +61,242 @@ export default function EpisodeCard(
   );
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.card,
-        {
-          backgroundColor: theme.colors.backgroundSecondary,
-          borderColor: theme.colors.borderSubtle,
-        },
-      ]}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <View style={styles.topRow}>
-        <Text style={[styles.number, { color: theme.colors.textTertiary }]}>
-          {episode.episodeNumberWithPrefix || `#${episode.episodeNumber}`}
-        </Text>
-        <Text style={[styles.time, { color: theme.colors.textTertiary }]}>
-          {timeString}
-        </Text>
-      </View>
-
-      <Text
-        style={[
-          theme.typography.bodyLarge,
-          { color: theme.colors.textPrimary, fontWeight: "600" },
-        ]}
-        numberOfLines={2}
+    <View style={{ marginBottom: 12 }}>
+      <Pressable
+        style={({ pressed }: { pressed: boolean }) => {
+          return {
+            opacity: pressed ? 0.7 : muted ? 0.5 : 1,
+          };
+        }}
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={`${type === "incident" ? "Incident" : "Alert"} episode ${episode.episodeNumberWithPrefix || episode.episodeNumber}, ${episode.title}. State: ${state?.name ?? "unknown"}. Severity: ${severity?.name ?? "unknown"}.`}
       >
-        {episode.title}
-      </Text>
-
-      <View style={styles.badgeRow}>
-        {state ? (
-          <View
-            style={[
-              styles.badge,
-              { backgroundColor: theme.colors.backgroundTertiary },
-            ]}
-          >
-            <View style={[styles.dot, { backgroundColor: stateColor }]} />
-            <Text
-              style={[styles.badgeText, { color: theme.colors.textPrimary }]}
-            >
-              {state.name}
-            </Text>
-          </View>
-        ) : null}
-
-        {severity ? (
-          <View
-            style={[styles.badge, { backgroundColor: severityColor + "26" }]}
-          >
-            <Text style={[styles.badgeText, { color: severityColor }]}>
-              {severity.name}
-            </Text>
-          </View>
-        ) : null}
-      </View>
-
-      {childCount > 0 ? (
-        <Text
-          style={[styles.childCount, { color: theme.colors.textSecondary }]}
+        <View
+          style={{
+            borderRadius: 24,
+            overflow: "hidden",
+            backgroundColor: theme.colors.backgroundElevated,
+            borderWidth: 1,
+            borderColor: theme.colors.borderGlass,
+            shadowColor: "#000",
+            shadowOpacity: 0.22,
+            shadowOffset: { width: 0, height: 8 },
+            shadowRadius: 14,
+            elevation: 5,
+          }}
         >
-          {childCount} {type === "incident" ? "incident" : "alert"}
-          {childCount !== 1 ? "s" : ""}
-        </Text>
-      ) : null}
-    </TouchableOpacity>
+          <View
+            style={{
+              height: 3,
+              backgroundColor: theme.colors.borderSubtle,
+              opacity: 1,
+            }}
+          />
+          <View style={{ padding: 16 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 10,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                {projectName ? <ProjectBadge name={projectName} /> : null}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 9999,
+                    backgroundColor: theme.colors.iconBackground,
+                  }}
+                >
+                  <Ionicons
+                    name={
+                      type === "incident"
+                        ? "warning-outline"
+                        : "notifications-outline"
+                    }
+                    size={10}
+                    color={theme.colors.textSecondary}
+                    style={{ marginRight: 4 }}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontWeight: "600",
+                      color: theme.colors.textSecondary,
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    {type === "incident" ? "INCIDENT EPISODE" : "ALERT EPISODE"}
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 9999,
+                    backgroundColor: theme.colors.backgroundTertiary,
+                    borderWidth: 1,
+                    borderColor: theme.colors.borderDefault,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "bold",
+                      color: theme.colors.textPrimary,
+                      letterSpacing: 0.2,
+                    }}
+                  >
+                    {episode.episodeNumberWithPrefix ||
+                      `#${episode.episodeNumber}`}
+                  </Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Ionicons
+                  name="time-outline"
+                  size={12}
+                  color={theme.colors.textTertiary}
+                  style={{ marginRight: 4 }}
+                />
+                <Text
+                  style={{ fontSize: 12, color: theme.colors.textTertiary }}
+                >
+                  {timeString}
+                </Text>
+              </View>
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "flex-start",
+                marginTop: 2,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: "600",
+                  flex: 1,
+                  paddingRight: 8,
+                  color: theme.colors.textPrimary,
+                  letterSpacing: -0.2,
+                }}
+                numberOfLines={2}
+              >
+                {episode.title}
+              </Text>
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={theme.colors.textTertiary}
+                style={{ marginTop: 2 }}
+              />
+            </View>
+
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: 8,
+                marginTop: 12,
+              }}
+            >
+              {state ? (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 9999,
+                    backgroundColor: theme.colors.backgroundTertiary,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 9999,
+                      marginRight: 6,
+                      backgroundColor: stateColor,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: "600",
+                      color: stateColor,
+                    }}
+                  >
+                    {state.name}
+                  </Text>
+                </View>
+              ) : null}
+
+              {severity ? (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 9999,
+                    backgroundColor: theme.colors.backgroundTertiary,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: "600",
+                      color: severityColor,
+                    }}
+                  >
+                    {severity.name}
+                  </Text>
+                </View>
+              ) : null}
+
+              {childCount > 0 ? (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 9999,
+                    backgroundColor: theme.colors.iconBackground,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: "600",
+                      color: theme.colors.actionPrimary,
+                    }}
+                  >
+                    {childCount} {type === "incident" ? "incident" : "alert"}
+                    {childCount !== 1 ? "s" : ""}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          </View>
+        </View>
+      </Pressable>
+    </View>
   );
 }
-
-const styles: ReturnType<typeof StyleSheet.create> = StyleSheet.create({
-  card: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 12,
-  },
-  topRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 6,
-  },
-  number: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  time: {
-    fontSize: 12,
-  },
-  badgeRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 10,
-  },
-  badge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  childCount: {
-    fontSize: 12,
-    marginTop: 8,
-  },
-});

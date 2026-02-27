@@ -5,9 +5,26 @@ export interface ColorTokens {
   backgroundTertiary: string;
   backgroundElevated: string;
 
+  // Accent
+  cardAccent: string;
+  backgroundGlass: string;
+  iconBackground: string;
+
+  // Gradient
+  accentGradientStart: string;
+  accentGradientMid: string;
+  accentGradientEnd: string;
+  accentCyan: string;
+  accentCyanBg: string;
+  surfaceGlow: string;
+  headerGradient: string;
+  gradientStart: string;
+  gradientEnd: string;
+
   // Border
   borderDefault: string;
   borderSubtle: string;
+  borderGlass: string;
 
   // Text
   textPrimary: string;
@@ -54,111 +71,73 @@ export interface ColorTokens {
 }
 
 export const darkColors: ColorTokens = {
-  // Background
-  backgroundPrimary: "#0D1117",
-  backgroundSecondary: "#161B22",
-  backgroundTertiary: "#21262D",
-  backgroundElevated: "#1C2128",
+  // Background — rich near-black, not pure black
+  backgroundPrimary: "#09090B",
+  backgroundSecondary: "#0F0F12",
+  backgroundTertiary: "#18181F",
+  backgroundElevated: "#141418",
+
+  // Accent
+  cardAccent: "rgba(255, 255, 255, 0.04)",
+  backgroundGlass: "rgba(255, 255, 255, 0.03)",
+  iconBackground: "rgba(255, 255, 255, 0.08)",
+
+  // Gradient — neutral monochrome accent
+  accentGradientStart: "#52525B",
+  accentGradientMid: "#3F3F46",
+  accentGradientEnd: "#27272A",
+  accentCyan: "#A1A1AA",
+  accentCyanBg: "rgba(161, 161, 170, 0.12)",
+  surfaceGlow: "rgba(255, 255, 255, 0.05)",
+  headerGradient: "rgba(255, 255, 255, 0.03)",
+  gradientStart: "rgba(255, 255, 255, 0.07)",
+  gradientEnd: "transparent",
 
   // Border
-  borderDefault: "#30363D",
-  borderSubtle: "#21262D",
+  borderDefault: "rgba(255, 255, 255, 0.06)",
+  borderSubtle: "rgba(255, 255, 255, 0.04)",
+  borderGlass: "rgba(255, 255, 255, 0.06)",
 
   // Text
-  textPrimary: "#E6EDF3",
-  textSecondary: "#8B949E",
-  textTertiary: "#6E7681",
-  textInverse: "#0D1117",
-
-  // Severity
-  severityCritical: "#F85149",
-  severityCriticalBg: "#F8514926",
-  severityMajor: "#F0883E",
-  severityMajorBg: "#F0883E26",
-  severityMinor: "#D29922",
-  severityMinorBg: "#D2992226",
-  severityWarning: "#E3B341",
-  severityWarningBg: "#E3B34126",
-  severityInfo: "#58A6FF",
-  severityInfoBg: "#58A6FF26",
-
-  // State
-  stateCreated: "#F85149",
-  stateAcknowledged: "#D29922",
-  stateResolved: "#3FB950",
-  stateInvestigating: "#F0883E",
-  stateMuted: "#6E7681",
-
-  // On-Call
-  oncallActive: "#3FB950",
-  oncallActiveBg: "#3FB95026",
-  oncallInactive: "#6E7681",
-  oncallInactiveBg: "#6E768126",
-
-  // Action
-  actionPrimary: "#6366F1",
-  actionPrimaryPressed: "#4F46E5",
-  actionDestructive: "#F85149",
-  actionDestructivePressed: "#DA3633",
-
-  // Status
-  statusSuccess: "#3FB950",
-  statusSuccessBg: "#3FB95026",
-  statusError: "#F85149",
-  statusErrorBg: "#F8514926",
-};
-
-export const lightColors: ColorTokens = {
-  // Background
-  backgroundPrimary: "#FFFFFF",
-  backgroundSecondary: "#F6F8FA",
-  backgroundTertiary: "#EAEEF2",
-  backgroundElevated: "#FFFFFF",
-
-  // Border
-  borderDefault: "#D0D7DE",
-  borderSubtle: "#EAEEF2",
-
-  // Text
-  textPrimary: "#1F2328",
-  textSecondary: "#656D76",
-  textTertiary: "#8C959F",
+  textPrimary: "#FAFAFA",
+  textSecondary: "#A1A1AA",
+  textTertiary: "#52525B",
   textInverse: "#FFFFFF",
 
   // Severity
-  severityCritical: "#CF222E",
-  severityCriticalBg: "#CF222E1A",
-  severityMajor: "#BC4C00",
-  severityMajorBg: "#BC4C001A",
-  severityMinor: "#9A6700",
-  severityMinorBg: "#9A67001A",
-  severityWarning: "#BF8700",
-  severityWarningBg: "#BF87001A",
-  severityInfo: "#0969DA",
-  severityInfoBg: "#0969DA1A",
+  severityCritical: "#EF4444",
+  severityCriticalBg: "rgba(239, 68, 68, 0.12)",
+  severityMajor: "#F97316",
+  severityMajorBg: "rgba(249, 115, 22, 0.12)",
+  severityMinor: "#EAB308",
+  severityMinorBg: "rgba(234, 179, 8, 0.12)",
+  severityWarning: "#F59E0B",
+  severityWarningBg: "rgba(245, 158, 11, 0.12)",
+  severityInfo: "#3B82F6",
+  severityInfoBg: "rgba(59, 130, 246, 0.12)",
 
   // State
-  stateCreated: "#CF222E",
-  stateAcknowledged: "#9A6700",
-  stateResolved: "#1A7F37",
-  stateInvestigating: "#BC4C00",
-  stateMuted: "#8C959F",
+  stateCreated: "#EF4444",
+  stateAcknowledged: "#F59E0B",
+  stateResolved: "#22C55E",
+  stateInvestigating: "#F97316",
+  stateMuted: "#52525B",
 
   // On-Call
-  oncallActive: "#1A7F37",
-  oncallActiveBg: "#1A7F371A",
-  oncallInactive: "#8C959F",
-  oncallInactiveBg: "#8C959F1A",
+  oncallActive: "#22C55E",
+  oncallActiveBg: "rgba(34, 197, 94, 0.12)",
+  oncallInactive: "#52525B",
+  oncallInactiveBg: "rgba(82, 82, 91, 0.12)",
 
-  // Action
-  actionPrimary: "#6366F1",
-  actionPrimaryPressed: "#4F46E5",
-  actionDestructive: "#CF222E",
-  actionDestructivePressed: "#A40E26",
+  // Action — neutral accent
+  actionPrimary: "#D4D4D8",
+  actionPrimaryPressed: "#A1A1AA",
+  actionDestructive: "#EF4444",
+  actionDestructivePressed: "#DC2626",
 
   // Status
-  statusSuccess: "#1A7F37",
-  statusSuccessBg: "#1A7F371A",
-  statusError: "#CF222E",
-  statusErrorBg: "#CF222E1A",
+  statusSuccess: "#22C55E",
+  statusSuccessBg: "rgba(34, 197, 94, 0.12)",
+  statusError: "#EF4444",
+  statusErrorBg: "rgba(239, 68, 68, 0.12)",
 };

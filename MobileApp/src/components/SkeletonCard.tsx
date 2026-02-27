@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import {
   View,
-  StyleSheet,
   Animated,
   DimensionValue,
   AccessibilityInfo,
@@ -36,13 +35,13 @@ export default function SkeletonCard({
     const animation: Animated.CompositeAnimation = Animated.loop(
       Animated.sequence([
         Animated.timing(opacity, {
-          toValue: 0.7,
-          duration: 1000,
+          toValue: 0.6,
+          duration: 900,
           useNativeDriver: true,
         }),
         Animated.timing(opacity, {
-          toValue: 0.3,
-          duration: 1000,
+          toValue: 0.25,
+          duration: 900,
           useNativeDriver: true,
         }),
       ]),
@@ -60,37 +59,60 @@ export default function SkeletonCard({
   if (variant === "compact") {
     return (
       <Animated.View
-        style={[
-          styles.card,
-          {
-            backgroundColor: theme.colors.backgroundSecondary,
-            borderColor: theme.colors.borderSubtle,
-            opacity,
-          },
-        ]}
+        style={{
+          borderRadius: 16,
+          marginBottom: 12,
+          overflow: "hidden",
+          backgroundColor: theme.colors.backgroundElevated,
+          borderWidth: 1,
+          borderColor: theme.colors.borderGlass,
+          opacity,
+        }}
         accessibilityLabel="Loading content"
         accessibilityRole="progressbar"
       >
-        <View style={styles.compactRow}>
+        <View
+          style={{
+            height: 3,
+            backgroundColor: theme.colors.backgroundTertiary,
+          }}
+        />
+        <View style={{ padding: 16 }}>
           <View
-            style={[
-              styles.compactBadge,
-              { backgroundColor: theme.colors.backgroundTertiary },
-            ]}
-          />
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 10,
+            }}
+          >
+            <View
+              style={{
+                height: 16,
+                width: 56,
+                borderRadius: 4,
+                backgroundColor: theme.colors.backgroundTertiary,
+              }}
+            />
+            <View
+              style={{
+                height: 12,
+                width: 32,
+                borderRadius: 4,
+                backgroundColor: theme.colors.backgroundTertiary,
+              }}
+            />
+          </View>
           <View
-            style={[
-              styles.compactTime,
-              { backgroundColor: theme.colors.backgroundTertiary },
-            ]}
+            style={{
+              height: 18,
+              borderRadius: 4,
+              width: "75%",
+              marginBottom: 12,
+              backgroundColor: theme.colors.backgroundTertiary,
+            }}
           />
         </View>
-        <View
-          style={[
-            styles.titleLine,
-            { backgroundColor: theme.colors.backgroundTertiary, width: "75%" },
-          ]}
-        />
       </Animated.View>
     );
   }
@@ -98,60 +120,104 @@ export default function SkeletonCard({
   if (variant === "detail") {
     return (
       <Animated.View
-        style={[styles.detailContainer, { opacity }]}
+        style={{ padding: 20, opacity }}
         accessibilityLabel="Loading content"
         accessibilityRole="progressbar"
       >
-        {/* Badge row */}
-        <View style={styles.badgeRow}>
-          <View
-            style={[
-              styles.badgeSkeleton,
-              { backgroundColor: theme.colors.backgroundTertiary },
-            ]}
-          />
-          <View
-            style={[
-              styles.badgeSkeleton,
-              { backgroundColor: theme.colors.backgroundTertiary, width: 64 },
-            ]}
-          />
-        </View>
-        {/* Title */}
         <View
-          style={[
-            styles.detailTitle,
-            { backgroundColor: theme.colors.backgroundTertiary },
-          ]}
-        />
-        {/* Detail card */}
-        <View
-          style={[
-            styles.detailCard,
-            {
-              backgroundColor: theme.colors.backgroundSecondary,
-              borderColor: theme.colors.borderSubtle,
-            },
-          ]}
+          style={{
+            borderRadius: 16,
+            overflow: "hidden",
+            marginBottom: 20,
+            backgroundColor: theme.colors.backgroundElevated,
+            borderWidth: 1,
+            borderColor: theme.colors.borderGlass,
+          }}
         >
-          {Array.from({ length: 3 }).map((_: unknown, index: number) => {
-            return (
-              <View key={index} style={styles.detailRow}>
+          <View
+            style={{
+              height: 3,
+              backgroundColor: theme.colors.backgroundTertiary,
+            }}
+          />
+          <View style={{ padding: 20 }}>
+            <View
+              style={{
+                height: 16,
+                width: 64,
+                borderRadius: 4,
+                marginBottom: 12,
+                backgroundColor: theme.colors.backgroundTertiary,
+              }}
+            />
+            <View
+              style={{
+                height: 28,
+                width: "80%",
+                borderRadius: 4,
+                marginBottom: 12,
+                backgroundColor: theme.colors.backgroundTertiary,
+              }}
+            />
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              <View
+                style={{
+                  height: 24,
+                  width: 80,
+                  borderRadius: 6,
+                  backgroundColor: theme.colors.backgroundTertiary,
+                }}
+              />
+              <View
+                style={{
+                  height: 24,
+                  width: 56,
+                  borderRadius: 6,
+                  backgroundColor: theme.colors.backgroundTertiary,
+                }}
+              />
+            </View>
+          </View>
+        </View>
+        <View
+          style={{
+            borderRadius: 12,
+            overflow: "hidden",
+            backgroundColor: theme.colors.backgroundElevated,
+            borderWidth: 1,
+            borderColor: theme.colors.borderGlass,
+            borderLeftWidth: 3,
+            borderLeftColor: theme.colors.backgroundTertiary,
+          }}
+        >
+          <View style={{ padding: 16 }}>
+            {Array.from({ length: 3 }).map((_: unknown, index: number) => {
+              return (
                 <View
-                  style={[
-                    styles.detailLabel,
-                    { backgroundColor: theme.colors.backgroundTertiary },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.detailValue,
-                    { backgroundColor: theme.colors.backgroundTertiary },
-                  ]}
-                />
-              </View>
-            );
-          })}
+                  key={index}
+                  style={{ flexDirection: "row", marginBottom: 12 }}
+                >
+                  <View
+                    style={{
+                      height: 14,
+                      width: 80,
+                      borderRadius: 4,
+                      marginRight: 16,
+                      backgroundColor: theme.colors.backgroundTertiary,
+                    }}
+                  />
+                  <View
+                    style={{
+                      height: 14,
+                      width: 120,
+                      borderRadius: 4,
+                      backgroundColor: theme.colors.backgroundTertiary,
+                    }}
+                  />
+                </View>
+              );
+            })}
+          </View>
         </View>
       </Animated.View>
     );
@@ -159,164 +225,100 @@ export default function SkeletonCard({
 
   return (
     <Animated.View
-      style={[
-        styles.card,
-        {
-          backgroundColor: theme.colors.backgroundSecondary,
-          borderColor: theme.colors.borderSubtle,
-          opacity,
-        },
-      ]}
+      style={{
+        borderRadius: 16,
+        marginBottom: 12,
+        overflow: "hidden",
+        backgroundColor: theme.colors.backgroundElevated,
+        borderWidth: 1,
+        borderColor: theme.colors.borderGlass,
+        opacity,
+      }}
       accessibilityLabel="Loading content"
       accessibilityRole="progressbar"
     >
-      {/* Top row: badge + time */}
-      <View style={styles.topRow}>
-        <View
-          style={[
-            styles.numberSkeleton,
-            { backgroundColor: theme.colors.backgroundTertiary },
-          ]}
-        />
-        <View
-          style={[
-            styles.timeSkeleton,
-            { backgroundColor: theme.colors.backgroundTertiary },
-          ]}
-        />
-      </View>
-      {/* Title */}
       <View
-        style={[
-          styles.titleLine,
-          { backgroundColor: theme.colors.backgroundTertiary },
-        ]}
+        style={{
+          height: 3,
+          backgroundColor: theme.colors.backgroundTertiary,
+        }}
       />
-      {/* Badge row */}
-      <View style={styles.badgeRow}>
+      <View style={{ padding: 16 }}>
         <View
-          style={[
-            styles.badgeSkeleton,
-            { backgroundColor: theme.colors.backgroundTertiary },
-          ]}
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 12,
+          }}
+        >
+          <View
+            style={{
+              height: 14,
+              width: 56,
+              borderRadius: 4,
+              backgroundColor: theme.colors.backgroundTertiary,
+            }}
+          />
+          <View
+            style={{
+              height: 12,
+              width: 40,
+              borderRadius: 4,
+              backgroundColor: theme.colors.backgroundTertiary,
+            }}
+          />
+        </View>
+        <View
+          style={{
+            height: 18,
+            borderRadius: 4,
+            width: "70%",
+            marginBottom: 12,
+            backgroundColor: theme.colors.backgroundTertiary,
+          }}
         />
         <View
-          style={[
-            styles.badgeSkeleton,
-            { backgroundColor: theme.colors.backgroundTertiary, width: 56 },
-          ]}
-        />
-      </View>
-      {/* Body lines */}
-      {Array.from({ length: Math.max(lines - 1, 1) }).map(
-        (_: unknown, index: number) => {
-          return (
-            <View
-              key={index}
-              style={[
-                styles.line,
-                {
-                  backgroundColor: theme.colors.backgroundTertiary,
+          style={{
+            flexDirection: "row",
+            gap: 8,
+            marginBottom: 12,
+          }}
+        >
+          <View
+            style={{
+              height: 24,
+              width: 80,
+              borderRadius: 6,
+              backgroundColor: theme.colors.backgroundTertiary,
+            }}
+          />
+          <View
+            style={{
+              height: 24,
+              width: 56,
+              borderRadius: 6,
+              backgroundColor: theme.colors.backgroundTertiary,
+            }}
+          />
+        </View>
+        {Array.from({ length: Math.max(lines - 1, 1) }).map(
+          (_: unknown, index: number) => {
+            return (
+              <View
+                key={index}
+                style={{
+                  height: 12,
+                  borderRadius: 4,
+                  marginBottom: 8,
                   width: lineWidths[index % lineWidths.length],
-                },
-              ]}
-            />
-          );
-        },
-      )}
+                  backgroundColor: theme.colors.backgroundTertiary,
+                }}
+              />
+            );
+          },
+        )}
+      </View>
     </Animated.View>
   );
 }
-
-const styles: ReturnType<typeof StyleSheet.create> = StyleSheet.create({
-  card: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 12,
-  },
-  topRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  numberSkeleton: {
-    height: 14,
-    width: 48,
-    borderRadius: 4,
-  },
-  timeSkeleton: {
-    height: 12,
-    width: 36,
-    borderRadius: 4,
-  },
-  titleLine: {
-    height: 18,
-    borderRadius: 4,
-    width: "70%",
-    marginBottom: 12,
-  },
-  badgeRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 12,
-  },
-  badgeSkeleton: {
-    height: 24,
-    width: 80,
-    borderRadius: 6,
-  },
-  line: {
-    height: 12,
-    borderRadius: 4,
-    marginBottom: 8,
-  },
-  // Compact variant
-  compactRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  compactBadge: {
-    height: 14,
-    width: 48,
-    borderRadius: 4,
-  },
-  compactTime: {
-    height: 12,
-    width: 32,
-    borderRadius: 4,
-  },
-  // Detail variant
-  detailContainer: {
-    padding: 20,
-  },
-  detailTitle: {
-    height: 24,
-    width: "80%",
-    borderRadius: 4,
-    marginBottom: 20,
-  },
-  detailCard: {
-    borderRadius: 12,
-    borderWidth: 1,
-    padding: 16,
-  },
-  detailRow: {
-    flexDirection: "row",
-    marginBottom: 12,
-  },
-  detailLabel: {
-    height: 14,
-    width: 80,
-    borderRadius: 4,
-    marginRight: 16,
-  },
-  detailValue: {
-    height: 14,
-    width: 120,
-    borderRadius: 4,
-  },
-});

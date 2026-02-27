@@ -12,6 +12,45 @@ import {
   clearTokens,
   type StoredTokens,
 } from "../storage/keychain";
+import { getCachedSsoTokens } from "../storage/ssoTokens";
+
+/**
+ * Recursively normalizes OneUptime API serialized types in response data.
+ * Converts { _type: "ObjectID", value: "uuid" } → "uuid"
+ * Converts { _type: "DateTime", value: "iso-string" } → "iso-string"
+ */
+function normalizeResponseData(data: unknown): unknown {
+  if (data === null || data === undefined) {
+    return data;
+  }
+
+  if (Array.isArray(data)) {
+    return data.map(normalizeResponseData);
+  }
+
+  if (typeof data === "object") {
+    const obj: Record<string, unknown> = data as Record<string, unknown>;
+
+    // Check for serialized OneUptime types
+    if (
+      typeof obj["_type"] === "string" &&
+      Object.prototype.hasOwnProperty.call(obj, "value") &&
+      (obj["_type"] === "ObjectID" ||
+        obj["_type"] === "DateTime" ||
+        obj["_type"] === "Markdown")
+    ) {
+      return normalizeResponseData(obj["value"]);
+    }
+
+    const normalized: Record<string, unknown> = {};
+    for (const key in obj) {
+      normalized[key] = normalizeResponseData(obj[key]);
+    }
+    return normalized;
+  }
+
+  return data;
+}
 
 let isRefreshing: boolean = false;
 let refreshSubscribers: Array<(token: string) => void> = [];
@@ -51,13 +90,19 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
+    const ssoTokens: Record<string, string> = getCachedSsoTokens();
+    if (Object.keys(ssoTokens).length > 0 && config.headers) {
+      config.headers["x-sso-tokens"] = JSON.stringify(ssoTokens);
+    }
+
     return config;
   },
 );
 
-// Response interceptor: handle 401 with token refresh queue
+// Response interceptor: normalize OneUptime serialized types then handle 401
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
+    response.data = normalizeResponseData(response.data);
     return response;
   },
   async (error: AxiosError) => {
@@ -96,6 +141,9 @@ apiClient.interceptors.response.use(
         `${serverUrl}/identity/refresh-token`,
         {
           refreshToken: tokens.refreshToken,
+        },
+        {
+          timeout: 10000,
         },
       );
 

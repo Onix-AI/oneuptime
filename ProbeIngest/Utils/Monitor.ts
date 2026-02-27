@@ -196,6 +196,92 @@ export default class MonitorUtil {
       }
     }
 
+    if (monitorType === MonitorType.DNS) {
+      for (const monitorStep of monitorSteps?.data?.monitorStepsInstanceArray ||
+        []) {
+        // Handle DNS hostname secrets (custom DNS server)
+        if (
+          monitorStep.data?.dnsMonitor?.hostname &&
+          this.hasSecrets(monitorStep.data.dnsMonitor.hostname)
+        ) {
+          if (!isSecretsLoaded) {
+            monitorSecrets = await MonitorUtil.loadMonitorSecrets(monitorId);
+            isSecretsLoaded = true;
+          }
+
+          monitorStep.data.dnsMonitor.hostname =
+            (await MonitorUtil.fillSecretsInStringOrJSON({
+              secrets: monitorSecrets,
+              populateSecretsIn: monitorStep.data.dnsMonitor.hostname,
+            })) as string;
+        }
+
+        // Handle DNS query name secrets
+        if (
+          monitorStep.data?.dnsMonitor?.queryName &&
+          this.hasSecrets(monitorStep.data.dnsMonitor.queryName)
+        ) {
+          if (!isSecretsLoaded) {
+            monitorSecrets = await MonitorUtil.loadMonitorSecrets(monitorId);
+            isSecretsLoaded = true;
+          }
+
+          monitorStep.data.dnsMonitor.queryName =
+            (await MonitorUtil.fillSecretsInStringOrJSON({
+              secrets: monitorSecrets,
+              populateSecretsIn: monitorStep.data.dnsMonitor.queryName,
+            })) as string;
+        }
+      }
+    }
+
+    if (monitorType === MonitorType.Domain) {
+      for (const monitorStep of monitorSteps?.data?.monitorStepsInstanceArray ||
+        []) {
+        // Handle Domain name secrets
+        if (
+          monitorStep.data?.domainMonitor?.domainName &&
+          this.hasSecrets(monitorStep.data.domainMonitor.domainName)
+        ) {
+          if (!isSecretsLoaded) {
+            monitorSecrets = await MonitorUtil.loadMonitorSecrets(monitorId);
+            isSecretsLoaded = true;
+          }
+
+          monitorStep.data.domainMonitor.domainName =
+            (await MonitorUtil.fillSecretsInStringOrJSON({
+              secrets: monitorSecrets,
+              populateSecretsIn: monitorStep.data.domainMonitor.domainName,
+            })) as string;
+        }
+      }
+    }
+
+    if (monitorType === MonitorType.ExternalStatusPage) {
+      for (const monitorStep of monitorSteps?.data?.monitorStepsInstanceArray ||
+        []) {
+        // Handle External Status Page URL secrets
+        if (
+          monitorStep.data?.externalStatusPageMonitor?.statusPageUrl &&
+          this.hasSecrets(
+            monitorStep.data.externalStatusPageMonitor.statusPageUrl,
+          )
+        ) {
+          if (!isSecretsLoaded) {
+            monitorSecrets = await MonitorUtil.loadMonitorSecrets(monitorId);
+            isSecretsLoaded = true;
+          }
+
+          monitorStep.data.externalStatusPageMonitor.statusPageUrl =
+            (await MonitorUtil.fillSecretsInStringOrJSON({
+              secrets: monitorSecrets,
+              populateSecretsIn:
+                monitorStep.data.externalStatusPageMonitor.statusPageUrl,
+            })) as string;
+        }
+      }
+    }
+
     return monitorSteps;
   }
 

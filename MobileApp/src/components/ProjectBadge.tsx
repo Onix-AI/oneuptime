@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import { useTheme } from "../theme";
 
 interface ProjectBadgeProps {
@@ -12,17 +12,23 @@ export default function ProjectBadge({
   color,
 }: ProjectBadgeProps): React.JSX.Element {
   const { theme } = useTheme();
-
-  const dotColor: string = color || theme.colors.actionPrimary;
-
   return (
-    <View style={styles.container}>
-      <View style={[styles.dot, { backgroundColor: dotColor }]} />
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: 9999,
+          marginRight: 6,
+          backgroundColor: color || theme.colors.actionPrimary,
+        }}
+      />
       <Text
-        style={[
-          theme.typography.bodySmall,
-          { color: theme.colors.textSecondary },
-        ]}
+        style={{
+          fontSize: 12,
+          fontWeight: "500",
+          color: theme.colors.textSecondary,
+        }}
         numberOfLines={1}
       >
         {name}
@@ -30,16 +36,3 @@ export default function ProjectBadge({
     </View>
   );
 }
-
-const styles: ReturnType<typeof StyleSheet.create> = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-});

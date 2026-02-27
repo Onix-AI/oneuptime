@@ -14,6 +14,13 @@ import SyntheticMonitorResponse from "../../../Types/Monitor/SyntheticMonitors/S
 import SnmpMonitorResponse, {
   SnmpOidResponse,
 } from "../../../Types/Monitor/SnmpMonitor/SnmpMonitorResponse";
+import DnsMonitorResponse, {
+  DnsRecordResponse,
+} from "../../../Types/Monitor/DnsMonitor/DnsMonitorResponse";
+import DomainMonitorResponse from "../../../Types/Monitor/DomainMonitor/DomainMonitorResponse";
+import ExternalStatusPageMonitorResponse, {
+  ExternalStatusPageComponentStatus,
+} from "../../../Types/Monitor/ExternalStatusPageMonitor/ExternalStatusPageMonitorResponse";
 import Typeof from "../../../Types/Typeof";
 import VMUtil from "../VM/VMAPI";
 import DataToProcess from "./DataToProcess";
@@ -238,6 +245,89 @@ export default class MonitorTemplateUtil {
               storageMap[oidResponse.name] = oidResponse.value;
             }
           }
+        }
+      }
+
+      if (data.monitorType === MonitorType.DNS) {
+        const dnsResponse: DnsMonitorResponse | undefined = (
+          data.dataToProcess as ProbeMonitorResponse
+        ).dnsResponse;
+
+        storageMap = {
+          isOnline: (data.dataToProcess as ProbeMonitorResponse).isOnline,
+          responseTimeInMs: dnsResponse?.responseTimeInMs,
+          failureCause: dnsResponse?.failureCause,
+          isTimeout: dnsResponse?.isTimeout,
+          isDnssecValid: dnsResponse?.isDnssecValid,
+        } as JSONObject;
+
+        // Add DNS records
+        if (dnsResponse?.records) {
+          storageMap["records"] = dnsResponse.records.map(
+            (record: DnsRecordResponse) => {
+              return {
+                type: record.type,
+                value: record.value,
+                ttl: record.ttl,
+              };
+            },
+          );
+
+          // Add record values as a flat array for easier templating
+          storageMap["recordValues"] = dnsResponse.records.map(
+            (record: DnsRecordResponse) => {
+              return record.value;
+            },
+          );
+        }
+      }
+
+      if (data.monitorType === MonitorType.Domain) {
+        const domainResponse: DomainMonitorResponse | undefined = (
+          data.dataToProcess as ProbeMonitorResponse
+        ).domainResponse;
+
+        storageMap = {
+          isOnline: (data.dataToProcess as ProbeMonitorResponse).isOnline,
+          responseTimeInMs: domainResponse?.responseTimeInMs,
+          failureCause: domainResponse?.failureCause,
+          domainName: domainResponse?.domainName,
+          registrar: domainResponse?.registrar,
+          createdDate: domainResponse?.createdDate,
+          updatedDate: domainResponse?.updatedDate,
+          expiresDate: domainResponse?.expiresDate,
+          nameServers: domainResponse?.nameServers,
+          domainStatus: domainResponse?.domainStatus,
+          dnssec: domainResponse?.dnssec,
+        } as JSONObject;
+      }
+
+      if (data.monitorType === MonitorType.ExternalStatusPage) {
+        const externalStatusPageResponse:
+          | ExternalStatusPageMonitorResponse
+          | undefined = (data.dataToProcess as ProbeMonitorResponse)
+          .externalStatusPageResponse;
+
+        storageMap = {
+          isOnline: (data.dataToProcess as ProbeMonitorResponse).isOnline,
+          responseTimeInMs: externalStatusPageResponse?.responseTimeInMs,
+          failureCause: externalStatusPageResponse?.failureCause,
+          overallStatus: externalStatusPageResponse?.overallStatus,
+          activeIncidentCount: externalStatusPageResponse?.activeIncidentCount,
+        } as JSONObject;
+
+        // Add component statuses
+        if (externalStatusPageResponse?.componentStatuses) {
+          storageMap["componentStatuses"] =
+            externalStatusPageResponse.componentStatuses.map(
+              (component: ExternalStatusPageComponentStatus) => {
+                return {
+                  name: component.name,
+                  status: component.status,
+                  description: component.description,
+                };
+              },
+            );
         }
       }
     } catch (err) {

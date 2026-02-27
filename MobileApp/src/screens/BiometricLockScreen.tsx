@@ -1,7 +1,9 @@
 import React, { useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import { useTheme } from "../theme";
 import * as LocalAuthentication from "expo-local-authentication";
+import Logo from "../components/Logo";
+import GradientButton from "../components/GradientButton";
 
 interface BiometricLockScreenProps {
   onSuccess: () => void;
@@ -26,122 +28,64 @@ export default function BiometricLockScreen({
     }
   };
 
-  // Auto-prompt on mount
   useEffect(() => {
     authenticate();
   }, []);
 
   return (
     <View
-      style={[
-        styles.container,
-        { backgroundColor: theme.colors.backgroundPrimary },
-      ]}
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 40,
+        backgroundColor: theme.colors.backgroundPrimary,
+      }}
     >
-      {/* Lock icon */}
       <View
-        style={[
-          styles.iconContainer,
-          { borderColor: theme.colors.borderDefault },
-        ]}
+        style={{
+          width: 80,
+          height: 80,
+          borderRadius: 16,
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 24,
+          backgroundColor: theme.colors.iconBackground,
+        }}
       >
-        <View
-          style={[
-            styles.lockBody,
-            { backgroundColor: theme.colors.textTertiary },
-          ]}
-        />
-        <View
-          style={[
-            styles.lockShackle,
-            { borderColor: theme.colors.textTertiary },
-          ]}
-        />
+        <Logo size={40} />
       </View>
 
       <Text
-        style={[
-          theme.typography.titleMedium,
-          {
-            color: theme.colors.textPrimary,
-            marginTop: 24,
-            textAlign: "center",
-          },
-        ]}
+        style={{
+          fontSize: 20,
+          fontWeight: "bold",
+          textAlign: "center",
+          color: theme.colors.textPrimary,
+          letterSpacing: -0.3,
+        }}
       >
         OneUptime is Locked
       </Text>
 
       <Text
-        style={[
-          theme.typography.bodyMedium,
-          {
-            color: theme.colors.textSecondary,
-            marginTop: 8,
-            textAlign: "center",
-          },
-        ]}
+        style={{
+          fontSize: 15,
+          marginTop: 8,
+          textAlign: "center",
+          color: theme.colors.textSecondary,
+        }}
       >
         Use {biometricType.toLowerCase()} to unlock
       </Text>
 
-      <TouchableOpacity
-        style={[
-          styles.unlockButton,
-          { backgroundColor: theme.colors.actionPrimary },
-        ]}
-        onPress={authenticate}
-        activeOpacity={0.8}
-      >
-        <Text style={[styles.unlockButtonText, { color: "#FFFFFF" }]}>
-          Unlock
-        </Text>
-      </TouchableOpacity>
+      <View style={{ marginTop: 40, width: "100%", maxWidth: 260 }}>
+        <GradientButton
+          label="Unlock"
+          onPress={authenticate}
+          icon="finger-print-outline"
+        />
+      </View>
     </View>
   );
 }
-
-const styles: ReturnType<typeof StyleSheet.create> = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 40,
-  },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  lockBody: {
-    width: 28,
-    height: 22,
-    borderRadius: 4,
-    marginTop: 8,
-  },
-  lockShackle: {
-    width: 20,
-    height: 16,
-    borderWidth: 3,
-    borderBottomWidth: 0,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    position: "absolute",
-    top: 16,
-  },
-  unlockButton: {
-    marginTop: 32,
-    paddingVertical: 16,
-    paddingHorizontal: 48,
-    borderRadius: 12,
-    minWidth: 200,
-    alignItems: "center",
-  },
-  unlockButtonText: {
-    fontSize: 17,
-    fontWeight: "600",
-  },
-});

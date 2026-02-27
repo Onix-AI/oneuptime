@@ -34,10 +34,13 @@ import {
 import type { PushMetricExporter } from "@opentelemetry/sdk-metrics/build/src/export/MetricExporter";
 import * as opentelemetry from "@opentelemetry/sdk-node";
 import { SpanExporter } from "@opentelemetry/sdk-trace-base";
-import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
+import {
+  ATTR_SERVICE_NAME,
+  ATTR_SERVICE_VERSION,
+} from "@opentelemetry/semantic-conventions";
 import URL from "../../Types/API/URL";
 import Dictionary from "../../Types/Dictionary";
-import { DisableTelemetry } from "../EnvironmentConfig";
+import { AppVersion, Env, DisableTelemetry } from "../EnvironmentConfig";
 import logger from "./Logger";
 
 type ResourceWithRawAttributes = LogsResource & {
@@ -141,6 +144,8 @@ export default class Telemetry {
   public static getResource(data: { serviceName: string }): Resource {
     return new Resource({
       [ATTR_SERVICE_NAME]: data.serviceName,
+      [ATTR_SERVICE_VERSION]: AppVersion,
+      ["deployment.environment"]: Env,
     });
   }
 

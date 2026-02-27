@@ -22,6 +22,7 @@ import {
   SpanStatus,
 } from "Common/Models/AnalyticsModels/Span";
 import ExceptionUtil from "../Utils/Exception";
+import StackTraceParser, { ParsedStackTrace } from "../Utils/StackTraceParser";
 import logger from "Common/Server/Utils/Logger";
 import SpanService from "Common/Server/Services/SpanService";
 import ExceptionInstanceService from "Common/Server/Services/ExceptionInstanceService";
@@ -55,6 +56,9 @@ type ExceptionEventPayload = {
   attributes: JSONObject;
   time: ParsedUnixNano;
   fingerprint: string;
+  release: string;
+  environment: string;
+  parsedFrames: string;
 };
 
 export default class OtelTracesIngestService extends OtelIngestBaseService {
@@ -318,6 +322,7 @@ export default class OtelTracesIngestService extends OtelIngestBaseService {
                         traceId: traceId,
                         spanStatusCode: statusCode,
                         spanName: spanName,
+                        resourceAttributes: resourceAttributes,
                       },
                       dbExceptions,
                     );
@@ -447,6 +452,7 @@ export default class OtelTracesIngestService extends OtelIngestBaseService {
       traceId: string;
       spanStatusCode: SpanStatus;
       spanName: string;
+      resourceAttributes: Dictionary<AttributeType | Array<AttributeType>>;
     },
     dbExceptions: Array<JSONObject>,
   ): Array<JSONObject> {
@@ -505,6 +511,28 @@ export default class OtelTracesIngestService extends OtelIngestBaseService {
                 exceptionType: exceptionType,
               });
 
+              // Extract release and environment from resource attributes
+              const release: string =
+                (spanContext.resourceAttributes[
+                  "resource.service.version"
+                ] as string) || "";
+              const environment: string =
+                (spanContext.resourceAttributes[
+                  "resource.deployment.environment"
+                ] as string) || "";
+
+              // Parse stack trace into structured frames
+              let parsedFramesJson: string = "[]";
+              if (stackTrace) {
+                try {
+                  const parsed: ParsedStackTrace =
+                    StackTraceParser.parse(stackTrace);
+                  parsedFramesJson = JSON.stringify(parsed.frames);
+                } catch {
+                  parsedFramesJson = "[]";
+                }
+              }
+
               const exceptionData: ExceptionEventPayload = {
                 projectId: spanContext.projectId,
                 serviceId: spanContext.serviceId,
@@ -519,6 +547,9 @@ export default class OtelTracesIngestService extends OtelIngestBaseService {
                 attributes: exceptionAttributes,
                 time: parsedTime,
                 fingerprint: fingerprint,
+                release: release,
+                environment: environment,
+                parsedFrames: parsedFramesJson,
               };
 
               dbExceptions.push(this.buildExceptionRow(exceptionData));
@@ -540,6 +571,16 @@ export default class OtelTracesIngestService extends OtelIngestBaseService {
                 ...(stackTrace
                   ? {
                       stackTrace: stackTrace,
+                    }
+                  : {}),
+                ...(release
+                  ? {
+                      release: release,
+                    }
+                  : {}),
+                ...(environment
+                  ? {
+                      environment: environment,
                     }
                   : {}),
               }).catch((err: Error) => {
@@ -667,6 +708,9 @@ export default class OtelTracesIngestService extends OtelIngestBaseService {
       spanId: data.spanId || "",
       fingerprint: data.fingerprint,
       spanName: data.spanName || "",
+      release: data.release || "",
+      environment: data.environment || "",
+      parsedFrames: data.parsedFrames || "[]",
       attributes: data.attributes || {},
     };
   }

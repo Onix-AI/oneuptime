@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   NavigationContainer,
   DefaultTheme,
@@ -6,42 +6,49 @@ import {
   useNavigationContainerRef,
 } from "@react-navigation/native";
 import * as Linking from "expo-linking";
+import * as SplashScreen from "expo-splash-screen";
 import { useTheme } from "../theme";
 import { useAuth } from "../hooks/useAuth";
-import { useProject } from "../hooks/useProject";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 import { useBiometric } from "../hooks/useBiometric";
+import { processPendingNotification } from "../notifications/handlers";
 import AuthStackNavigator from "./AuthStackNavigator";
 import MainTabNavigator from "./MainTabNavigator";
-import ProjectSelectionScreen from "../screens/ProjectSelectionScreen";
 import BiometricLockScreen from "../screens/BiometricLockScreen";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
+import { View, ActivityIndicator } from "react-native";
 
 const prefix: string = Linking.createURL("/");
 
 const linking: React.ComponentProps<typeof NavigationContainer>["linking"] = {
   prefixes: [prefix, "oneuptime://"],
+  /*
+   * Disable automatic deep link URL resolution via NavigationContainer.
+   * On Android with React Native's new architecture (Fabric), the async
+   * getInitialURL resolution inside NavigationContainer's useLinking hook
+   * sets state inside a microtask callback which never triggers a re-render,
+   * causing screens to never appear (blank screen after loading).
+   * Deep link navigation from push notifications is handled separately in
+   * usePushNotifications via Notifications.getLastNotificationResponseAsync().
+   */
+  enabled: false,
   config: {
     screens: {
       Home: "home",
       Incidents: {
         screens: {
-          IncidentDetail: "incident/:incidentId",
+          IncidentDetail: "incident/:projectId/:incidentId",
+          IncidentEpisodeDetail: "incident-episode/:projectId/:episodeId",
         },
       },
       Alerts: {
         screens: {
-          AlertDetail: "alert/:alertId",
+          AlertDetail: "alert/:projectId/:alertId",
+          AlertEpisodeDetail: "alert-episode/:projectId/:episodeId",
         },
       },
-      IncidentEpisodes: {
+      OnCall: {
         screens: {
-          IncidentEpisodeDetail: "incident-episode/:episodeId",
-        },
-      },
-      AlertEpisodes: {
-        screens: {
-          AlertEpisodeDetail: "alert-episode/:episodeId",
+          OnCallList: "on-call",
         },
       },
     },
@@ -51,42 +58,51 @@ const linking: React.ComponentProps<typeof NavigationContainer>["linking"] = {
 export default function RootNavigator(): React.JSX.Element {
   const { theme } = useTheme();
   const { isAuthenticated, isLoading, needsServerUrl } = useAuth();
-  const { selectedProject, isLoadingProjects } = useProject();
   const navigationRef: ReturnType<typeof useNavigationContainerRef> =
     useNavigationContainerRef();
   const biometric: ReturnType<typeof useBiometric> = useBiometric();
 
   const [biometricPassed, setBiometricPassed] = useState(false);
-  const [biometricChecked, setBiometricChecked] = useState(false);
 
   usePushNotifications(navigationRef);
 
-  // Check biometric on app launch
+  // Hide the native splash screen once initial loading completes
   useEffect(() => {
-    const checkBiometric: () => Promise<void> = async (): Promise<void> => {
-      if (!isAuthenticated || !biometric.isEnabled) {
-        setBiometricPassed(true);
-        setBiometricChecked(true);
-        return;
-      }
-
-      setBiometricChecked(true);
-      // Don't auto-pass — show lock screen
-    };
-
     if (!isLoading) {
-      checkBiometric();
+      SplashScreen.hideAsync();
     }
-  }, [isAuthenticated, isLoading, biometric.isEnabled]);
+  }, [isLoading]);
+
+  /*
+   * Process pending notification when auth/biometric state settles and the
+   * MainTabNavigator mounts (covers the case where onReady already fired for
+   * AuthStackNavigator before the user logged in, or after biometric unlock).
+   */
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      const timer: ReturnType<typeof setTimeout> = setTimeout(
+        processPendingNotification,
+        100,
+      );
+      return () => {
+        return clearTimeout(timer);
+      };
+    }
+    return undefined;
+  }, [isAuthenticated, isLoading, biometricPassed]);
+
+  const handleNavigationReady: () => void = useCallback((): void => {
+    processPendingNotification();
+  }, []);
 
   const navigationTheme: Theme = {
     ...DefaultTheme,
-    dark: theme.isDark,
+    dark: true,
     colors: {
       ...DefaultTheme.colors,
       primary: theme.colors.actionPrimary,
       background: theme.colors.backgroundPrimary,
-      card: theme.colors.backgroundSecondary,
+      card: theme.colors.backgroundPrimary,
       text: theme.colors.textPrimary,
       border: theme.colors.borderDefault,
       notification: theme.colors.severityCritical,
@@ -94,13 +110,15 @@ export default function RootNavigator(): React.JSX.Element {
     fonts: DefaultTheme.fonts,
   };
 
-  if (isLoading || !biometricChecked) {
+  if (isLoading) {
     return (
       <View
-        style={[
-          styles.loading,
-          { backgroundColor: theme.colors.backgroundPrimary },
-        ]}
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: theme.colors.backgroundPrimary,
+        }}
       >
         <ActivityIndicator size="large" color={theme.colors.actionPrimary} />
       </View>
@@ -128,23 +146,6 @@ export default function RootNavigator(): React.JSX.Element {
       );
     }
 
-    if (isLoadingProjects) {
-      return (
-        <View
-          style={[
-            styles.loading,
-            { backgroundColor: theme.colors.backgroundPrimary },
-          ]}
-        >
-          <ActivityIndicator size="large" color={theme.colors.actionPrimary} />
-        </View>
-      );
-    }
-
-    if (!selectedProject) {
-      return <ProjectSelectionScreen />;
-    }
-
     return <MainTabNavigator />;
   };
 
@@ -153,16 +154,9 @@ export default function RootNavigator(): React.JSX.Element {
       ref={navigationRef}
       theme={navigationTheme}
       linking={linking}
+      onReady={handleNavigationReady}
     >
       {renderContent()}
     </NavigationContainer>
   );
 }
-
-const styles: ReturnType<typeof StyleSheet.create> = StyleSheet.create({
-  loading: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

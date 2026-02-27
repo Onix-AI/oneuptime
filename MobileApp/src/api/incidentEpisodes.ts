@@ -6,6 +6,7 @@ import type {
   IncidentState,
   StateTimelineItem,
   NoteItem,
+  FeedItem,
 } from "./types";
 
 export async function fetchIncidentEpisodes(
@@ -29,6 +30,7 @@ export async function fetchIncidentEpisodes(
         episodeNumber: true,
         episodeNumberWithPrefix: true,
         description: true,
+        rootCause: true,
         createdAt: true,
         declaredAt: true,
         incidentCount: true,
@@ -39,6 +41,43 @@ export async function fetchIncidentEpisodes(
     },
     {
       headers: { tenantid: projectId },
+    },
+  );
+  return response.data;
+}
+
+export async function fetchAllIncidentEpisodes(
+  options: { skip?: number; limit?: number; unresolvedOnly?: boolean } = {},
+): Promise<ListResponse<IncidentEpisodeItem>> {
+  const { skip = 0, limit = 100, unresolvedOnly = false } = options;
+
+  const query: Record<string, unknown> = {};
+  if (unresolvedOnly) {
+    query.currentIncidentState = { isResolvedState: false };
+  }
+
+  const response: AxiosResponse = await apiClient.post(
+    `/api/incident-episode/get-list?skip=${skip}&limit=${limit}`,
+    {
+      query,
+      select: {
+        _id: true,
+        title: true,
+        episodeNumber: true,
+        episodeNumberWithPrefix: true,
+        description: true,
+        rootCause: true,
+        createdAt: true,
+        declaredAt: true,
+        incidentCount: true,
+        currentIncidentState: { _id: true, name: true, color: true },
+        incidentSeverity: { _id: true, name: true, color: true },
+        projectId: true,
+      },
+      sort: { createdAt: "DESC" },
+    },
+    {
+      headers: { "is-multi-tenant-query": "true" },
     },
   );
   return response.data;
@@ -58,6 +97,7 @@ export async function fetchIncidentEpisodeById(
         episodeNumber: true,
         episodeNumberWithPrefix: true,
         description: true,
+        rootCause: true,
         createdAt: true,
         declaredAt: true,
         incidentCount: true,
@@ -112,6 +152,31 @@ export async function fetchIncidentEpisodeStateTimeline(
         incidentState: { _id: true, name: true, color: true },
       },
       sort: { createdAt: "DESC" },
+    },
+    {
+      headers: { tenantid: projectId },
+    },
+  );
+  return response.data.data;
+}
+
+export async function fetchIncidentEpisodeFeed(
+  projectId: string,
+  episodeId: string,
+): Promise<FeedItem[]> {
+  const response: AxiosResponse = await apiClient.post(
+    "/api/incident-episode-feed/get-list?skip=0&limit=50",
+    {
+      query: { incidentEpisodeId: episodeId },
+      select: {
+        _id: true,
+        feedInfoInMarkdown: true,
+        moreInformationInMarkdown: true,
+        displayColor: true,
+        postedAt: true,
+        createdAt: true,
+      },
+      sort: { postedAt: "DESC" },
     },
     {
       headers: { tenantid: projectId },

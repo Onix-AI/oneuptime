@@ -71,6 +71,20 @@ const OccouranceTable: FunctionComponent<ComponentProps> = (
               type: FieldType.Text,
               title: "Span Name",
             },
+            {
+              field: {
+                release: true,
+              },
+              type: FieldType.Text,
+              title: "Release",
+            },
+            {
+              field: {
+                environment: true,
+              },
+              type: FieldType.Text,
+              title: "Environment",
+            },
           ]}
           selectMoreFields={{
             spanStatusCode: true,
@@ -119,6 +133,20 @@ const OccouranceTable: FunctionComponent<ComponentProps> = (
                 spanName: true,
               },
               title: "Span Name",
+              type: FieldType.Text,
+            },
+            {
+              field: {
+                release: true,
+              },
+              title: "Release",
+              type: FieldType.Text,
+            },
+            {
+              field: {
+                environment: true,
+              },
+              title: "Environment",
               type: FieldType.Text,
             },
             {

@@ -128,23 +128,6 @@ jobs:
           max_attempts: 3
           command: cd Workflow && npm install && npm run compile && npm run dep-check
 
-  compile-api-reference:
-    runs-on: ubuntu-latest
-    env:
-      CI_PIPELINE_ID: ${{github.run_number}}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: latest
-      - run: cd Common && npm install
-      - name: Compile API Reference
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 30
-          max_attempts: 3
-          command: cd APIReference && npm install && npm run compile && npm run dep-check
-
   compile-docs-reference:
     runs-on: ubuntu-latest
     env:
@@ -398,6 +381,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: latest
+      - run: cd Common && npm install && npm run compile
       - name: Compile MobileApp
         uses: nick-fields/retry@v3
         with:
@@ -421,3 +405,20 @@ jobs:
           timeout_minutes: 30
           max_attempts: 3
           command: cd AIAgent && npm install && npm run compile && npm run dep-check
+
+  compile-cli:
+    runs-on: ubuntu-latest
+    env:
+      CI_PIPELINE_ID: ${{github.run_number}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
+      - run: cd Common && npm install
+      - name: Compile CLI
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 30
+          max_attempts: 3
+          command: cd CLI && npm install && npm run compile && npm run dep-check

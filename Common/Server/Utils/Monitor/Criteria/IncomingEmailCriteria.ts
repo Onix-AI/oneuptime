@@ -238,7 +238,11 @@ export default class IncomingEmailCriteria {
 
     if (criteriaFilter.filterType === FilterType.IsNotEmpty) {
       if (fieldValue && fieldValue.trim() !== "") {
-        return `${fieldName} is not empty.`;
+        const truncatedValue: string =
+          fieldValue.length > 500
+            ? fieldValue.substring(0, 500) + "..."
+            : fieldValue;
+        return `${fieldName} is not empty. Value: ${truncatedValue}`;
       }
       return null;
     }

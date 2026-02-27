@@ -1,8 +1,10 @@
 import React from "react";
+import { Platform } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useTheme } from "../theme";
 import SettingsScreen from "../screens/SettingsScreen";
-import NotificationPreferencesScreen from "../screens/NotificationPreferencesScreen";
+import ProjectsScreen from "../screens/settings/ProjectsScreen";
+import SSOProviderSelectScreen from "../screens/settings/SSOProviderSelectScreen";
 import type { SettingsStackParamList } from "./types";
 
 const Stack: ReturnType<
@@ -16,10 +18,18 @@ export default function SettingsStackNavigator(): React.JSX.Element {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: theme.colors.backgroundSecondary,
+          backgroundColor: theme.colors.backgroundPrimary,
         },
         headerTintColor: theme.colors.textPrimary,
         headerShadowVisible: false,
+        ...(Platform.OS === "ios"
+          ? {
+              headerLargeTitle: true,
+              headerLargeStyle: {
+                backgroundColor: theme.colors.backgroundPrimary,
+              },
+            }
+          : {}),
       }}
     >
       <Stack.Screen
@@ -28,9 +38,14 @@ export default function SettingsStackNavigator(): React.JSX.Element {
         options={{ title: "Settings" }}
       />
       <Stack.Screen
-        name="NotificationPreferences"
-        component={NotificationPreferencesScreen}
-        options={{ title: "Notifications" }}
+        name="ProjectsList"
+        component={ProjectsScreen}
+        options={{ title: "Projects" }}
+      />
+      <Stack.Screen
+        name="SSOProviderSelect"
+        component={SSOProviderSelectScreen}
+        options={{ title: "SSO Login" }}
       />
     </Stack.Navigator>
   );
