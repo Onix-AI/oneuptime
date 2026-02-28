@@ -292,12 +292,58 @@ Consider submitting a PR to the upstream OneUptime repository for a permanent fi
 
 ---
 
+## 6. MCP Server Connection Reset Fix
+
+**Date Applied:** 2026-02-27
+
+**Patched File:** `Onix/patches/RouteHandler.ts` (mounted into container)
+
+**Last Extracted:** 2026-02-27 (from `oneuptime/mcp:release` image, version 10.0.14)
+
+### Problem
+MCP SDK `^1.25.0` resolves to >=1.26.0 which enforces single-transport-per-McpServer. The upstream code uses a singleton `McpServer` and calls `.connect()` for each new session, which throws "Already connected to a transport" on the second connection.
+
+### Fix
+Create a fresh `McpServer` instance per session in `handleNewSession()` instead of reusing the singleton. Each session gets its own server with tool handlers registered on it. Supports multiple concurrent sessions.
+
+### How to Apply This Patch
+
+**Step 1: Extract the file from the container (without override mounts)**
+```bash
+cd /opt/oneuptime
+docker compose -f docker-compose.yml up -d mcp
+sleep 15
+docker cp oneuptime-mcp-1:/usr/src/app/Handlers/RouteHandler.ts /opt/oneuptime/Onix/patches/RouteHandler.ts
+docker compose -f docker-compose.yml stop mcp
+```
+
+**Step 2: Apply the patch**
+In `handleNewSession()`, replace the singleton `getMCPServer()` call with a fresh `McpServer` per session and register tool handlers on it. See `Onix/patches/RouteHandler.ts` for the exact code.
+
+**Step 3: Recreate the mcp service with the new mount**
+```bash
+export $(grep -v '^#' config.env | xargs) && docker compose up -d mcp
+```
+
+**Step 4: Verify**
+```bash
+docker exec oneuptime-mcp-1 grep "new McpServer" /usr/src/app/Handlers/RouteHandler.ts
+```
+
+### Re-applying After Updates
+When OneUptime is updated (new Docker images), re-extract and re-apply:
+1. Check if the issue is fixed upstream
+2. If not, repeat steps 1-4 above
+
+---
+
 ## Files Changed from Upstream
 
 | File | Type | Description |
 |------|------|-------------|
 | `Onix/patches/CustomCodeMonitorCriteria.ts` | Added | Patched version extracted from container with JSON stringify fix |
 | `Onix/patches/StatusPageService.ts` | Added | Patched version extracted from container with custom domain SSO redirect fix |
+| `Onix/patches/RouteHandler.ts` | Added | Patched version extracted from container with MCP connection reset fix |
 | `docker-compose.override.yml` | Added | SSL cert mount + patched file mounts |
 | `certs/ServerCerts/monitor.onixai.ai.crt` | Added | CloudFlare Origin certificate |
 | `certs/ServerCerts/monitor.onixai.ai.key` | Added | CloudFlare Origin private key |
@@ -315,6 +361,9 @@ docker exec oneuptime-probe-ingest-1 grep -A 5 "Convert object results" \
 # Check the SSO redirect patch is in the running container
 docker exec oneuptime-app-1 grep -A 3 "fullDomain" \
   /usr/src/Common/Server/Services/StatusPageService.ts | grep "https://"
+
+# Check the MCP per-session patch is in the running container
+docker exec oneuptime-mcp-1 grep "new McpServer" /usr/src/app/Handlers/RouteHandler.ts
 
 # Check certificates are mounted
 docker exec oneuptime-ingress-1 ls -la /etc/nginx/certs/ServerCerts/
