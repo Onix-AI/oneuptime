@@ -13,27 +13,29 @@ This document tracks all modifications made to the upstream OneUptime repository
 **Last Re-extracted:** 2026-02-27 (from `oneuptime/probe-ingest:release` image, version 10.0.14)
 
 ### Problem
-Custom JavaScript Code monitors that return JSON objects (e.g., `return { data: { status: "ok" } }`) silently fail criteria matching. The "Contains" filter and other string-based criteria checks don't work because the result is an object, not a string.
+Two issues with Custom JavaScript Code monitors that return JSON objects (e.g., `return { data: { status: "[OFFLINE:critical]", title: "..." } }`):
+
+1. **Criteria matching fails:** The upstream "Contains" filter and other string-based criteria checks don't work because the result is an object, not a string.
+2. **Incident template variables unresolved:** The original patch (2026-02-04) fixed criteria matching by mutating `syntheticMonitorResponse.result` in-place with `JSON.stringify`. However, this destroyed the original object before `MonitorTemplateUtil.buildTemplateStorageMap` could read it, causing `{{result.title}}`, `{{result.data.incident.name}}`, etc. to appear as raw text in incident titles/descriptions.
 
 ### Fix
-Added JSON.stringify conversion (with pretty-print formatting) for object results before criteria comparison in the `CheckOn.ResultValue` section.
+Stringify the result into a **local variable** (`resultValue`) for criteria comparison, leaving the original `syntheticMonitorResponse.result` object intact for template resolution.
 
-### Patch Code (added after the emptyNotEmptyResult check, ~line 73)
+### Patch Code (replaces the comparison block after the emptyNotEmptyResult check, ~line 73)
 ```typescript
-// Convert object results to JSON string for comparison
-// This allows Contains/NotContains filters to work with JSON objects
-// returned from custom code monitors (e.g., { status: "[OFFLINE:critical]", ... })
-if (
+// Stringify object results for comparison without mutating the original
+// (the original must stay as an object for incident template resolution)
+const resultValue: string | number | boolean | undefined =
   syntheticMonitorResponse.result &&
   typeof syntheticMonitorResponse.result === "object"
-) {
-  syntheticMonitorResponse.result = JSON.stringify(
-    syntheticMonitorResponse.result,
-    null,
-    2,
-  );
-}
+    ? JSON.stringify(syntheticMonitorResponse.result, null, 2)
+    : (syntheticMonitorResponse.result as
+        | string
+        | number
+        | boolean
+        | undefined);
 ```
+Then use `resultValue` instead of `syntheticMonitorResponse.result` in the number and string comparisons below.
 
 ### How to Apply This Patch
 

@@ -72,19 +72,17 @@ export default class CustomCodeMonitoringCriteria {
         return emptyNotEmptyResult;
       }
 
-      // Convert object results to JSON string for comparison
-      // This allows Contains/NotContains filters to work with JSON objects
-      // returned from custom code monitors (e.g., { status: "[OFFLINE:critical]", ... })
-      if (
+      // Stringify object results for comparison without mutating the original
+      // (the original must stay as an object for incident template resolution)
+      const resultValue: string | number | boolean | undefined =
         syntheticMonitorResponse.result &&
         typeof syntheticMonitorResponse.result === "object"
-      ) {
-        syntheticMonitorResponse.result = JSON.stringify(
-          syntheticMonitorResponse.result,
-          null,
-          2,
-        );
-      }
+          ? JSON.stringify(syntheticMonitorResponse.result, null, 2)
+          : (syntheticMonitorResponse.result as
+              | string
+              | number
+              | boolean
+              | undefined);
 
       let thresholdAsNumber: number | null = null;
 
@@ -97,12 +95,9 @@ export default class CustomCodeMonitoringCriteria {
         thresholdAsNumber = null;
       }
 
-      if (
-        thresholdAsNumber !== null &&
-        typeof syntheticMonitorResponse.result === "number"
-      ) {
+      if (thresholdAsNumber !== null && typeof resultValue === "number") {
         const result: string | null = CompareCriteria.compareCriteriaNumbers({
-          value: syntheticMonitorResponse.result,
+          value: resultValue,
           threshold: thresholdAsNumber as number,
           criteriaFilter: input.criteriaFilter,
         });
@@ -112,9 +107,9 @@ export default class CustomCodeMonitoringCriteria {
         }
       }
 
-      if (threshold && typeof syntheticMonitorResponse.result === "string") {
+      if (threshold && typeof resultValue === "string") {
         const result: string | null = CompareCriteria.compareCriteriaStrings({
-          value: syntheticMonitorResponse.result,
+          value: resultValue,
           threshold: threshold.toString(),
           criteriaFilter: input.criteriaFilter,
         });
