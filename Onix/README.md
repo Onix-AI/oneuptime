@@ -23,9 +23,7 @@ Onix/
 │
 ├── cloudflare/                    Cloudflare DNS records for onixai.ai
 │
-├── doppler/                       Doppler secret management config
-│
-└── oneuptime/                     OneUptime application config (monitors, status pages, teams)
+└── doppler/                       Doppler secret management config
 ```
 
 ## Key Resources
@@ -57,6 +55,8 @@ The GCP VM at `monitor.onixai.ai` tracks the `onix` branch from our fork. To dep
 See [UPGRADES.md](UPGRADES.md) for the full step-by-step procedure.
 
 ## Updating Config Exports
+
+> **Note:** GCP config exports in `Onix/gcp/` are point-in-time snapshots and may be stale. `INFRASTRUCTURE.md` is the authoritative reference — it contains human-readable documentation with recreation commands. Use `gcloud describe` or the commands below to get current state.
 
 Re-export GCP configs to keep them current:
 

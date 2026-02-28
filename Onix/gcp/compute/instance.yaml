@@ -1,7 +1,7 @@
 canIpForward: false
 cpuPlatform: AMD Rome
 creationTimestamp: '2026-02-03T18:28:16.439-08:00'
-deletionProtection: false
+deletionProtection: true
 disks:
 - architecture: X86_64
   autoDelete: false
@@ -53,7 +53,7 @@ metadata:
       #!/bin/bash
       set -e
       cd /opt/oneuptime
-      ./fetch-secrets.sh
+      ./Onix/fetch-secrets.sh
       npm start
   - key: ssh-keys
     value: |-

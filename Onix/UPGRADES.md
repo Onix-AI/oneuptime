@@ -39,7 +39,7 @@ If new vars were added:
 1. Add them to **Doppler** (production config) — they auto-sync to GCP Secret Manager
 2. Add the secret names to `fetch-secrets.sh` on the VM (the SECRETS array)
 
-### 3. Server: SSH and pull
+### 3. Server: SSH and deploy
 
 ```bash
 gcloud compute ssh oneuptime-production \
@@ -51,11 +51,31 @@ gcloud compute ssh oneuptime-production \
 Then on the VM:
 ```bash
 cd /opt/oneuptime
+
+# Check disk space — images are ~59 GB on an 80 GB disk
+df -h /
+docker system df
+
+# If low on space, clean old images BEFORE pulling new ones
+# (safe — does NOT touch database volumes)
+npm run stop
+docker image prune -a -f
+# To clean a single image instead: docker image rm oneuptime/app:release
+
+# Pull code and secrets
 git pull origin onix
 ./Onix/fetch-secrets.sh
-export $(grep -v '^#' config.env | xargs)
-docker compose pull
-docker compose up --remove-orphans -d
+
+# Pull new images and start
+npm run pull
+npm start
+```
+
+The `npm run` scripts handle env var export, `--remove-orphans`, and status checks automatically. A full pull takes ~30 minutes.
+
+If you need raw `docker compose` (e.g., targeting a specific service or passing extra flags), export env vars first:
+```bash
+export $(grep -v '^#' config.env | xargs) && docker compose <command>
 ```
 
 ### 4. Re-apply patches (if still needed)
@@ -98,9 +118,8 @@ gcloud compute disks snapshot oneuptime-production \
 cd /opt/oneuptime
 git log --oneline -5                    # find the previous good commit
 git checkout <commit-hash>
-export $(grep -v '^#' config.env | xargs)
-docker compose pull
-docker compose up --remove-orphans -d
+npm run pull
+npm start
 ```
 
 **Full** — restore from disk snapshot via GCP Console.

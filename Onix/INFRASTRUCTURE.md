@@ -2,7 +2,7 @@
 
 Comprehensive infrastructure documentation for the self-hosted OneUptime deployment at `monitor.onixai.ai`. This document contains everything needed to recreate the entire setup from scratch.
 
-**Last updated:** 2026-02-12
+**Last updated:** 2026-02-28
 **Audited from:** Live GCP project + Cloudflare + Doppler
 
 ---
@@ -510,7 +510,7 @@ Doppler is configured with a GCP Secret Manager integration that auto-syncs all 
 
 The integration uses the `doppler-secret-manager` service account with a conditional IAM binding that restricts it to only manage secrets with the `doppler-` prefix.
 
-### GCP Secret Manager Secrets (27 total)
+### GCP Secret Manager Secrets (27 in GCP: 24 application + 3 Doppler metadata)
 
 All secrets are prefixed with `doppler-` in GCP Secret Manager. The names below show the logical name (without the prefix):
 
@@ -709,6 +709,7 @@ services:
   Onix/patches/
     CustomCodeMonitorCriteria.ts         # Patched: JSON stringify fix for custom code monitors
     StatusPageService.ts                 # Patched: SSO redirect fix for custom domains
+    RouteHandler.ts                      # Patched: MCP per-session server fix
   certs/
     ServerCerts/
       monitor.onixai.ai.crt             # Cloudflare origin certificate
@@ -719,24 +720,7 @@ The repo is cloned via SSH using a read-only deploy key (`~/.ssh/deploy_key`). T
 
 ### docker-compose.override.yml
 
-```yaml
-services:
-  ingress:
-    volumes:
-      - ./certs/ServerCerts:/etc/nginx/certs/ServerCerts:ro
-
-  app:
-    volumes:
-      - ./Onix/patches/StatusPageService.ts:/usr/src/Common/Server/Services/StatusPageService.ts:ro
-
-  probe-ingest:
-    volumes:
-      - ./Onix/patches/CustomCodeMonitorCriteria.ts:/usr/src/app/node_modules/Common/Server/Utils/Monitor/Criteria/CustomCodeMonitorCriteria.ts:ro
-
-  probe-2:
-    deploy:
-      replicas: 0
-```
+See [`docker-compose.override.yml`](docker-compose.override.yml) for the current configuration.
 
 ### Applied Patches
 
@@ -746,6 +730,7 @@ See `Onix/PATCHES.md` for full details on each patch.
 |-------|------|---------|
 | Custom Code Monitor JSON Fix | `Onix/patches/CustomCodeMonitorCriteria.ts` | Converts object results to JSON string for criteria matching |
 | SSO Custom Domain Redirect | `Onix/patches/StatusPageService.ts` | Fixes post-SSO redirect to custom domains using Cloudflare SSL |
+| MCP Per-Session Server Fix | `Onix/patches/RouteHandler.ts` | Creates fresh McpServer per session to fix SDK >=1.26.0 single-transport enforcement |
 | Probe-2 Disabled | `docker-compose.override.yml` | Saves ~384 MB; single probe sufficient on same server |
 
 ### Startup Sequence

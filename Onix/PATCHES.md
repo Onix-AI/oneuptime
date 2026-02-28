@@ -57,23 +57,23 @@ docker compose -f docker-compose.yml stop probe-ingest
 
 **Step 3: Apply the patch**
 
-Edit `/opt/oneuptime/Onix/patches/CustomCodeMonitorCriteria.ts` and add the following code block inside the `CheckOn.ResultValue` section, AFTER the `emptyNotEmptyResult` check (around line 73):
+Edit `/opt/oneuptime/Onix/patches/CustomCodeMonitorCriteria.ts` and replace the comparison block inside the `CheckOn.ResultValue` section, AFTER the `emptyNotEmptyResult` check (around line 73), with the following local-variable approach:
 
 ```typescript
-      // Convert object results to JSON string for comparison
-      // This allows Contains/NotContains filters to work with JSON objects
-      // returned from custom code monitors (e.g., { status: "[OFFLINE:critical]", ... })
-      if (
+      // Stringify object results for comparison without mutating the original
+      // (the original must stay as an object for incident template resolution)
+      const resultValue: string | number | boolean | undefined =
         syntheticMonitorResponse.result &&
         typeof syntheticMonitorResponse.result === "object"
-      ) {
-        syntheticMonitorResponse.result = JSON.stringify(
-          syntheticMonitorResponse.result,
-          null,
-          2,
-        );
-      }
+          ? JSON.stringify(syntheticMonitorResponse.result, null, 2)
+          : (syntheticMonitorResponse.result as
+              | string
+              | number
+              | boolean
+              | undefined);
 ```
+
+Then use `resultValue` instead of `syntheticMonitorResponse.result` in the number and string comparisons below (the `compareCriteriaNumbers` and `compareCriteriaStrings` calls).
 
 **Step 4: Update docker-compose.override.yml**
 
@@ -154,30 +154,43 @@ The private key (`monitor.onixai.ai.key`) should be kept secure and not exposed 
 1. Mounts SSL certificates into the ingress (nginx) container
 2. Mounts patched CustomCodeMonitorCriteria.ts into probe-ingest container
 3. Mounts patched StatusPageService.ts into app container (SSO custom domain redirect fix)
-4. Disables probe-2 to save memory (~384 MB)
+4. Mounts patched RouteHandler.ts into mcp container (per-session MCP fix)
+5. Disables probe-2 to save memory (~384 MB)
 
 ### Content
-```yaml
-services:
-  ingress:
-    volumes:
-      - ./certs/ServerCerts:/etc/nginx/certs/ServerCerts:ro
 
-  app:
-    volumes:
-      - ./Onix/patches/StatusPageService.ts:/usr/src/Common/Server/Services/StatusPageService.ts:ro
-
-  probe-ingest:
-    volumes:
-      - ./Onix/patches/CustomCodeMonitorCriteria.ts:/usr/src/app/node_modules/Common/Server/Utils/Monitor/Criteria/CustomCodeMonitorCriteria.ts:ro
-
-  probe-2:
-    deploy:
-      replicas: 0
-```
+See [`docker-compose.override.yml`](../docker-compose.override.yml) for the current configuration.
 
 ### Usage
 This file is automatically merged with `docker-compose.yml` when running `docker compose up`. No additional flags needed.
+
+---
+
+## 4. Disabled Services
+
+**Date Added:** 2026-02-04
+**Updated:** 2026-02-05
+
+### Services Disabled
+| Service | Memory Saved | Reason |
+|---------|--------------|--------|
+| probe-2 | ~384 MB | Single probe sufficient; both probes on same server provide no geographic benefit |
+
+### Note on docs service
+The `docs` service cannot be disabled because nginx depends on it as an upstream. Disabling it causes nginx to fail with "host not found in upstream" errors.
+
+### Total Memory Saved
+~384 MB
+
+### How It Works
+Services are disabled by setting `deploy.replicas: 0` in `docker-compose.override.yml`. This prevents the containers from starting while keeping the configuration intact.
+
+### Re-enabling
+To re-enable a service, remove its entry from `docker-compose.override.yml` and run:
+```bash
+cd /opt/oneuptime
+export $(grep -v '^#' config.env | xargs) && docker compose up -d
+```
 
 ---
 
@@ -371,30 +384,3 @@ docker exec oneuptime-mcp-1 grep "new McpServer" /usr/src/app/Handlers/RouteHand
 docker exec oneuptime-ingress-1 ls -la /etc/nginx/certs/ServerCerts/
 ```
 
----
-
-## 4. Disabled Services
-
-**Date Added:** 2026-02-04
-**Updated:** 2026-02-05
-
-### Services Disabled
-| Service | Memory Saved | Reason |
-|---------|--------------|--------|
-| probe-2 | ~384 MB | Single probe sufficient; both probes on same server provide no geographic benefit |
-
-### Note on docs service
-The `docs` service cannot be disabled because nginx depends on it as an upstream. Disabling it causes nginx to fail with "host not found in upstream" errors.
-
-### Total Memory Saved
-~384 MB
-
-### How It Works
-Services are disabled by setting `deploy.replicas: 0` in `docker-compose.override.yml`. This prevents the containers from starting while keeping the configuration intact.
-
-### Re-enabling
-To re-enable a service, remove its entry from `docker-compose.override.yml` and run:
-```bash
-cd /opt/oneuptime
-export $(grep -v '^#' config.env | xargs) && docker compose up -d
-```

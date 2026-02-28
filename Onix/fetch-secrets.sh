@@ -39,7 +39,7 @@ for secret in "${SECRETS[@]}"; do
   value=$(gcloud secrets versions access latest --secret="doppler-${secret}" 2>/dev/null || echo "")
   if [ -n "$value" ]; then
     # Remove existing line if present, then add new value
-    sed -i "/^${secret}=/d" config.env
+    grep -v "^${secret}=" config.env > config.env.tmp && mv config.env.tmp config.env
     echo "${secret}=${value}" >> config.env
     echo "  Updated: ${secret}"
   fi

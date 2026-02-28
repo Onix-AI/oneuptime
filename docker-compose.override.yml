@@ -15,6 +15,9 @@ services:
     volumes:
       - ./Onix/patches/RouteHandler.ts:/usr/src/app/Handlers/RouteHandler.ts:ro
 
+  postgres:
+    ports: !override []
+
   probe-2:
     deploy:
       replicas: 0
