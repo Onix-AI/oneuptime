@@ -152,8 +152,7 @@ The private key (`monitor.onixai.ai.key`) should be kept secure and not exposed 
 1. Mounts SSL certificates into the ingress (nginx) container
 2. Mounts patched CustomCodeMonitorCriteria.ts into probe-ingest container
 3. Mounts patched StatusPageService.ts into app container (SSO custom domain redirect fix)
-4. Mounts patched RouteHandler.ts into mcp container (per-session server fix)
-5. Disables probe-2 to save memory (~384 MB)
+4. Disables probe-2 to save memory (~384 MB)
 
 ### Content
 ```yaml
@@ -169,10 +168,6 @@ services:
   probe-ingest:
     volumes:
       - ./Onix/patches/CustomCodeMonitorCriteria.ts:/usr/src/app/node_modules/Common/Server/Utils/Monitor/Criteria/CustomCodeMonitorCriteria.ts:ro
-
-  mcp:
-    volumes:
-      - ./Onix/patches/RouteHandler.ts:/usr/src/app/Handlers/RouteHandler.ts:ro
 
   probe-2:
     deploy:
@@ -297,79 +292,12 @@ Consider submitting a PR to the upstream OneUptime repository for a permanent fi
 
 ---
 
-## 6. MCP Server Per-Session Fix
-
-**Date Applied:** 2026-02-27
-
-**Patched File:** `Onix/patches/RouteHandler.ts` (mounted into mcp container)
-
-**Also broken in:** `upstream/master` (as of 2026-02-27)
-
-### Problem
-The MCP server uses a singleton `McpServer` instance (in `Server/MCPServer.ts`). When a new session connects, `handleNewSession()` in `Handlers/RouteHandler.ts` calls `mcpServer.connect(transport)` on this singleton. The MCP SDK (`@modelcontextprotocol/sdk` >= 1.26.0) enforces that `.connect()` can only be called once per `McpServer` instance, throwing:
-
-```
-Error: Already connected to a transport. Call close() before connecting to a new transport, or use a separate Protocol instance per connection.
-```
-
-The first session works. Every subsequent session fails. This broke when the Docker image was rebuilt and npm resolved `^1.25.0` to `1.26.0` (which added the guard).
-
-### Fix
-Instead of using the singleton, create a new `McpServer` instance per session and register tool handlers on it. Changes to `Handlers/RouteHandler.ts`:
-
-1. Import `McpServer` directly from the SDK, `registerToolHandlers` from `ToolHandler`, and `MCP_SERVER_NAME`/`MCP_SERVER_VERSION` from `ServerConfig`
-2. Pass `tools` through `createMCPHandler(tools)` → `handleNewSession(req, res, apiKey, tools)`
-3. In `handleNewSession`, create a fresh `McpServer` and call `registerToolHandlers()` before connecting
-
-### How to Apply This Patch
-
-Unlike the other patches, this file does NOT need to be extracted from the container first — it's a complete replacement written against the upstream source (which has not changed this file since it was introduced).
-
-**Step 1: Verify the patch file exists**
-```bash
-ls /opt/oneuptime/Onix/patches/RouteHandler.ts
-```
-
-**Step 2: Update docker-compose.override.yml**
-```yaml
-  mcp:
-    volumes:
-      - ./Onix/patches/RouteHandler.ts:/usr/src/app/Handlers/RouteHandler.ts:ro
-```
-
-**Step 3: Recreate the mcp service**
-```bash
-export $(grep -v '^#' config.env | xargs) && docker compose up -d mcp
-```
-
-**Step 4: Verify the patch is applied**
-```bash
-docker exec oneuptime-mcp-1 grep -A 2 "PATCHED by Onix" /usr/src/app/Handlers/RouteHandler.ts
-```
-
-### Impact
-- MCP server now correctly handles multiple concurrent sessions
-- Each session gets its own `McpServer` instance with tool handlers registered
-- No impact on tool functionality — same tools, same API
-
-### Re-applying After Updates
-If upstream changes `Handlers/RouteHandler.ts`, the patch may need to be updated to incorporate their changes alongside our per-session fix. Check with:
-```bash
-git diff upstream/release -- MCP/Handlers/RouteHandler.ts
-```
-
-### Upstream PR
-This is a clear upstream bug. Consider submitting a PR.
-
----
-
 ## Files Changed from Upstream
 
 | File | Type | Description |
 |------|------|-------------|
 | `Onix/patches/CustomCodeMonitorCriteria.ts` | Added | Patched version extracted from container with JSON stringify fix |
 | `Onix/patches/StatusPageService.ts` | Added | Patched version extracted from container with custom domain SSO redirect fix |
-| `Onix/patches/RouteHandler.ts` | Added | Patched MCP route handler with per-session McpServer instances |
 | `docker-compose.override.yml` | Added | SSL cert mount + patched file mounts |
 | `certs/ServerCerts/monitor.onixai.ai.crt` | Added | CloudFlare Origin certificate |
 | `certs/ServerCerts/monitor.onixai.ai.key` | Added | CloudFlare Origin private key |
@@ -387,10 +315,6 @@ docker exec oneuptime-probe-ingest-1 grep -A 5 "Convert object results" \
 # Check the SSO redirect patch is in the running container
 docker exec oneuptime-app-1 grep -A 3 "fullDomain" \
   /usr/src/Common/Server/Services/StatusPageService.ts | grep "https://"
-
-# Check the MCP per-session patch is in the running container
-docker exec oneuptime-mcp-1 grep -A 2 "PATCHED by Onix" \
-  /usr/src/app/Handlers/RouteHandler.ts
 
 # Check certificates are mounted
 docker exec oneuptime-ingress-1 ls -la /etc/nginx/certs/ServerCerts/

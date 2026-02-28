@@ -11,10 +11,6 @@ services:
     volumes:
       - ./Onix/patches/CustomCodeMonitorCriteria.ts:/usr/src/app/node_modules/Common/Server/Utils/Monitor/Criteria/CustomCodeMonitorCriteria.ts:ro
 
-  mcp:
-    volumes:
-      - ./Onix/patches/RouteHandler.ts:/usr/src/app/Handlers/RouteHandler.ts:ro
-
   probe-2:
     deploy:
       replicas: 0
